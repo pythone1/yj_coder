@@ -1,0 +1,13 @@
+train: ../train/images
+val: ../valid/images
+test: ../test/images
+
+nc: 1
+names: ['chicken']
+
+roboflow:
+  workspace: project-5i49b
+  project: chicken-kgmsm
+  version: 4
+  license: CC BY 4.0
+  url: https://universe.roboflow.com/project-5i49b/chicken-kgmsm/dataset/4

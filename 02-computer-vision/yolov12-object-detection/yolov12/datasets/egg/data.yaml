@@ -1,0 +1,13 @@
+train: ../train/images
+val: ../valid/images
+test: ../test/images
+
+nc: 1
+names: ['0']
+
+roboflow:
+  workspace: 2025roboflow03-3azrd
+  project: 2025-roboflow-03-dyii0
+  version: 2
+  license: CC BY 4.0
+  url: https://universe.roboflow.com/2025roboflow03-3azrd/2025-roboflow-03-dyii0/dataset/2

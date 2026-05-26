@@ -1,3 +1,0 @@
-# Usage Guide
-
-How to use the Pypoo framework...

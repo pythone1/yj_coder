@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>港股 AI/芯片主题研究终端</title>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
+    <style>
+        :root {
+            --bg: #101114;
+            --panel: #191b1f;
+            --panel-2: #21242a;
+            --border: #333842;
+            --text: #edf0f3;
+            --muted: #99a1ad;
+            --accent: #f0c44c;
+            --cyan: #55c7d8;
+            --up: #ef5350;
+            --down: #26a69a;
+        }
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            height: 100vh;
+            overflow: hidden;
+            background: var(--bg);
+            color: var(--text);
+            font-family: "Segoe UI", "Microsoft YaHei", Arial, sans-serif;
+            letter-spacing: 0;
+        }
+        button, input, select { font: inherit; }
+        .app {
+            display: grid;
+            grid-template-columns: 280px minmax(520px, 1fr) 420px;
+            grid-template-rows: 58px minmax(420px, 1fr) 220px;
+            height: 100vh;
+            gap: 8px;
+            padding: 8px;
+        }
+        .top {
+            grid-column: 1 / 4;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 14px;
+            background: var(--panel);
+            border: 1px solid var(--border);
+        }
+        .brand { display: flex; align-items: center; gap: 14px; min-width: 0; }
+        .brand h1 { font-size: 18px; margin: 0; white-space: nowrap; }
+        .status { color: var(--muted); font-size: 12px; }
+        .toolbar { display: flex; align-items: center; gap: 8px; }
+        .toolbar button {
+            border: 1px solid var(--border);
+            background: var(--panel-2);
+            color: var(--text);
+            height: 34px;
+            padding: 0 12px;
+            cursor: pointer;
+        }
+        .sidebar, .main, .right, .events {
+            background: var(--panel);
+            border: 1px solid var(--border);
+            min-height: 0;
+            overflow: hidden;
+        }
+        .sidebar { grid-column: 1; grid-row: 2; }
+        .main { grid-column: 2; grid-row: 2; }
+        .section-title {
+            height: 38px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 12px;
+            border-bottom: 1px solid var(--border);
+            color: var(--accent);
+            font-size: 13px;
+            font-weight: 700;
+        }
+        .watchlist { overflow: auto; height: calc(100% - 38px); }
+        .entity {
+            padding: 12px;
+            border-bottom: 1px solid #282c34;
+            cursor: pointer;
+        }
+        .entity.active { background: #252932; border-left: 3px solid var(--accent); padding-left: 9px; }
+        .entity-head { display: flex; justify-content: space-between; gap: 10px; align-items: center; }
+        .entity-name { font-size: 15px; font-weight: 700; }
+        .score { color: var(--accent); font-family: Consolas, monospace; }
+        .entity-meta { color: var(--muted); font-size: 12px; margin-top: 6px; line-height: 1.45; }
+        .chips { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 8px; }
+        .chip {
+            border: 1px solid #3b414d;
+            background: #15171b;
+            color: var(--muted);
+            padding: 2px 6px;
+            font-size: 11px;
+        }
+        .main { display: grid; grid-template-rows: 98px 42px 1fr; }
+        .quote {
+            display: grid;
+            grid-template-columns: 1.2fr repeat(5, 1fr);
+            gap: 1px;
+            background: var(--border);
+            border-bottom: 1px solid var(--border);
+        }
+        .qcell { background: var(--panel); padding: 12px; min-width: 0; }
+        .q-label { color: var(--muted); font-size: 12px; }
+        .q-val { margin-top: 8px; font-size: 18px; font-family: Consolas, monospace; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .price { font-size: 30px; }
+        .tabs {
+            display: flex;
+            align-items: center;
+            background: #15171b;
+            border-bottom: 1px solid var(--border);
+        }
+        .tab {
+            height: 42px;
+            padding: 0 18px;
+            display: flex;
+            align-items: center;
+            color: var(--muted);
+            cursor: pointer;
+            border-right: 1px solid #242832;
+        }
+        .tab.active { color: var(--accent); border-bottom: 2px solid var(--accent); background: var(--panel); }
+        #chart { width: 100%; height: 100%; min-height: 0; }
+        .right {
+            grid-column: 3;
+            grid-row: 2 / 4;
+            display: grid;
+            grid-template-rows: 190px minmax(0, 1fr);
+        }
+        .right-section {
+            min-height: 0;
+            overflow: hidden;
+            display: grid;
+            grid-template-rows: 38px minmax(0, 1fr);
+        }
+        .ranking { overflow: auto; min-height: 0; }
+        .rank-row {
+            display: grid;
+            grid-template-columns: 34px 1fr 64px;
+            align-items: center;
+            padding: 10px 12px;
+            border-bottom: 1px solid #282c34;
+            gap: 8px;
+        }
+        .rank-index { color: var(--muted); font-family: Consolas, monospace; }
+        .rank-name { font-weight: 700; }
+        .rank-drivers { color: var(--muted); font-size: 12px; margin-top: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .chat { min-height: 0; display: grid; grid-template-rows: 38px minmax(0, 1fr) 52px; border-top: 1px solid var(--border); }
+        .chat-log { min-height: 0; overflow: auto; padding: 12px; display: flex; flex-direction: column; gap: 10px; }
+        .msg {
+            max-width: 94%;
+            white-space: pre-wrap;
+            line-height: 1.55;
+            font-size: 13px;
+            padding: 10px 12px;
+            border: 1px solid #353b45;
+            background: #22262d;
+        }
+        .msg.user { align-self: flex-end; background: #1d3f51; border-color: #2f667a; }
+        .msg.ai { align-self: flex-start; }
+        .chat-input { min-height: 0; display: grid; grid-template-columns: minmax(0, 1fr) 74px; gap: 6px; padding: 7px; border-top: 1px solid var(--border); }
+        .chat-input input { background: #0d0f12; color: var(--text); border: 1px solid var(--border); padding: 0 10px; outline: none; }
+        .chat-input button { background: var(--accent); color: #111; border: none; font-weight: 700; cursor: pointer; }
+        .events { grid-column: 1 / 3; grid-row: 3; display: grid; grid-template-rows: 38px minmax(0, 1fr); }
+        .mini-actions { display: flex; align-items: center; gap: 6px; }
+        .mini-btn {
+            border: 1px solid var(--border);
+            background: #15171b;
+            color: var(--muted);
+            height: 24px;
+            padding: 0 8px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        .mini-btn.active { color: #111; background: var(--accent); border-color: var(--accent); font-weight: 700; }
+        .event-table { overflow: auto; }
+        table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+        th, td { border-bottom: 1px solid #282c34; padding: 8px 10px; text-align: left; font-size: 12px; vertical-align: top; }
+        th { color: var(--muted); font-weight: 600; background: #15171b; position: sticky; top: 0; }
+        .up { color: var(--up); }
+        .down { color: var(--down); }
+        .muted { color: var(--muted); }
+        .error { color: #ff9e80; }
+        @media (max-width: 1100px) {
+            .app { grid-template-columns: 240px 1fr; grid-template-rows: 58px 1fr 340px 220px; }
+            .top { grid-column: 1 / 3; }
+            .sidebar { grid-column: 1; grid-row: 2; }
+            .main { grid-column: 2; grid-row: 2; }
+            .right { grid-column: 1 / 3; grid-row: 3; }
+            .events { grid-column: 1 / 3; grid-row: 4; }
+        }
+    </style>
+</head>
+<body>
+<div class="app">
+    <header class="top">
+        <div class="brand">
+            <h1>港股 AI/芯片主题研究终端</h1>
+            <div class="status" id="status">初始化</div>
+        </div>
+        <div class="toolbar">
+            <button onclick="loadState()">刷新</button>
+            <button onclick="showReport()">简报</button>
+        </div>
+    </header>
+
+    <aside class="sidebar">
+        <div class="section-title"><span>观察池</span><span id="entity-count">0</span></div>
+        <div class="watchlist" id="watchlist"></div>
+    </aside>
+
+    <main class="main">
+        <section class="quote">
+            <div class="qcell">
+                <div class="q-label" id="q-symbol">--</div>
+                <div class="q-val price" id="q-price">--</div>
+            </div>
+            <div class="qcell"><div class="q-label">涨跌幅</div><div class="q-val" id="q-pct">--</div></div>
+            <div class="qcell"><div class="q-label">最高</div><div class="q-val" id="q-high">--</div></div>
+            <div class="qcell"><div class="q-label">最低</div><div class="q-val" id="q-low">--</div></div>
+            <div class="qcell"><div class="q-label">成交量</div><div class="q-val" id="q-vol">--</div></div>
+            <div class="qcell"><div class="q-label">RSI / MACD</div><div class="q-val" id="q-tech">--</div></div>
+        </section>
+        <nav class="tabs">
+            <div class="tab active" id="tab-min" onclick="setTab('min')">分时</div>
+            <div class="tab" id="tab-day" onclick="setTab('day')">日K</div>
+        </nav>
+        <section id="chart"></section>
+    </main>
+
+    <aside class="right">
+        <section class="right-section">
+            <div class="section-title"><span>主题热度</span><span>Score</span></div>
+            <div class="ranking" id="ranking"></div>
+        </section>
+        <section class="chat">
+            <div class="section-title"><span>研究助手</span><span id="ai-mode">Local</span></div>
+            <div class="chat-log" id="chat-log"></div>
+            <div class="chat-input">
+                <input id="chat-input" placeholder="输入研究问题" onkeydown="if(event.key==='Enter') sendMsg()">
+                <button onclick="sendMsg()">发送</button>
+            </div>
+        </section>
+    </aside>
+
+    <section class="events">
+        <div class="section-title">
+            <span>事件时间线</span>
+            <span class="mini-actions">
+                <button class="mini-btn active" id="event-selected-btn" onclick="setEventScope('selected')">当前</button>
+                <button class="mini-btn" id="event-all-btn" onclick="setEventScope('all')">全部</button>
+                <span id="event-count">0</span>
+            </span>
+        </div>
+        <div class="event-table">
+            <table>
+                <thead><tr><th style="width:150px">时间</th><th style="width:100px">实体</th><th style="width:110px">类型</th><th>事件</th><th style="width:80px">影响</th></tr></thead>
+                <tbody id="events-body"></tbody>
+            </table>
+        </div>
+    </section>
+</div>
+
+<script>
+    let state = null;
+    let selectedEntity = null;
+    let selectedSymbol = null;
+    let currentTab = 'min';
+    let eventScope = 'selected';
+    const chart = echarts.init(document.getElementById('chart'));
+
+    function clsByPct(pct) {
+        const n = Number(pct || 0);
+        return n >= 0 ? 'up' : 'down';
+    }
+
+    function fmt(n, digits = 2) {
+        if (n === null || n === undefined || Number.isNaN(Number(n))) return '--';
+        return Number(n).toFixed(digits);
+    }
+
+    function pickDefault() {
+        if (selectedEntity && state.entities[selectedEntity]) return;
+        const scores = state.theme_scores || [];
+        selectedEntity = scores[0]?.entity_id || Object.keys(state.entities || {})[0] || null;
+        const entity = state.entities[selectedEntity] || {};
+        selectedSymbol = (entity.stock_codes || [])[0] || Object.keys(state.stocks || {})[0] || null;
+    }
+
+    async function loadState() {
+        const res = await fetch('/api/state?t=' + Date.now());
+        state = await res.json();
+        pickDefault();
+        renderAll();
+    }
+
+    function renderAll() {
+        renderStatus();
+        renderWatchlist();
+        renderRanking();
+        renderQuote();
+        renderChart();
+        renderEvents();
+    }
+
+    function renderStatus() {
+        const errors = state.system?.errors || [];
+        document.getElementById('status').textContent = `更新 ${state.updated_at || '--'} · ${errors.length ? '有错误' : '运行中'}`;
+        document.getElementById('status').className = errors.length ? 'status error' : 'status';
+        document.getElementById('ai-mode').textContent = state.system?.has_zhipu_key ? 'GLM' : 'Local';
+    }
+
+    function renderWatchlist() {
+        const box = document.getElementById('watchlist');
+        const entities = state.entities || {};
+        const scores = Object.fromEntries((state.theme_scores || []).map(s => [s.entity_id, s]));
+        document.getElementById('entity-count').textContent = Object.keys(entities).length;
+        box.innerHTML = '';
+        Object.entries(entities).forEach(([id, entity]) => {
+            const score = scores[id];
+            const div = document.createElement('div');
+            div.className = 'entity' + (id === selectedEntity ? ' active' : '');
+            div.onclick = () => {
+                selectedEntity = id;
+                selectedSymbol = (entity.stock_codes || [])[0] || selectedSymbol;
+                renderAll();
+            };
+            const stocks = (entity.stock_codes || []).join(', ') || '未绑定股票';
+            div.innerHTML = `
+                <div class="entity-head">
+                    <div class="entity-name"></div>
+                    <div class="score">${score ? score.score : '--'}</div>
+                </div>
+                <div class="entity-meta"></div>
+                <div class="chips"></div>
+            `;
+            div.querySelector('.entity-name').textContent = entity.display_name || id;
+            div.querySelector('.entity-meta').textContent = `${entity.category || '未分类'} · ${stocks}`;
+            const chips = div.querySelector('.chips');
+            (entity.keywords || []).slice(0, 4).forEach(k => {
+                const chip = document.createElement('span');
+                chip.className = 'chip';
+                chip.textContent = k;
+                chips.appendChild(chip);
+            });
+            box.appendChild(div);
+        });
+    }
+
+    function renderRanking() {
+        const box = document.getElementById('ranking');
+        box.innerHTML = '';
+        (state.theme_scores || []).forEach((item, idx) => {
+            const row = document.createElement('div');
+            row.className = 'rank-row';
+            row.innerHTML = `
+                <div class="rank-index">${idx + 1}</div>
+                <div><div class="rank-name"></div><div class="rank-drivers"></div></div>
+                <div class="score">${item.score}</div>
+            `;
+            row.querySelector('.rank-name').textContent = `${item.display_name} · ${item.level}`;
+            row.querySelector('.rank-drivers').textContent = (item.drivers || []).join(' / ') || '暂无驱动';
+            box.appendChild(row);
+        });
+    }
+
+    function currentStock() {
+        const entity = state.entities?.[selectedEntity] || {};
+        if (!selectedSymbol || !(state.stocks || {})[selectedSymbol]) {
+            selectedSymbol = (entity.stock_codes || []).find(s => state.stocks?.[s]) || Object.keys(state.stocks || {})[0] || null;
+        }
+        return selectedSymbol ? state.stocks[selectedSymbol] : null;
+    }
+
+    function renderQuote() {
+        const stock = currentStock();
+        if (!stock || stock.status !== 'ok') {
+            document.getElementById('q-symbol').textContent = selectedSymbol || '--';
+            document.getElementById('q-price').textContent = '--';
+            document.getElementById('q-pct').textContent = stock?.error || '--';
+            return;
+        }
+        const rt = stock.realtime || {};
+        const tech = stock.technical || {};
+        const pctClass = clsByPct(rt.pct);
+        document.getElementById('q-symbol').textContent = `${rt.name || ''} ${stock.symbol}`;
+        const price = document.getElementById('q-price');
+        price.textContent = fmt(rt.price, 2);
+        price.className = `q-val price ${pctClass}`;
+        const pct = document.getElementById('q-pct');
+        pct.textContent = `${fmt(rt.pct, 2)}%`;
+        pct.className = `q-val ${pctClass}`;
+        document.getElementById('q-high').textContent = fmt(rt.high, 2);
+        document.getElementById('q-low').textContent = fmt(rt.low, 2);
+        document.getElementById('q-vol').textContent = `${fmt((rt.vol || 0) / 10000, 1)}万`;
+        document.getElementById('q-tech').textContent = `${fmt(tech.RSI, 1)} / ${fmt(tech.MACD, 3)}`;
+    }
+
+    function setTab(tab) {
+        currentTab = tab;
+        document.getElementById('tab-min').className = tab === 'min' ? 'tab active' : 'tab';
+        document.getElementById('tab-day').className = tab === 'day' ? 'tab active' : 'tab';
+        renderChart();
+    }
+
+    function renderChart() {
+        const stock = currentStock();
+        chart.clear();
+        if (!stock || stock.status !== 'ok') return;
+        const base = {
+            animation: false,
+            backgroundColor: 'transparent',
+            tooltip: { trigger: 'axis', axisPointer: { type: 'cross' } },
+            legend: { top: 6, textStyle: { color: '#cfd3dc' } },
+            grid: [
+                { left: '3%', right: '3%', top: 42, height: '56%' },
+                { left: '3%', right: '3%', top: '74%', height: '18%' }
+            ],
+            xAxis: [
+                { type: 'category', data: [], axisLine: { lineStyle: { color: '#555' } } },
+                { type: 'category', gridIndex: 1, data: [], axisLabel: { show: false }, axisLine: { lineStyle: { color: '#555' } } }
+            ],
+            yAxis: [
+                { scale: true, splitLine: { lineStyle: { color: '#2a2e36' } } },
+                { scale: true, gridIndex: 1, splitLine: { lineStyle: { color: '#2a2e36' } } }
+            ],
+            series: []
+        };
+        if (currentTab === 'min') {
+            const d = stock.intraday || {};
+            base.xAxis[0].data = d.times || [];
+            base.xAxis[1].data = d.times || [];
+            base.series = [
+                { name: '现价', type: 'line', data: d.prices || [], showSymbol: false, lineStyle: { color: '#edf0f3', width: 1.5 } },
+                { name: '均价', type: 'line', data: d.vwaps || [], showSymbol: false, lineStyle: { color: '#f0c44c', width: 1.3 } },
+                { name: 'BOLL上轨', type: 'line', data: d.upper || [], showSymbol: false, lineStyle: { color: '#ff9e80', width: 1, type: 'dashed' } },
+                { name: 'BOLL下轨', type: 'line', data: d.lower || [], showSymbol: false, lineStyle: { color: '#55c7d8', width: 1, type: 'dashed' } },
+                { name: '净量', type: 'bar', xAxisIndex: 1, yAxisIndex: 1, data: (d.net_vols || []).map(v => ({ value: v, itemStyle: { color: v >= 0 ? '#ef5350' : '#26a69a' } })) }
+            ];
+        } else {
+            const d = stock.kline || {};
+            base.xAxis[0].data = d.dates || [];
+            base.xAxis[1].data = d.dates || [];
+            base.series = [
+                { name: '日K', type: 'candlestick', data: d.values || [], itemStyle: { color: '#ef5350', color0: '#26a69a', borderColor: '#ef5350', borderColor0: '#26a69a' } },
+                { name: 'MA5', type: 'line', data: d.ma5 || [], showSymbol: false, lineStyle: { color: '#edf0f3', width: 1 } },
+                { name: 'MA10', type: 'line', data: d.ma10 || [], showSymbol: false, lineStyle: { color: '#55c7d8', width: 1 } },
+                { name: 'MA20', type: 'line', data: d.ma20 || [], showSymbol: false, lineStyle: { color: '#f0c44c', width: 1 } },
+                { name: 'MACD', type: 'bar', xAxisIndex: 1, yAxisIndex: 1, data: (d.macd || []).map(v => ({ value: v, itemStyle: { color: v >= 0 ? '#ef5350' : '#26a69a' } })) }
+            ];
+        }
+        chart.setOption(base);
+    }
+
+    function renderEvents() {
+        const body = document.getElementById('events-body');
+        document.getElementById('event-selected-btn').className = eventScope === 'selected' ? 'mini-btn active' : 'mini-btn';
+        document.getElementById('event-all-btn').className = eventScope === 'all' ? 'mini-btn active' : 'mini-btn';
+        const rows = (state.events || [])
+            .filter(e => eventScope === 'all' || !selectedEntity || e.entity_id === selectedEntity)
+            .slice(0, 80);
+        document.getElementById('event-count').textContent = rows.length;
+        body.innerHTML = '';
+        rows.forEach(e => {
+            const tr = document.createElement('tr');
+            const entityName = state.entities?.[e.entity_id]?.display_name || e.entity_id || '--';
+            tr.innerHTML = '<td></td><td></td><td></td><td></td><td></td>';
+            tr.children[0].textContent = e.ts || '';
+            tr.children[1].textContent = entityName;
+            tr.children[2].textContent = e.event_type || '';
+            tr.children[3].textContent = e.title || '';
+            tr.children[4].textContent = e.impact || '';
+            if (e.url && !String(e.url).startsWith('rule://') && !String(e.url).startsWith('local://')) {
+                tr.children[3].title = e.url;
+                tr.children[3].style.textDecoration = 'underline';
+                tr.children[3].style.cursor = 'pointer';
+                tr.children[3].onclick = () => window.open(e.url, '_blank');
+            }
+            body.appendChild(tr);
+        });
+    }
+
+    function setEventScope(scope) {
+        eventScope = scope;
+        renderEvents();
+    }
+
+    function appendMsg(role, text) {
+        const log = document.getElementById('chat-log');
+        const div = document.createElement('div');
+        div.className = `msg ${role}`;
+        div.textContent = text;
+        log.appendChild(div);
+        log.scrollTop = log.scrollHeight;
+    }
+
+    async function sendMsg() {
+        const input = document.getElementById('chat-input');
+        const msg = input.value.trim();
+        if (!msg) return;
+        appendMsg('user', msg);
+        input.value = '';
+        appendMsg('ai', '分析中...');
+        const pending = document.querySelector('#chat-log .msg.ai:last-child');
+        try {
+            const res = await fetch('/chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ msg, entity_id: selectedEntity, symbol: selectedSymbol })
+            });
+            const data = await res.json();
+            pending.textContent = data.reply || '无回复';
+        } catch (err) {
+            pending.textContent = '连接失败。';
+        }
+    }
+
+    async function showReport() {
+        const res = await fetch('/api/report?t=' + Date.now());
+        const data = await res.json();
+        appendMsg('ai', data.report || '暂无简报');
+    }
+
+    window.addEventListener('resize', () => chart.resize());
+    loadState();
+    setInterval(loadState, 15000);
+</script>
+</body>
+</html>

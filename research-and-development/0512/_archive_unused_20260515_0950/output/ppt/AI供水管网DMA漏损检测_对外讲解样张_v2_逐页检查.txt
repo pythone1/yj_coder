@@ -1,6 +1,0 @@
-01	OK	chars=131	pics=1	min_font=11.5	bottom=7.5	
-02	OK	chars=213	pics=3	min_font=10.0	bottom=7.28	
-03	OK	chars=242	pics=1	min_font=10.0	bottom=7.28	
-04	OK	chars=151	pics=4	min_font=10.0	bottom=7.28	
-05	OK	chars=221	pics=1	min_font=10.0	bottom=7.28	
-06	OK	chars=195	pics=1	min_font=10.0	bottom=7.28	
