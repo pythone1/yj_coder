@@ -1,0 +1,351 @@
+{
+  "baseline": {
+    "outfall_link": "253",
+    "rows": 287,
+    "outfall_total_volume_m3": 24821.436168025128,
+    "outfall_peak_flow_cms": 0.19478057867118975
+  },
+  "event": {
+    "outfall_link": "253",
+    "rows": 287,
+    "outfall_total_volume_m3": 28582.988383982138,
+    "outfall_peak_flow_cms": 0.288091284407338
+  },
+  "delta_outfall_m3": 3761.55221595701,
+  "baseline_rpt": {
+    "rpt": "E:\\PY\\LSTM\\0520\\data\\0520_clean_baseline.rpt",
+    "External Inflow": [
+      0.0,
+      0.0
+    ],
+    "External Outflow": [
+      2.485,
+      24.85
+    ],
+    "Flooding Loss": [
+      0.0,
+      0.0
+    ],
+    "Final Stored Volume": [
+      0.056,
+      0.562
+    ],
+    "Continuity Error": [
+      0.0
+    ],
+    "flooding_node_rows": 30,
+    "sum_node_flood_volume_m3": 160.0,
+    "top10_by_depth": [
+      {
+        "node": "107",
+        "hours": 0.02,
+        "max_rate_cms": 0.342,
+        "volume_m3": 12.0,
+        "max_ponded_depth_m": 4.946
+      },
+      {
+        "node": "306",
+        "hours": 0.01,
+        "max_rate_cms": 0.836,
+        "volume_m3": 25.0,
+        "max_ponded_depth_m": 3.725
+      },
+      {
+        "node": "110",
+        "hours": 0.02,
+        "max_rate_cms": 1.998,
+        "volume_m3": 50.0,
+        "max_ponded_depth_m": 2.612
+      },
+      {
+        "node": "91",
+        "hours": 0.03,
+        "max_rate_cms": 1.28,
+        "volume_m3": 13.0,
+        "max_ponded_depth_m": 1.91
+      },
+      {
+        "node": "109",
+        "hours": 0.01,
+        "max_rate_cms": 0.96,
+        "volume_m3": 8.0,
+        "max_ponded_depth_m": 1.226
+      },
+      {
+        "node": "108",
+        "hours": 0.01,
+        "max_rate_cms": 0.793,
+        "volume_m3": 6.0,
+        "max_ponded_depth_m": 1.222
+      },
+      {
+        "node": "92",
+        "hours": 0.03,
+        "max_rate_cms": 0.212,
+        "volume_m3": 4.0,
+        "max_ponded_depth_m": 0.739
+      },
+      {
+        "node": "90",
+        "hours": 0.02,
+        "max_rate_cms": 0.269,
+        "volume_m3": 4.0,
+        "max_ponded_depth_m": 0.625
+      },
+      {
+        "node": "111",
+        "hours": 0.01,
+        "max_rate_cms": 1.05,
+        "volume_m3": 5.0,
+        "max_ponded_depth_m": 0.453
+      },
+      {
+        "node": "106",
+        "hours": 0.01,
+        "max_rate_cms": 0.887,
+        "volume_m3": 5.0,
+        "max_ponded_depth_m": 0.452
+      }
+    ],
+    "top10_by_volume": [
+      {
+        "node": "110",
+        "hours": 0.02,
+        "max_rate_cms": 1.998,
+        "volume_m3": 50.0,
+        "max_ponded_depth_m": 2.612
+      },
+      {
+        "node": "306",
+        "hours": 0.01,
+        "max_rate_cms": 0.836,
+        "volume_m3": 25.0,
+        "max_ponded_depth_m": 3.725
+      },
+      {
+        "node": "252",
+        "hours": 0.03,
+        "max_rate_cms": 1.041,
+        "volume_m3": 16.0,
+        "max_ponded_depth_m": 0.176
+      },
+      {
+        "node": "91",
+        "hours": 0.03,
+        "max_rate_cms": 1.28,
+        "volume_m3": 13.0,
+        "max_ponded_depth_m": 1.91
+      },
+      {
+        "node": "107",
+        "hours": 0.02,
+        "max_rate_cms": 0.342,
+        "volume_m3": 12.0,
+        "max_ponded_depth_m": 4.946
+      },
+      {
+        "node": "109",
+        "hours": 0.01,
+        "max_rate_cms": 0.96,
+        "volume_m3": 8.0,
+        "max_ponded_depth_m": 1.226
+      },
+      {
+        "node": "108",
+        "hours": 0.01,
+        "max_rate_cms": 0.793,
+        "volume_m3": 6.0,
+        "max_ponded_depth_m": 1.222
+      },
+      {
+        "node": "106",
+        "hours": 0.01,
+        "max_rate_cms": 0.887,
+        "volume_m3": 5.0,
+        "max_ponded_depth_m": 0.452
+      },
+      {
+        "node": "111",
+        "hours": 0.01,
+        "max_rate_cms": 1.05,
+        "volume_m3": 5.0,
+        "max_ponded_depth_m": 0.453
+      },
+      {
+        "node": "90",
+        "hours": 0.02,
+        "max_rate_cms": 0.269,
+        "volume_m3": 4.0,
+        "max_ponded_depth_m": 0.625
+      }
+    ]
+  },
+  "event_rpt": {
+    "rpt": "E:\\PY\\LSTM\\0520\\data\\0520_truth_event.rpt",
+    "External Inflow": [
+      0.378,
+      3.78
+    ],
+    "External Outflow": [
+      2.861,
+      28.611
+    ],
+    "Flooding Loss": [
+      0.0,
+      0.0
+    ],
+    "Final Stored Volume": [
+      0.056,
+      0.562
+    ],
+    "Continuity Error": [
+      0.0
+    ],
+    "flooding_node_rows": 30,
+    "sum_node_flood_volume_m3": 160.0,
+    "top10_by_depth": [
+      {
+        "node": "107",
+        "hours": 0.02,
+        "max_rate_cms": 0.342,
+        "volume_m3": 12.0,
+        "max_ponded_depth_m": 4.946
+      },
+      {
+        "node": "306",
+        "hours": 0.01,
+        "max_rate_cms": 0.836,
+        "volume_m3": 25.0,
+        "max_ponded_depth_m": 3.725
+      },
+      {
+        "node": "110",
+        "hours": 0.02,
+        "max_rate_cms": 1.998,
+        "volume_m3": 50.0,
+        "max_ponded_depth_m": 2.612
+      },
+      {
+        "node": "91",
+        "hours": 0.03,
+        "max_rate_cms": 1.28,
+        "volume_m3": 13.0,
+        "max_ponded_depth_m": 1.91
+      },
+      {
+        "node": "109",
+        "hours": 0.01,
+        "max_rate_cms": 0.96,
+        "volume_m3": 8.0,
+        "max_ponded_depth_m": 1.226
+      },
+      {
+        "node": "108",
+        "hours": 0.01,
+        "max_rate_cms": 0.793,
+        "volume_m3": 6.0,
+        "max_ponded_depth_m": 1.222
+      },
+      {
+        "node": "92",
+        "hours": 0.03,
+        "max_rate_cms": 0.212,
+        "volume_m3": 4.0,
+        "max_ponded_depth_m": 0.739
+      },
+      {
+        "node": "90",
+        "hours": 0.02,
+        "max_rate_cms": 0.269,
+        "volume_m3": 4.0,
+        "max_ponded_depth_m": 0.625
+      },
+      {
+        "node": "111",
+        "hours": 0.01,
+        "max_rate_cms": 1.05,
+        "volume_m3": 5.0,
+        "max_ponded_depth_m": 0.453
+      },
+      {
+        "node": "106",
+        "hours": 0.01,
+        "max_rate_cms": 0.887,
+        "volume_m3": 5.0,
+        "max_ponded_depth_m": 0.452
+      }
+    ],
+    "top10_by_volume": [
+      {
+        "node": "110",
+        "hours": 0.02,
+        "max_rate_cms": 1.998,
+        "volume_m3": 50.0,
+        "max_ponded_depth_m": 2.612
+      },
+      {
+        "node": "306",
+        "hours": 0.01,
+        "max_rate_cms": 0.836,
+        "volume_m3": 25.0,
+        "max_ponded_depth_m": 3.725
+      },
+      {
+        "node": "252",
+        "hours": 0.03,
+        "max_rate_cms": 1.041,
+        "volume_m3": 16.0,
+        "max_ponded_depth_m": 0.176
+      },
+      {
+        "node": "91",
+        "hours": 0.03,
+        "max_rate_cms": 1.28,
+        "volume_m3": 13.0,
+        "max_ponded_depth_m": 1.91
+      },
+      {
+        "node": "107",
+        "hours": 0.02,
+        "max_rate_cms": 0.342,
+        "volume_m3": 12.0,
+        "max_ponded_depth_m": 4.946
+      },
+      {
+        "node": "109",
+        "hours": 0.01,
+        "max_rate_cms": 0.96,
+        "volume_m3": 8.0,
+        "max_ponded_depth_m": 1.226
+      },
+      {
+        "node": "108",
+        "hours": 0.01,
+        "max_rate_cms": 0.793,
+        "volume_m3": 6.0,
+        "max_ponded_depth_m": 1.222
+      },
+      {
+        "node": "106",
+        "hours": 0.01,
+        "max_rate_cms": 0.887,
+        "volume_m3": 5.0,
+        "max_ponded_depth_m": 0.452
+      },
+      {
+        "node": "111",
+        "hours": 0.01,
+        "max_rate_cms": 1.05,
+        "volume_m3": 5.0,
+        "max_ponded_depth_m": 0.453
+      },
+      {
+        "node": "90",
+        "hours": 0.02,
+        "max_rate_cms": 0.269,
+        "volume_m3": 4.0,
+        "max_ponded_depth_m": 0.625
+      }
+    ]
+  }
+}

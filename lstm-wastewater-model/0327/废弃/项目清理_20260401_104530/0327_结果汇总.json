@@ -1,0 +1,23 @@
+{
+  "run_mode": "0327 论文口径小参数实验",
+  "Qr_m3": 76000.0,
+  "ga_best_mean_nse": 0.6498411498104115,
+  "posterior_median_nse": 0.6677500922663985,
+  "posterior_best_nse": -30.45993745552824,
+  "final_solution_name": "posterior_median",
+  "final_mean_nse": 0.6677500922663985,
+  "predicted_top3": [
+    "J124",
+    "J41",
+    "J78"
+  ],
+  "initial_ppd_count": 8,
+  "posterior_validation_sample_count": 12,
+  "posterior_coverage_mean": 0.48850174216027875,
+  "am_accept_rate_by_chain": {
+    "0": 0.15,
+    "1": 0.08333333333333333
+  },
+  "am_sd": 0.121,
+  "am_dimension_d": 20
+}

@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>污水管网入渗溯源项目总览</title>
+  <style>
+    :root {
+      --bg: #f4f7fb;
+      --card: #ffffff;
+      --ink: #10233c;
+      --muted: #58708a;
+      --accent: #0f766e;
+      --accent2: #2563eb;
+      --warn: #b45309;
+      --danger: #b91c1c;
+      --border: #d9e2ec;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
+      background:
+        radial-gradient(circle at top right, rgba(37,99,235,0.08), transparent 28%),
+        radial-gradient(circle at left center, rgba(15,118,110,0.08), transparent 24%),
+        var(--bg);
+      color: var(--ink);
+    }
+    .wrap {
+      width: min(1380px, calc(100% - 40px));
+      margin: 0 auto;
+      padding: 28px 0 40px;
+    }
+    .hero {
+      background: linear-gradient(135deg, #ffffff, #eef6ff 48%, #eefbf8);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 28px 30px;
+      box-shadow: 0 18px 44px rgba(16,35,60,0.08);
+    }
+    h1, h2, h3 { margin: 0; }
+    .subtitle {
+      margin-top: 10px;
+      color: var(--muted);
+      line-height: 1.7;
+      font-size: 16px;
+    }
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 14px;
+      margin-top: 22px;
+    }
+    .metric {
+      background: rgba(255,255,255,0.9);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 18px 16px;
+    }
+    .metric .label {
+      color: var(--muted);
+      font-size: 13px;
+    }
+    .metric .value {
+      margin-top: 8px;
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--ink);
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: 1.15fr 0.85fr;
+      gap: 18px;
+      margin-top: 20px;
+    }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 22px;
+      padding: 22px;
+      box-shadow: 0 12px 28px rgba(16,35,60,0.06);
+    }
+    .card p, .card li {
+      color: var(--muted);
+      line-height: 1.75;
+      margin: 0;
+      font-size: 15px;
+    }
+    ul {
+      margin: 12px 0 0;
+      padding-left: 20px;
+    }
+    .two {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+      margin-top: 18px;
+    }
+    iframe {
+      width: 100%;
+      min-height: 560px;
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      background: #fff;
+    }
+    .tag {
+      display: inline-block;
+      padding: 6px 10px;
+      border-radius: 999px;
+      margin-right: 8px;
+      margin-top: 10px;
+      font-size: 13px;
+      background: #e8f4ff;
+      color: var(--accent2);
+    }
+    .truth { color: var(--danger); font-weight: 700; }
+    .pred { color: var(--accent); font-weight: 700; }
+    .warn { color: var(--warn); font-weight: 700; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <section class="hero">
+      <h1>污水管网入渗溯源项目总览</h1>
+      <p class="subtitle">
+        这套系统的目标，是在只掌握少量监测点流量数据的情况下，
+        通过 <strong>SWMM 物理仿真 + 遗传算法 + 贝叶斯后验采样</strong>，
+        反推出最可能存在异常入渗的节点位置与贡献大小。
+        当前阶段采用 10 个候选节点、4 个监测点的受控盲测版本，用于验证算法链路与可解释性。
+      </p>
+      <div class="metrics">
+        <div class="metric"><div class="label">真实异常点</div><div class="value">J129, J195, J61</div></div>
+        <div class="metric"><div class="label">当前识别结果</div><div class="value">J195, J61</div></div>
+        <div class="metric"><div class="label">注水放大系数</div><div class="value">2.00</div></div>
+        <div class="metric"><div class="label">Mean NSE</div><div class="value">0.8575</div></div>
+        <div class="metric"><div class="label">ACC</div><div class="value">0.9000</div></div>
+        <div class="metric"><div class="label">MCC</div><div class="value">0.7638</div></div>
+        <div class="metric"><div class="label">AM 平均接受率</div><div class="value">0.1944</div></div>
+      </div>
+    </section>
+
+    <section class="grid">
+      <article class="card">
+        <h2>一、这套算法在干什么</h2>
+        <ul>
+          <li>先用 <strong>晴天基线模型</strong> 给出没有异常入流时的正常响应。</li>
+          <li>再用受控注水构造 <strong>观测增量</strong>，也就是异常带来的额外流量变化。</li>
+          <li>遗传算法在 10 个候选节点上同时分配总入流量，反复调用 SWMM，寻找与监测曲线最接近的区域。</li>
+          <li>随后用自适应 Metropolis 对高相关区域做贝叶斯采样，输出 posterior PPD 和收敛诊断。</li>
+          <li>最终不仅给出“怀疑哪些点有问题”，还给出每个点贡献大小以及不确定性。</li>
+        </ul>
+      </article>
+      <article class="card">
+        <h2>二、领导最需要看的结论</h2>
+        <ul>
+          <li>当前链路已经从“试验脚本”升级为“<strong>可解释的数值反演系统</strong>”。</li>
+          <li>本轮采用了 <strong>2.00 倍注水放大系数</strong>，让受控实验激励更明显。</li>
+          <li>算法已能稳定给出 posterior 结果，但当前仍存在 <span class="warn">邻近井代偿</span> 问题。</li>
+          <li>项目现在的重点已经转为“提高辨识精度”，而不是“从零搭建链路”。</li>
+        </ul>
+        <div>
+          <span class="tag">受控盲测</span>
+          <span class="tag">10 节点候选池</span>
+          <span class="tag">4 个监测点</span>
+          <span class="tag">GA + AM</span>
+        </div>
+      </article>
+    </section>
+
+    <section class="two">
+      <article class="card">
+        <h2>三、真实结果 vs 识别结果</h2>
+        <p>下图直接对比了真实注水点与算法识别点。红色是真值未识别，绿色是识别但非真值，金色表示真值与识别重合。</p>
+        <iframe src="truth_vs_prediction_map.html"></iframe>
+      </article>
+      <article class="card">
+        <h2>四、监测点拟合效果</h2>
+        <p>下图展示 4 个监测点上，算法反演结果与真实观测增量的曲线贴合情况。Mean NSE 越高，说明整体拟合越好。</p>
+        <iframe src="full_dim_monitor_fit.html"></iframe>
+      </article>
+    </section>
+
+    <section class="two">
+      <article class="card">
+        <h2>五、后验概率分布 PPD</h2>
+        <p>这一步展示算法最后认为“每个候选节点有多大概率应当保留较高入流份额”，它比单个点解更适合用来解释不确定性。</p>
+        <iframe src="paper_posterior_ppd.html"></iframe>
+      </article>
+      <article class="card">
+        <h2>六、收敛与采样诊断</h2>
+        <p>这一步展示 posterior 链是否稳定、是否收敛、接受率是否健康，是判断结果是否可信的重要依据。</p>
+        <iframe src="paper_convergence_diagnostics.html"></iframe>
+      </article>
+    </section>
+  </div>
+</body>
+</html>

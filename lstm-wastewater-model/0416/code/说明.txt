@@ -1,0 +1,210 @@
+0416 主链代码说明
+
+一、代码入口
+1. 数据构造入口
+`build_0416_data.py`
+
+运行命令：
+`conda run -n LSTM python code\build_0416_data.py`
+
+作用：
+从基线 INP 和事件 INP 生成算法使用的 CSV 数据。
+
+2. 小参数入口
+`run_small_0416.py`
+
+运行命令：
+`conda run -n LSTM python code\run_small_0416.py`
+
+作用：
+运行小规模 GA + AM。
+
+3. 中参数入口
+`run_medium_0416.py`
+
+运行命令：
+`conda run -n LSTM python code\run_medium_0416.py`
+
+作用：
+运行中规模 GA + AM。
+
+4. 大参数入口
+`run_large_0416.py`
+
+运行命令：
+`conda run -n LSTM python code\run_large_0416.py`
+
+作用：
+运行大规模 GA + AM。
+
+二、配置文件
+配置文件：
+`config_0416.py`
+
+主要配置项：
+1. `MODEL_1D_INP`
+   旱天基线模型路径。
+
+2. `MODEL_2D_INP`
+   雨天事件模型路径。
+
+3. `CANDIDATE_NODES`
+   候选井列表。
+   算法只在这些井之间分配总入流量。
+
+4. `MONITOR_NODES`
+   监测井列表。
+   GA 和 AM 都使用这些监测点计算误差。
+
+5. `TRUTH_INJECTION_NODES`
+   真值注入点列表。
+   用于真值回放检查和结果统计。
+
+6. `OUTFALL_NODE`
+   排口节点。
+
+7. `STEP_MINUTES`
+   时间步长，当前为 5 分钟。
+
+8. `ExperimentConfig`
+   默认算法参数。
+
+三、当前模型和点位
+1. 当前基线模型
+`0-网状污水管网模型/0417_32h_clean_baseline_no_J20_J48_J11.inp`
+
+2. 当前事件模型
+`0-网状污水管网模型/0417_32h_injection_50pct_J20_J48_J11.inp`
+
+3. 当前候选井
+`J20, J48, J11, J29, J31, J41, J72, J86, J73, J91, J92, J90, J64, J65, J10, J8, J5, J30, J52, J50`
+
+4. 当前监测井
+`J19, J24, J25, J27, J46, J47, J49, J84, J62, J61, J9, J50, J7, J75`
+
+5. 当前真值注入点
+`J20, J48, J11`
+
+四、主链脚本分工
+1. `build_0416_data.py`
+执行模型数据构造。
+输出总入流过程、真值注水数据、基线监测、事件监测、观测增量和排口过程。
+
+2. `simulation_0416.py`
+执行单个候选解的水力模拟。
+把 20 维候选井份额转换成各井逐时注水过程。
+将注水过程写入运行时 INP。
+调用 PySWMM 运行模型。
+返回 `mean_nse`、`sse`、模拟增量、事件流量和排口流量。
+
+3. `ga_am_0416.py`
+执行 GA 和 AM。
+GA 使用 `mean NSE` 排序。
+AM 使用 `SSE` 构造似然。
+GA 每代执行近似去重。
+initial PPD 从 GA 最后一代样本中筛选。
+AM warmup 后的样本进入后验统计。
+
+4. `run_outputs_0416.py`
+保存最终方案。
+输出 `ga_best`、`posterior_best_map`、`posterior_median_summary` 三类结果。
+
+5. `design_0417_candidates_monitors.py`
+生成候选井和监测井辅助设计文件。
+该脚本不是正式运行入口。
+
+6. `build_large_run_heatmap_dashboard_0417.py`
+根据大参数结果生成网页可视化。
+
+7. `create_large_run_summary_report_0417.py`
+根据大参数结果生成总结报告。
+
+五、运行流程
+1. 进入项目根目录。
+2. 运行数据构造：
+`conda run -n LSTM python code\build_0416_data.py`
+
+3. 运行小参数检查：
+`conda run -n LSTM python code\run_small_0416.py`
+
+4. 运行中参数：
+`conda run -n LSTM python code\run_medium_0416.py`
+
+5. 运行大参数：
+`conda run -n LSTM python code\run_large_0416.py`
+
+六、参数修改位置
+1. 修改候选井：
+`config_0416.py` 中的 `CANDIDATE_NODES`
+
+2. 修改监测井：
+`config_0416.py` 中的 `MONITOR_NODES`
+
+3. 修改真值点：
+`config_0416.py` 中的 `TRUTH_INJECTION_NODES`
+
+4. 修改模型路径：
+`config_0416.py` 中的 `MODEL_1D_INP` 和 `MODEL_2D_INP`
+
+5. 修改中参数算法规模：
+`run_medium_0416.py` 中的 `ExperimentConfig(...)`
+
+6. 修改大参数算法规模：
+`run_large_0416.py` 中的 `ExperimentConfig(...)`
+
+七、输出目录
+1. 数据输出：
+`data/generated_0417_scheme_32h_layout_v2/`
+
+2. 小参数结果：
+`results_0417_scheme_32h_layout_v2/small_run/`
+
+3. 中参数结果：
+`results_0417_scheme_32h_layout_v2/medium_run/`
+
+4. 大参数结果：
+`results_0417_scheme_32h_layout_v2/large_run/`
+
+八、主要结果文件
+1. `0417_truth_replay_check.json`
+真值回放检查。
+
+2. `0417_GA_all.csv`
+GA 全部样本。
+
+3. `0417_GA_best_by_generation.csv`
+GA 每代最优。
+
+4. `0417_initial_PPD.csv`
+GA 到 AM 的初始样本池。
+
+5. `0417_AM_samples.csv`
+AM 采样结果。
+
+6. `0417_PPD_samples.csv`
+warmup 后后验样本。
+
+7. `0417_posterior_node_weights.csv`
+后验节点统计。
+
+8. `0417_solution_scores.csv`
+最终方案评分。
+
+9. `0417_solution_shares.csv`
+最终方案份额。
+
+10. `0417_summary.json`
+运行汇总。
+
+九、路径规则
+`config_0416.py` 会按代码所在目录自动识别项目根目录。
+压缩包移动到其他位置后，进入解压后的根目录运行命令即可。
+
+十、必须重新构造数据的情况
+出现以下改动后，运行 `build_0416_data.py`：
+1. 改了基线 INP。
+2. 改了事件 INP。
+3. 改了候选井。
+4. 改了监测井。
+5. 改了真值注入点。
+6. 改了时间步长。

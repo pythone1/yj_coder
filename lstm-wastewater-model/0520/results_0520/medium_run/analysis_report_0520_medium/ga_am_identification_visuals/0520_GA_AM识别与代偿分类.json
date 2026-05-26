@@ -1,0 +1,97 @@
+{
+  "base_png": "E:\\PY\\LSTM\\0520\\results_0520\\medium_run\\analysis_report_0520_medium\\ga_am_identification_visuals\\figures\\01_基础布设_真值候选监测点.png",
+  "ga_png": "E:\\PY\\LSTM\\0520\\results_0520\\medium_run\\analysis_report_0520_medium\\ga_am_identification_visuals\\figures\\02_GA识别结果_含代偿点.png",
+  "am_png": "E:\\PY\\LSTM\\0520\\results_0520\\medium_run\\analysis_report_0520_medium\\ga_am_identification_visuals\\figures\\03_AM识别结果_含代偿点.png",
+  "combined_png": "E:\\PY\\LSTM\\0520\\results_0520\\medium_run\\analysis_report_0520_medium\\ga_am_identification_visuals\\figures\\04_GA_AM识别与代偿综合对比.png",
+  "html": "E:\\PY\\LSTM\\0520\\results_0520\\medium_run\\analysis_report_0520_medium\\ga_am_identification_visuals\\0520_GA_AM识别与代偿综合可视化.html",
+  "classification": {
+    "threshold": 0.05,
+    "truth_nodes": [
+      "103",
+      "304",
+      "10",
+      "178",
+      "42"
+    ],
+    "candidate_nodes": [
+      "10",
+      "62",
+      "124",
+      "42",
+      "178",
+      "63",
+      "103",
+      "241",
+      "273",
+      "215",
+      "216",
+      "60",
+      "308",
+      "310",
+      "312",
+      "118",
+      "304",
+      "64",
+      "91",
+      "85"
+    ],
+    "monitor_nodes": [
+      "286",
+      "223",
+      "239",
+      "267",
+      "8",
+      "251",
+      "252",
+      "189",
+      "37"
+    ],
+    "ga": {
+      "active": [
+        "10",
+        "42",
+        "103",
+        "308",
+        "304",
+        "91"
+      ],
+      "truth_hits": [
+        "103",
+        "304",
+        "10",
+        "42"
+      ],
+      "compensation": [
+        "91",
+        "308"
+      ],
+      "missed_truth": [
+        "178"
+      ]
+    },
+    "am": {
+      "active": [
+        "10",
+        "42",
+        "178",
+        "241",
+        "308",
+        "64"
+      ],
+      "truth_hits": [
+        "10",
+        "178",
+        "42"
+      ],
+      "compensation": [
+        "64",
+        "308",
+        "241"
+      ],
+      "missed_truth": [
+        "103",
+        "304"
+      ]
+    }
+  }
+}

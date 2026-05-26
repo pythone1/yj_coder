@@ -1,0 +1,419 @@
+0416 管网溯源代码用户指南
+
+一、使用范围
+本目录用于运行 0416 管网溯源实验主链路。
+主链路包括：
+1. 读取 SWMM INP 模型。
+2. 构造旱天基线数据、雨天事件数据和观测增量数据。
+3. 将候选井份额转换为注水过程。
+4. 使用 GA 搜索候选解。
+5. 使用 AM 在 GA 结果基础上继续搜索。
+6. 输出 GA 最优解、AM MAP 解、后验统计解和评分表。
+
+二、目录结构
+解压后目录结构如下：
+
+1. `code/`
+   存放全部主链 Python 代码。
+
+2. `0-网状污水管网模型/`
+   存放 SWMM 模型和候选井、监测井辅助设计文件。
+
+3. `data/generated_0417_scheme_32h_layout_v2/`
+   存放已生成的 5 分钟数据文件。
+
+4. `调用说明_0416主链路.txt`
+   当前用户指南。
+
+三、运行环境
+1. 打开 Anaconda Prompt 或 PowerShell。
+2. 进入压缩包解压后的根目录。
+3. 使用 `LSTM` 环境运行代码。
+
+命令格式：
+`conda run -n LSTM python code\脚本名称.py`
+
+依赖包：
+1. `numpy`
+2. `pandas`
+3. `pyswmm`
+4. `tqdm`
+
+四、当前模型文件
+当前模型路径写在 `code/config_0416.py` 中。
+
+1. 旱天基线模型
+`0-网状污水管网模型/0417_32h_clean_baseline_no_J20_J48_J11.inp`
+
+作用：
+用于生成无额外注水条件下的基线流量。
+
+2. 雨天事件模型
+`0-网状污水管网模型/0417_32h_injection_50pct_J20_J48_J11.inp`
+
+作用：
+用于生成带真值注水条件下的事件流量。
+
+3. 模型时间设置
+总模拟时长：32 小时。
+数据间隔：5 分钟。
+数据行数：383 行。
+第一行时间：0.0833 小时。
+最后一行时间：31.9167 小时。
+
+4. 真值注入点
+`J20, J48, J11`
+
+五、当前候选井和监测井
+当前实际运行列表写在 `code/config_0416.py` 中。
+
+1. 候选井变量
+变量名：`CANDIDATE_NODES`
+
+当前值：
+`J20, J48, J11, J29, J31, J41, J72, J86, J73, J91, J92, J90, J64, J65, J10, J8, J5, J30, J52, J50`
+
+含义：
+算法只能在这 20 个井里分配总入流量。
+
+2. 监测井变量
+变量名：`MONITOR_NODES`
+
+当前值：
+`J19, J24, J25, J27, J46, J47, J49, J84, J62, J61, J9, J50, J7, J75`
+
+含义：
+GA 和 AM 都使用这些监测点的观测增量计算误差。
+
+3. 真值注入点变量
+变量名：`TRUTH_INJECTION_NODES`
+
+当前值：
+`J20, J48, J11`
+
+含义：
+用于真值回放校验和结果统计。
+
+六、候选井和监测井的选取逻辑
+1. 候选井选取逻辑
+候选井必须包含 `J20、J48、J11` 三个真值点。
+其余候选井沿管网拓扑分散布置。
+分散布置的目的，是降低相邻井之间出现高分代偿解的概率。
+
+2. 监测井选取逻辑
+监测井布设在注入点下游。
+每条主要响应路径上保留局部监测点。
+支路汇合前布设监测点，用于区分不同注入点。
+公共下游保留少量监测点，用于检查整体响应。
+上游哨兵点用于判断候选解是否在不该响应的位置产生错误响应。
+
+3. 修改位置
+修改候选井：
+打开 `code/config_0416.py`，修改 `CANDIDATE_NODES`。
+
+修改监测井：
+打开 `code/config_0416.py`，修改 `MONITOR_NODES`。
+
+修改真值点：
+打开 `code/config_0416.py`，修改 `TRUTH_INJECTION_NODES`。
+
+修改后必须重新运行数据构造脚本：
+`conda run -n LSTM python code\build_0416_data.py`
+
+七、数据构造步骤
+数据构造脚本：
+`code/build_0416_data.py`
+
+运行命令：
+`conda run -n LSTM python code\build_0416_data.py`
+
+脚本执行内容：
+1. 运行旱天基线模型。
+2. 提取所有监测井的基线 `total_inflow`。
+3. 提取排口基线流量。
+4. 运行雨天事件模型。
+5. 提取所有监测井的事件 `total_inflow`。
+6. 提取排口事件流量。
+7. 计算每个监测点的观测增量。
+8. 从事件 INP 中读取 `J20/J48/J11` 的真值注水波形。
+9. 将真值注水波形插值到 5 分钟时间轴。
+10. 用排口事件体积减去排口基线体积，得到当前实验使用的总入流体积。
+
+体积公式：
+`V_r = Σ[Q_event_outfall(t_i) - Q_baseline_outfall(t_i)] × Δt`
+
+其中：
+`Δt = 300 s`
+
+输出目录：
+`data/generated_0417_scheme_32h_layout_v2/`
+
+输出文件：
+1. `0417_总入流过程_5分钟.csv`
+2. `0417_真值注水数据_5分钟.csv`
+3. `0417_基线监测_5分钟.csv`
+4. `0417_事件监测_5分钟.csv`
+5. `0417_观测增量_5分钟.csv`
+6. `0417_排口过程_5分钟.csv`
+7. `0417_数据构造汇总.json`
+
+八、算法运行步骤
+1. 小参数运行
+命令：
+`conda run -n LSTM python code\run_small_0416.py`
+
+输出目录：
+`results_0417_scheme_32h_layout_v2/small_run/`
+
+用途：
+快速检查数据、模型、候选井、监测井和算法流程是否能跑通。
+
+2. 中参数运行
+命令：
+`conda run -n LSTM python code\run_medium_0416.py`
+
+输出目录：
+`results_0417_scheme_32h_layout_v2/medium_run/`
+
+用途：
+正式实验运行入口。
+
+3. 大参数运行
+命令：
+`conda run -n LSTM python code\run_large_0416.py`
+
+输出目录：
+`results_0417_scheme_32h_layout_v2/large_run/`
+
+用途：
+更大搜索规模实验入口。
+
+九、GA 参数设置位置
+GA 参数写在运行入口脚本的 `ExperimentConfig(...)` 中。
+
+中参数文件：
+`code/run_medium_0416.py`
+
+大参数文件：
+`code/run_large_0416.py`
+
+主要 GA 参数：
+1. `ga_population_count`
+   GA 种群数量。
+
+2. `ga_population_size`
+   每个种群的个体数量。
+
+3. `ga_generations`
+   GA 迭代代数。
+
+4. `ga_elite_ratio`
+   每代保留的精英比例。
+
+5. `ga_mutation_strength`
+   变异强度。
+
+6. `ga_migration_interval`
+   种群之间迁移的间隔代数。
+
+7. `ga_migration_count`
+   每次迁移的个体数量。
+
+8. `ga_competition_replace_count`
+   强种群替换弱种群的个体数量。
+
+9. `ga_dedup_decimals`
+   GA 去重精度。
+   当前按小数位近似去重，避免大量重复个体反复参与迭代。
+
+GA 评分指标：
+`mean NSE`
+
+计算方式：
+先计算每个监测井的 NSE，再对所有监测井取平均。
+
+十、initial PPD 参数设置位置
+initial PPD 是 GA 到 AM 的过渡样本池。
+它由 GA 最后一代样本筛选和抽样得到。
+
+参数位置：
+`ExperimentConfig(...)`
+
+主要参数：
+1. `initial_ppd_keep_fraction`
+   从 GA 最后一代保留的比例。
+
+2. `initial_ppd_min_count`
+   initial PPD 的最小保留数量。
+
+3. `initial_ppd_min_mean_nse`
+   进入样本池的最低 mean NSE 门槛。
+
+4. `initial_ppd_max_nse_drop`
+   相对 GA 最优分数允许下降的范围。
+
+5. `initial_ppd_rank_pressure`
+   排名权重压力。
+   数值越大，高排名样本被抽中的概率越大。
+
+十一、AM 参数设置位置
+AM 参数写在运行入口脚本的 `ExperimentConfig(...)` 中。
+
+主要 AM 参数：
+1. `am_chain_count`
+   AM 链数量。
+
+2. `am_samples_per_chain`
+   每条链采样步数。
+
+3. `am_warmup`
+   warmup 步数。
+   warmup 前的样本不进入后验统计。
+
+4. `am_adapt_start`
+   从第几步开始更新 proposal 协方差。
+
+5. `am_initial_covariance`
+   AM 初始协方差规模。
+
+6. `am_use_prior_in_acceptance`
+   当前为 `False`。
+   AM 接受率只使用似然，不把 GA 先验再次放入接受率。
+
+7. `am_use_initial_ppd_covariance`
+   当前为 `True`。
+   AM 初始协方差由 initial PPD 样本估计。
+
+8. `am_proposal_method`
+   当前为 `tangent_projected_gaussian`。
+   proposal 后投影回非负且总和为 1 的份额空间。
+
+AM 评分指标：
+`SSE`
+
+似然形式：
+`log_like = -0.5 × SSE / σ²`
+
+十二、多进程参数
+参数名：
+`parallel_workers`
+
+位置：
+`ExperimentConfig(...)`
+
+作用：
+控制同时运行 SWMM 模拟的进程数。
+
+当前中参数：
+`parallel_workers=8`
+
+当前大参数：
+`parallel_workers=8`
+
+十三、输出文件说明
+每次运行会输出到对应结果目录。
+
+主要输出文件：
+1. `0417_truth_replay_check.json`
+   真值回放检查。
+   `mean_nse=1` 且 `sse` 接近 0，表示数据构造和注水回放链路一致。
+
+2. `0417_GA_all.csv`
+   GA 所有代、所有种群的样本和评分。
+
+3. `0417_GA_best_by_generation.csv`
+   每一代每个种群的最优结果。
+
+4. `0417_GA_last_generation.csv`
+   GA 最后一代样本。
+
+5. `0417_initial_PPD.csv`
+   从 GA 进入 AM 的初始样本池。
+
+6. `0417_AM_samples.csv`
+   AM 所有链的采样结果。
+
+7. `0417_PPD_samples.csv`
+   warmup 后进入后验统计的样本。
+
+8. `0417_posterior_node_weights.csv`
+   每个节点的后验统计结果。
+
+9. `0417_solution_scores.csv`
+   `ga_best`、`posterior_best_map`、`posterior_median_summary` 的评分。
+
+10. `0417_solution_shares.csv`
+   各方案在候选井上的份额。
+
+11. `0417_summary.json`
+   本次运行汇总。
+
+十四、结果如何读取
+1. GA 阶段看：
+`0417_GA_best_by_generation.csv`
+
+重点字段：
+`best_mean_nse`
+
+2. GA 最终样本看：
+`0417_GA_last_generation.csv`
+
+重点字段：
+`mean_nse, sse, J20, J48, J11, ...`
+
+3. AM 阶段看：
+`0417_AM_samples.csv`
+
+重点字段：
+`chain, step, accepted, log_like, acceptance_log_target, sse, mean_nse`
+
+4. 最终方案看：
+`0417_solution_scores.csv`
+`0417_solution_shares.csv`
+
+当前最终主方案字段：
+`posterior_best_map`
+
+含义：
+AM 后验样本中接受目标最好的样本。
+
+5. 后验统计看：
+`0417_posterior_node_weights.csv`
+
+字段含义：
+`mean`：后验均值。
+`median`：后验中位数。
+`p05`：5% 分位数。
+`p95`：95% 分位数。
+
+十五、把模型换成新工程时如何操作
+1. 放入新的基线 INP 和事件 INP。
+2. 打开 `code/config_0416.py`。
+3. 修改 `MODEL_1D_INP` 指向新基线模型。
+4. 修改 `MODEL_2D_INP` 指向新事件模型。
+5. 修改 `OUTFALL_NODE` 为新模型排口节点。
+6. 修改 `CANDIDATE_NODES` 为新候选井列表。
+7. 修改 `MONITOR_NODES` 为新监测井列表。
+8. 修改 `TRUTH_INJECTION_NODES` 为新真值点列表。
+9. 修改 `STEP_MINUTES` 为新模型输出步长。
+10. 运行 `build_0416_data.py`。
+11. 运行 `run_small_0416.py` 检查流程。
+12. 运行 `run_medium_0416.py` 或 `run_large_0416.py`。
+
+十六、修改注水波形时如何操作
+1. 打开事件 INP。
+2. 在 `[INFLOWS]` 中设置注入节点对应的时间序列名称。
+3. 在 `[TIMESERIES]` 中修改对应时间序列的流量值。
+4. 保持基线 INP 不含该额外注水。
+5. 运行 `build_0416_data.py`。
+6. 运行实验入口脚本。
+
+十七、当前代码路径识别方式
+`code/config_0416.py` 使用代码所在目录自动识别项目根目录。
+压缩包解压到其他路径后，代码会把解压目录作为新的根目录。
+不需要手动修改 `ROOT_DIR`。
+
+十八、版本规则
+1. 当前运行口径以 `code/config_0416.py` 为准。
+2. 修改模型、候选井、监测井、真值点或时间步长后，先重建数据。
+3. 运行结果以当前结果目录内的 `0417_summary.json` 和 `0417_solution_scores.csv` 为准。

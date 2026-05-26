@@ -1,0 +1,37 @@
+01	OK	chars=69	pics=1	min_font=14.0	bottom=7.5	
+02	OK	chars=65	pics=6	min_font=13.5	bottom=6.0	
+03	OK	chars=26	pics=1	min_font=15.0	bottom=7.5	
+04	OK	chars=95	pics=1	min_font=13.5	bottom=6.38	
+05	OK	chars=71	pics=1	min_font=13.2	bottom=6.21	
+06	OK	chars=79	pics=1	min_font=13.5	bottom=6.38	
+07	OK	chars=76	pics=1	min_font=13.2	bottom=6.21	
+08	OK	chars=17	pics=1	min_font=13.5	bottom=6.97	
+09	OK	chars=77	pics=2	min_font=13.5	bottom=6.33	
+10	OK	chars=52	pics=4	min_font=13.5	bottom=6.4	
+11	OK	chars=23	pics=1	min_font=15.0	bottom=7.5	
+12	OK	chars=15	pics=1	min_font=13.5	bottom=6.97	
+13	OK	chars=72	pics=1	min_font=13.5	bottom=6.38	
+14	OK	chars=64	pics=1	min_font=13.0	bottom=6.0	
+15	OK	chars=68	pics=1	min_font=13.5	bottom=6.38	
+16	OK	chars=28	pics=1	min_font=15.0	bottom=7.5	
+17	OK	chars=22	pics=1	min_font=13.5	bottom=6.97	
+18	OK	chars=65	pics=4	min_font=13.5	bottom=6.4	
+19	OK	chars=78	pics=1	min_font=13.5	bottom=6.38	
+20	OK	chars=62	pics=2	min_font=13.5	bottom=6.33	
+21	OK	chars=28	pics=1	min_font=15.0	bottom=7.5	
+22	OK	chars=61	pics=1	min_font=13.5	bottom=6.38	
+23	OK	chars=17	pics=1	min_font=13.5	bottom=6.97	
+24	OK	chars=15	pics=1	min_font=13.5	bottom=6.97	
+25	OK	chars=66	pics=2	min_font=13.5	bottom=6.33	
+26	OK	chars=26	pics=1	min_font=15.0	bottom=7.5	
+27	OK	chars=10	pics=1	min_font=13.5	bottom=6.97	
+28	OK	chars=66	pics=1	min_font=13.0	bottom=6.0	
+29	OK	chars=79	pics=6	min_font=13.5	bottom=6.0	
+30	OK	chars=75	pics=2	min_font=13.5	bottom=6.33	
+31	OK	chars=59	pics=1	min_font=13.0	bottom=6.0	
+32	OK	chars=25	pics=1	min_font=15.0	bottom=7.5	
+33	OK	chars=61	pics=1	min_font=13.5	bottom=6.38	
+34	OK	chars=79	pics=1	min_font=13.2	bottom=6.21	
+
+图片重复检查：
+唯一图片=21，总图片=54

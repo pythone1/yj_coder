@@ -1,0 +1,663 @@
+========================================================================================================================
+FILE: [✔]Uncertainty analysis method for diagnosing multi-pointdefects in urban drainage.pdf
+KW=genetic algorithm IDX=1315
+ diagnosis
+Uncertainty analysis
+Hybrid method
+Posterior probability distribution
+ABSTRACT
+Urban drainage system (UDS) plays a key role in city urbanization, where defective pipes can lead to seepage.
+Previous studies have identified the locations of defects in UDS using inverse optimization models. However, the
+unique optimal solution neglects uncertainty analysis, which may lead to misdiagnosis. In addition, the multi-
+point defect diagnosis has heavy computational burden due to high dimensional parameters space. To address
+these issues, this paper proposes a hybrid method that leverages the genetic algorithm (GA) to identify probable
+space, and then utilizes the adaptive Metropolis (AM) to provide an estimation of the posterior probability
+distribution (PPD). Firstly, a multi-population GA is employed for the maximum exploration within the model
+space. Then, AM algorithm is used to explore the final PPD of each pipe defect parameter. The metrics accuracy
+( ACC ), Matthews correlation coefficient ( MCC ) and mean absolute error ( MAE ) are used to evaluate the diagnosis
+performance. A synthetic UDS case with randomized multi-point seepage scenarios is used to validate the
+method. Results indicate that the proposed hybrid method is effective in diagnosing multi-point defect, with
+0.91, 0.78 of the hybrid method and 0.87, 0.69 of the DiffeRential Evolution Adaptive Metropolis method for the
+ACC and MCC , respectively. Meanwhile, the diagnosis speed has increased by 32 %. The result PPD passes the 90
+% confidence interval validation. The proposed method can provide effective uncertainty analysis to reduce
+misdiagnosis of the traditional method.
+1. Introduction
+Complex urban drainage system (UDS) plays a key role in city rapid
+urbanization development ( Luo et al., 2024 ). A scientific UDS signifi-
+cantly contributes to urban flood control ( Karn et al., 2023 ; Lund et al.,
+2019 ). However, especially in developing countries, for the long years of
+UDS construction, unscientific operation, materials aging and external
+disturbance, existing pipes have suffered a lot of damage, leading to
+defects ( Kumar et al., 2018 ; Tariq et al., 2022 ). Sewage leakage, flow
+seepage, groundwater infiltration and pollution will occur with defec-
+tive pipes ( Grimmeisen et al., 2017 ; Harvey and McBean, 2014 ; Liu
+et al., 2018 ). For example, studies have shown that water loss caused by
+defective aging pipe systems can reach up to 50 % ( Kanakoudis and
+Muhammetoglu, 2014 ). Municipal authorities often employ a passive
+strategy, waiting to conduct repairs until defects cause significant
+failures ( Rokstad and Ugarelli, 2016 ). As a result, with the increasing
+urban population and environmental pressure, the failure caused by
+defective UDS requires significant manpower, fin
+
+---
+
+KW=population IDX=1504
+o seepage.
+Previous studies have identified the locations of defects in UDS using inverse optimization models. However, the
+unique optimal solution neglects uncertainty analysis, which may lead to misdiagnosis. In addition, the multi-
+point defect diagnosis has heavy computational burden due to high dimensional parameters space. To address
+these issues, this paper proposes a hybrid method that leverages the genetic algorithm (GA) to identify probable
+space, and then utilizes the adaptive Metropolis (AM) to provide an estimation of the posterior probability
+distribution (PPD). Firstly, a multi-population GA is employed for the maximum exploration within the model
+space. Then, AM algorithm is used to explore the final PPD of each pipe defect parameter. The metrics accuracy
+( ACC ), Matthews correlation coefficient ( MCC ) and mean absolute error ( MAE ) are used to evaluate the diagnosis
+performance. A synthetic UDS case with randomized multi-point seepage scenarios is used to validate the
+method. Results indicate that the proposed hybrid method is effective in diagnosing multi-point defect, with
+0.91, 0.78 of the hybrid method and 0.87, 0.69 of the DiffeRential Evolution Adaptive Metropolis method for the
+ACC and MCC , respectively. Meanwhile, the diagnosis speed has increased by 32 %. The result PPD passes the 90
+% confidence interval validation. The proposed method can provide effective uncertainty analysis to reduce
+misdiagnosis of the traditional method.
+1. Introduction
+Complex urban drainage system (UDS) plays a key role in city rapid
+urbanization development ( Luo et al., 2024 ). A scientific UDS signifi-
+cantly contributes to urban flood control ( Karn et al., 2023 ; Lund et al.,
+2019 ). However, especially in developing countries, for the long years of
+UDS construction, unscientific operation, materials aging and external
+disturbance, existing pipes have suffered a lot of damage, leading to
+defects ( Kumar et al., 2018 ; Tariq et al., 2022 ). Sewage leakage, flow
+seepage, groundwater infiltration and pollution will occur with defec-
+tive pipes ( Grimmeisen et al., 2017 ; Harvey and McBean, 2014 ; Liu
+et al., 2018 ). For example, studies have shown that water loss caused by
+defective aging pipe systems can reach up to 50 % ( Kanakoudis and
+Muhammetoglu, 2014 ). Municipal authorities often employ a passive
+strategy, waiting to conduct repairs until defects cause significant
+failures ( Rokstad and Ugarelli, 2016 ). As a result, with the increasing
+urban population and environmental pressure, the failure caused by
+defective UDS requires significant manpower, financial resources and
+material resources to repair, even not thoroughly addressing the un-
+derlying defects. Thus, large budgets have been devoted to conduct
+preventive maintenance work by m
+
+---
+
+KW=competition IDX=8935
+ enhance the efficiency
+of MCMC sampling, evolution algorithms are often integrated. For
+example, Yang et al. (2016) combined differential evolution algorithm
+and MH algorithm to identify multi-point sudden water pollution sour-
+ces. To ensure the reliability of the final probability estimates, the in-
+tegrated evolution algorithms must maximize the exploration of the
+parameter space. The multi-population GA has been proven to possess
+the ability to maximize the exploration of the parameter space ( Aleardi
+and Mazzotti, 2017 ). By appropriately structuring the population size
+and establishing competition and migration mechanisms,
+multi-population GA can effectively mitigate genetic drift and thor-
+oughly explore the parameter space ( Pourvaziri and Naderi, 2014 ; Sun
+et al., 2022 ). However, there is currently a lack of researches employing
+uncertainty analysis methods for diagnosing multi-point defective pipes
+in UDS. Moreover, the study of combining AM with multi-population GA
+to enhance the efficiency of uncertainty diagnosis is still not available.
+The aim of this study is to enhance performance of multi-point defect
+diagnosis in UDS. The innovation of this study is diagnosing multi-defect
+in UDS using uncertainty analysis methods. The proposed method can
+provide effective uncertainty analysis to reduce misdiagnosis of the
+traditional method. In addition, a hybrid method has been proposed,
+broadly exploring the parameter space through a multi-population GA,
+and outputting the PPD of the defect level parameters by the AM
+method. More specifically, two questions are addressed: (1) Can the
+proposed hybrid method effectively diagnose multi-point defects? (2)
+Can the PPD provide accurate probabilistic UDS simulation with
+defective status?
+2. Case study
+A UDS case in Hangzhou, China, is selected to conduct the method. It
+is taken from the work of Lin et al (2020) . It has 19 subcatchments with
+19 pipes, 19 manholes and 1 outfall, covering 0.081 km
+2
+. Fig. 1 shows
+the sketch map. A 2-hour typical rainfall event is applied to diagnosis.
+Monitoring data intervals are 20 minutes.
+3. Methodology
+As shown in Fig. 2 , the study consists of parts as follows:
+(1) The SWMM model and the defect parameter are chosen to
+represent the defective pipes ( Section 3.1 ).
+(2) A hybrid method is developed to diagnose the multi-point
+defective pipes ( Section 3.2 ).
+(3) Synthetic cases with various factors are generated randomly to
+evaluate the diagnosis efficiency ( Section 3.3 ).
+(4) Metrics are used to evaluate the efficiency of diagnosis ( Section
+3.4 ).
+3.1. SWMM simulation with defects
+In this study, the simulation of UDS system defect is based on SWMM.
+SWMM is widely used to simulate the rainfall-runoff, pipe flow, and
+groundwater in UDS ( Luo et al., 2022 , 2023 )
+
+---
+
+KW=migration IDX=8951
+iciency
+of MCMC sampling, evolution algorithms are often integrated. For
+example, Yang et al. (2016) combined differential evolution algorithm
+and MH algorithm to identify multi-point sudden water pollution sour-
+ces. To ensure the reliability of the final probability estimates, the in-
+tegrated evolution algorithms must maximize the exploration of the
+parameter space. The multi-population GA has been proven to possess
+the ability to maximize the exploration of the parameter space ( Aleardi
+and Mazzotti, 2017 ). By appropriately structuring the population size
+and establishing competition and migration mechanisms,
+multi-population GA can effectively mitigate genetic drift and thor-
+oughly explore the parameter space ( Pourvaziri and Naderi, 2014 ; Sun
+et al., 2022 ). However, there is currently a lack of researches employing
+uncertainty analysis methods for diagnosing multi-point defective pipes
+in UDS. Moreover, the study of combining AM with multi-population GA
+to enhance the efficiency of uncertainty diagnosis is still not available.
+The aim of this study is to enhance performance of multi-point defect
+diagnosis in UDS. The innovation of this study is diagnosing multi-defect
+in UDS using uncertainty analysis methods. The proposed method can
+provide effective uncertainty analysis to reduce misdiagnosis of the
+traditional method. In addition, a hybrid method has been proposed,
+broadly exploring the parameter space through a multi-population GA,
+and outputting the PPD of the defect level parameters by the AM
+method. More specifically, two questions are addressed: (1) Can the
+proposed hybrid method effectively diagnose multi-point defects? (2)
+Can the PPD provide accurate probabilistic UDS simulation with
+defective status?
+2. Case study
+A UDS case in Hangzhou, China, is selected to conduct the method. It
+is taken from the work of Lin et al (2020) . It has 19 subcatchments with
+19 pipes, 19 manholes and 1 outfall, covering 0.081 km
+2
+. Fig. 1 shows
+the sketch map. A 2-hour typical rainfall event is applied to diagnosis.
+Monitoring data intervals are 20 minutes.
+3. Methodology
+As shown in Fig. 2 , the study consists of parts as follows:
+(1) The SWMM model and the defect parameter are chosen to
+represent the defective pipes ( Section 3.1 ).
+(2) A hybrid method is developed to diagnose the multi-point
+defective pipes ( Section 3.2 ).
+(3) Synthetic cases with various factors are generated randomly to
+evaluate the diagnosis efficiency ( Section 3.3 ).
+(4) Metrics are used to evaluate the efficiency of diagnosis ( Section
+3.4 ).
+3.1. SWMM simulation with defects
+In this study, the simulation of UDS system defect is based on SWMM.
+SWMM is widely used to simulate the rainfall-runoff, pipe flow, and
+groundwater in UDS ( Luo et al., 2022 , 2023 ). PySWMM, an ope
+
+---
+
+KW=roulette IDX=14396
+the initial PPD. The multi-population mechanism ensures the
+diversification capability of the algorithm ( Pourvaziri and Naderi,
+2014 ). Multiple populations will be generated in different parameter
+spaces. They will undergo evolutionary iterations within each popula-
+tion following the typical GA crossover and mutation operations.
+Meanwhile, at regular intervals, competition and migration occur
+among the populations. Upon reaching the designated number of
+evolutionary generations, the individuals from all independent pop-
+ulations are merged, and inferior individuals are removed based on the
+roulette wheel selection method. In the implementation of the method, a
+total of five populations are generated, each consisting of 80 individuals.
+The evolutionary process spans 25 generations, with population
+competition and migration occurring every five generations.
+The individual in the population has a chromosome with genes
+(represents the defect level value of each pipe). These genes are set as the
+pipe parameters in the SWMM. The length of gene in the GA is decided
+by the number of pipes in UDS. The choice of objective function is
+crucial to the performance of algorithm. Due to the presence of multiple
+Fig. 2. Framework of the study.
+C. Zhou et al. Water Research 270 (2025) 122849 
+3 
+monitoring sites, the mean of Nash – Sutcliffe efficiency (NSE) is chosen,
+as follows ( Zhou et al., 2023 ):
+NSE =
+1
+N
+⋅
+∑
+N
+n = 1
+[
+1  
+∑
+T
+t = 1
+(
+M
+t
+n
+  S
+t
+n
+S
+t
+n
+  μ
+0
+)
+2
+]
+(3)
+where N is number of monitoring site. T is the number of moments of
+simulation. M
+t
+n
+is the monitoring flow of node n at the moment t . S
+t
+n
+is the
+simulation flow of node n at the moment t . μ
+0
+is the mean of the
+monitoring flow.
+3.2.2. Step 2: adaptive metropolis sampling
+3.2.2.1. Bayesian inferential model. The likelihood function of the
+Bayesian model is constructed by calculating the difference between the
+monitoring values and the simulation values. Assuming that the com-
+posite error follows a normal distribution with a mean of 0 and a stan-
+dard deviation of σ , the likelihood function p ( M | X ) can be expressed by
+the following equation ( An et al., 2021 ):
+p ( M | X ) =
+1
+( 2 π σ
+2
+)
+π
+2
+⋅ exp
+(
+∑
+N
+n = 1
+∑
+T
+t = 1
+[
+ 
+ 
+M
+t
+n
+  S
+t
+n
+)
+2
+2 σ
+2
+])
+(4)
+where X is the vector of defect parameters. M are the monitor values.
+According to Bayesian theory, the posterior probability distribution
+p ( X | M ) can be expressed by the following equation ( Shao et al., 2021 ):
+p ( X | M ) = p ( M ) ⋅ p ( X ) ⋅
+1
+( 2 π σ
+2
+)
+π
+2
+⋅ exp
+(
+∑
+N
+n = 1
+∑
+T
+t = 1
+[
+ 
+ 
+M
+t
+n
+  S
+t
+n
+)
+2
+2 σ
+2
+])
+(5)
+where p ( M ) is usually considered as a constant. p ( X ) is the prior prob-
+ability generated by Step 1.
+3.2.2.2. AM sampling process. The proposal distribution of AM algo-
+rithm is defined as a multi
+
+---
+
+KW=adaptive metropolis IDX=1388
+ibution
+ABSTRACT
+Urban drainage system (UDS) plays a key role in city urbanization, where defective pipes can lead to seepage.
+Previous studies have identified the locations of defects in UDS using inverse optimization models. However, the
+unique optimal solution neglects uncertainty analysis, which may lead to misdiagnosis. In addition, the multi-
+point defect diagnosis has heavy computational burden due to high dimensional parameters space. To address
+these issues, this paper proposes a hybrid method that leverages the genetic algorithm (GA) to identify probable
+space, and then utilizes the adaptive Metropolis (AM) to provide an estimation of the posterior probability
+distribution (PPD). Firstly, a multi-population GA is employed for the maximum exploration within the model
+space. Then, AM algorithm is used to explore the final PPD of each pipe defect parameter. The metrics accuracy
+( ACC ), Matthews correlation coefficient ( MCC ) and mean absolute error ( MAE ) are used to evaluate the diagnosis
+performance. A synthetic UDS case with randomized multi-point seepage scenarios is used to validate the
+method. Results indicate that the proposed hybrid method is effective in diagnosing multi-point defect, with
+0.91, 0.78 of the hybrid method and 0.87, 0.69 of the DiffeRential Evolution Adaptive Metropolis method for the
+ACC and MCC , respectively. Meanwhile, the diagnosis speed has increased by 32 %. The result PPD passes the 90
+% confidence interval validation. The proposed method can provide effective uncertainty analysis to reduce
+misdiagnosis of the traditional method.
+1. Introduction
+Complex urban drainage system (UDS) plays a key role in city rapid
+urbanization development ( Luo et al., 2024 ). A scientific UDS signifi-
+cantly contributes to urban flood control ( Karn et al., 2023 ; Lund et al.,
+2019 ). However, especially in developing countries, for the long years of
+UDS construction, unscientific operation, materials aging and external
+disturbance, existing pipes have suffered a lot of damage, leading to
+defects ( Kumar et al., 2018 ; Tariq et al., 2022 ). Sewage leakage, flow
+seepage, groundwater infiltration and pollution will occur with defec-
+tive pipes ( Grimmeisen et al., 2017 ; Harvey and McBean, 2014 ; Liu
+et al., 2018 ). For example, studies have shown that water loss caused by
+defective aging pipe systems can reach up to 50 % ( Kanakoudis and
+Muhammetoglu, 2014 ). Municipal authorities often employ a passive
+strategy, waiting to conduct repairs until defects cause significant
+failures ( Rokstad and Ugarelli, 2016 ). As a result, with the increasing
+urban population and environmental pressure, the failure caused by
+defective UDS requires significant manpower, financial resources and
+material resources to repair, even not thoroughly ad
+
+---
+
+KW=80 IDX=14528
+4 ). Multiple populations will be generated in different parameter
+spaces. They will undergo evolutionary iterations within each popula-
+tion following the typical GA crossover and mutation operations.
+Meanwhile, at regular intervals, competition and migration occur
+among the populations. Upon reaching the designated number of
+evolutionary generations, the individuals from all independent pop-
+ulations are merged, and inferior individuals are removed based on the
+roulette wheel selection method. In the implementation of the method, a
+total of five populations are generated, each consisting of 80 individuals.
+The evolutionary process spans 25 generations, with population
+competition and migration occurring every five generations.
+The individual in the population has a chromosome with genes
+(represents the defect level value of each pipe). These genes are set as the
+pipe parameters in the SWMM. The length of gene in the GA is decided
+by the number of pipes in UDS. The choice of objective function is
+crucial to the performance of algorithm. Due to the presence of multiple
+Fig. 2. Framework of the study.
+C. Zhou et al. Water Research 270 (2025) 122849 
+3 
+monitoring sites, the mean of Nash – Sutcliffe efficiency (NSE) is chosen,
+as follows ( Zhou et al., 2023 ):
+NSE =
+1
+N
+⋅
+∑
+N
+n = 1
+[
+1  
+∑
+T
+t = 1
+(
+M
+t
+n
+  S
+t
+n
+S
+t
+n
+  μ
+0
+)
+2
+]
+(3)
+where N is number of monitoring site. T is the number of moments of
+simulation. M
+t
+n
+is the monitoring flow of node n at the moment t . S
+t
+n
+is the
+simulation flow of node n at the moment t . μ
+0
+is the mean of the
+monitoring flow.
+3.2.2. Step 2: adaptive metropolis sampling
+3.2.2.1. Bayesian inferential model. The likelihood function of the
+Bayesian model is constructed by calculating the difference between the
+monitoring values and the simulation values. Assuming that the com-
+posite error follows a normal distribution with a mean of 0 and a stan-
+dard deviation of σ , the likelihood function p ( M | X ) can be expressed by
+the following equation ( An et al., 2021 ):
+p ( M | X ) =
+1
+( 2 π σ
+2
+)
+π
+2
+⋅ exp
+(
+∑
+N
+n = 1
+∑
+T
+t = 1
+[
+ 
+ 
+M
+t
+n
+  S
+t
+n
+)
+2
+2 σ
+2
+])
+(4)
+where X is the vector of defect parameters. M are the monitor values.
+According to Bayesian theory, the posterior probability distribution
+p ( X | M ) can be expressed by the following equation ( Shao et al., 2021 ):
+p ( X | M ) = p ( M ) ⋅ p ( X ) ⋅
+1
+( 2 π σ
+2
+)
+π
+2
+⋅ exp
+(
+∑
+N
+n = 1
+∑
+T
+t = 1
+[
+ 
+ 
+M
+t
+n
+  S
+t
+n
+)
+2
+2 σ
+2
+])
+(5)
+where p ( M ) is usually considered as a constant. p ( X ) is the prior prob-
+ability generated by Step 1.
+3.2.2.2. AM sampling process. The proposal distribution of AM algo-
+rithm is defined as a multi-dimensional normal distribution N ( θ
+n
+, C
+n
+) ,
+with mean θ
+n
+at the current point X
+n   1
+and covariance C
+n
+calculated by
+the f
+
+---
+
+KW=25 IDX=4655
+g and labour-intensive. Limited by technical threshold
+and equipment costs, CCTV is not suitable for large spatial scales and
+high temporal frequency inspections ( Blackwood et al., 2005 ). Thus,
+diagnosis methods based on model approaches are widely applied
+* Corresponding author.
+E-mail address: liupan@whu.edu.cn (P. Liu).
+Contents lists available at ScienceDirect
+Water Research
+journal homepag e: www.el sevier.com/loc ate/watre s
+https://doi.org/10.1016/j.watres.2024.122849
+Received 17 September 2024; Received in revised form 9 November 2024; Accepted 23 November 2024
+Water Research 270 (2025) 122849 
+Available online 24 November 2024 
+0043-1354/© 2024 Elsevier Ltd. All rights are reserved, including those for text and data mining, AI training, and similar technologies. 
+( Zheng et al., 2018 ). Several typical success cases are presented in the
+water distribution system (WDS) ( Huang et al., 2020 ; Zhou et al., 2019 ).
+Unlike the use of high precision pressure monitoring equipment on
+WDS ( Gupta and Kulat, 2018 ; Huang et al., 2020 ; Qi et al., 2018 ), the
+flow in UDS is typically characterized as a non-pressure flow. Thus, the
+diagnosis model-based method of UDS often relies on more compre-
+hensive simulation. For example, the storm water management model
+(SWMM) is used to simulate UDS ( Sadler et al., 2019 ; Shao et al., 2021 )
+for inverse model diagnosis. Through a trial-and-error process, the in-
+verse model determines the parameters that most closely match the
+monitoring values, thus obtaining the defect diagnosis results. Inverse
+model based on optimization methods is a common approach in existing
+research. Xu et al. (2016) used water balance and chemical mass balance
+method to estimate the sewage inflow into the stormwater network,
+which successfully determined the defects and illicit connections of
+pipes. Zhao et al. (2020) optimized the specific infiltration locations by
+an inverse model with the support of chemical tracers and optimization
+model, which identified groundwater infiltration in success. Xu et al.
+(2021) coupled a genetic algorithm (GA) with SWMM to track the illicit
+connections of sewer system, which provided data basis for pipe
+reconstruction and rehabilitation.
+However, the objective of obtaining a “ single ” optimal solution by
+optimization algorithms does not align with the inherent nature of UDS
+pipe diagnosis. In fact, the diagnosis process should encompass uncer-
+tainty, such as monitoring data uncertainty ( Shao et al., 2021 ) and
+model simulation uncertainty ( Luo et al., 2023 ). From the start to the
+end, the uncertainty accompanies the inverse model for diagnosis ( Wang
+and Harrison, 2013 ). In this regard, the posterior probability distribu-
+tion (PPD) obtained by uncertainty analysis methods ( Pan et al., 2019 )
+
+---
+
+KW=2000 IDX=17333
+ing equation:
+C
+n
+=
+{
+C
+0
+s
+d
+Cov ( X
+0
+, X
+1
+, ⋯ , X
+n   1
+) + s
+d
+ε I
+d
+n ≤ t
+n
+n > t
+n
+(6)
+where the ε is a small positive number to ensure the C
+n
+is not a singular
+matrix. The s
+d
+is normally set to 2 . 4
+2
+/ d , where d is the variable
+dimension. The I
+d
+is unit matrix with d dimension. The t
+n
+is initial sample
+size.
+The new generated sample fits the following equation:
+X
+n
+∼ N ( θ
+n
+, C
+n
+) (7)
+The acceptance probability fits the following equation:
+β = min
+(
+1 ,
+p ( M | X
+n
+)
+p ( M | X
+n   1
+)
+)
+(8)
+The sampling process convergence criteria is set to be the maximum
+iteration times of 2000.
+Fig. 3. The flowchart of proposed hybrid method.
+C. Zhou et al. Water Research 270 (2025) 122849 
+4 
+3.3. Generation of synthetic scenarios
+To simulate multiple scenarios of multi-point defects, four groups
+sample data is generated randomly by PySWMM. The data is listed in the
+Table 1 . Each group has 100 samples. To detect the accuracy of multi-
+point seepage diagnosis, the number of seepage pipe ranges from 1 to
+5 with 20 samples of each number. Specific seepage pipe index is
+determined by non-release sampling. SRR is assumed to follow to a
+uniform distribution between 0.1 and 1.0. Simulation error and moni-
+toring error are significant sources of uncertainty in defect diagnosis.
+Errors are simulated by adding noise. Referring to prior research, the
+noise follows a normal distribution N ( 0 , σ ) , with the standard deviation σ
+reflecting the level of noise. Existing studies typically use σ values be-
+tween 0.01 and 0.05 ( Shao et al., 2021 ; Yang et al., 2016 ). To reflect the
+impact of varying degrees of error, the standard deviation σ is set to
+0.01, 0.02 or 0.05. To analyze the impact of the number of monitoring
+sites, control group 4 is set with 1 site while group 1, 2 and 3 have 3 sites.
+3.4. Evaluation metrics
+Although uncertainty analysis methods often yield PPD, it remains
+necessary to evaluate the effectiveness using statistical indicators. Due
+to the parameter value being zero (intact) or greater than zero (defec-
+tive), the distribution is likely to be skewed. The mean can be heavily
+influenced by extreme values, leading to a misleading representation of
+the diagnosis. For reflecting the typical defect severity by being robust to
+outliers and providing a clearer picture of the distribution center, the
+median is used to represent the final estimation of the PPD.
+3.4.1. Binary classification evaluation metrics
+In an identification method, each pipe diagnosis result can fall in one
+of the following four cases: actual defective pipe that is correctly diag-
+nosed, actual intact pipe that is wrongly diagnosed, actual defective pipe
+that is wrongly diagnosed and actual intact pipe that is correctly diag-
+nosed. This is similar to binary classificati
+
+---

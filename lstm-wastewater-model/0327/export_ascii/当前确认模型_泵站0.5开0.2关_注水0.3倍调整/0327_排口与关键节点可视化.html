@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <title>0327 排口与关键节点可视化</title>
+  <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
+  <style>
+    body { font-family: 'Microsoft YaHei', sans-serif; margin: 0; background: #f8fafc; color: #0f172a; }
+    .wrap { max-width: 1400px; margin: 0 auto; padding: 20px; }
+    .title { font-size: 28px; font-weight: 700; margin-bottom: 8px; }
+    .subtitle { color: #475569; margin-bottom: 18px; }
+    .grid { display: grid; grid-template-columns: 1.7fr 1fr; gap: 18px; }
+    .card { background: white; border-radius: 14px; box-shadow: 0 8px 30px rgba(15,23,42,0.08); padding: 16px; }
+    .legend-item { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+    .dot { width: 12px; height: 12px; border-radius: 999px; display: inline-block; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th, td { padding: 8px 6px; border-bottom: 1px solid #e2e8f0; text-align: left; }
+    th { background: #f8fafc; position: sticky; top: 0; }
+    .small { color: #64748b; font-size: 12px; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="title">0327 排口与关键节点可视化</div>
+    <div class="subtitle">当前模型：泵站 0.5 开 / 0.2 关，注水 0.3 倍调整版。结构排口是 J132，工程重点末端链路是 J231 → C89 → J132。</div>
+    <div class="grid">
+      <div class="card">
+        <div id="plot" style="width:100%;height:820px;"></div>
+      </div>
+      <div class="card">
+        <h3>角色说明</h3>
+        <div class="legend-item"><span class="dot" style="background:#111827"></span>结构排口：J132</div>
+        <div class="legend-item"><span class="dot" style="background:#2563eb"></span>末端关键节点：J231 等</div>
+        <div class="legend-item"><span class="dot" style="background:#f59e0b"></span>泵站链路节点：J232 / J41</div>
+        <div class="legend-item"><span class="dot" style="background:#dc2626"></span>注水点：J76 / J124 / J140</div>
+        <div class="legend-item"><span class="dot" style="background:#7c3aed"></span>事件溢流关注点</div>
+        <p class="small">注：J41 是当前调整后 0.3 倍事件下仍有溢流的节点；J56、J218 是上一版中较敏感的节点，这里也保留观察。</p>
+        <h3>关键节点表</h3>
+        <div style="max-height:520px; overflow:auto;">
+          <table>
+            <thead>
+              <tr><th>节点</th><th>角色</th><th>类型</th><th>底高程</th><th>最大水深</th><th>注水时序</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>J122</td><td>关键关联节点</td><td>Junction</td><td>27.77</td><td>4.2</td><td></td></tr><tr><td>J123</td><td>关键关联节点</td><td>Junction</td><td>27.74</td><td>4.0</td><td></td></tr><tr><td>J124</td><td>注水点</td><td>Junction</td><td>27.67</td><td>3.75</td><td>TS_J124_0327</td></tr><tr><td>J125</td><td>关键关联节点</td><td>Junction</td><td>26.79</td><td>2.99</td><td></td></tr><tr><td>J132</td><td>结构排口</td><td>Outfall</td><td>14.63</td><td></td><td></td></tr><tr><td>J138</td><td>关键关联节点</td><td>Junction</td><td>16.51</td><td>5.25</td><td></td></tr><tr><td>J139</td><td>关键关联节点</td><td>Junction</td><td>15.95</td><td>4.93</td><td></td></tr><tr><td>J140</td><td>注水点</td><td>Junction</td><td>15.97</td><td>4.84</td><td>TS_J140_0327</td></tr><tr><td>J141</td><td>关键关联节点</td><td>Junction</td><td>15.99</td><td>3.53</td><td></td></tr><tr><td>J142</td><td>关键关联节点</td><td>Junction</td><td>15.86</td><td>3.89</td><td></td></tr><tr><td>J144</td><td>关键关联节点</td><td>Junction</td><td>15.87</td><td>3.57</td><td></td></tr><tr><td>J202</td><td>关键关联节点</td><td>Junction</td><td>36.57</td><td>2.17</td><td></td></tr><tr><td>J218</td><td>关键关联节点</td><td>Junction</td><td>36.18</td><td>2.5</td><td></td></tr><tr><td>J229</td><td>关键关联节点</td><td>Junction</td><td>27.74</td><td>2.32</td><td></td></tr><tr><td>J230</td><td>关键关联节点</td><td>Junction</td><td>15.77</td><td>3.66</td><td></td></tr><tr><td>J231</td><td>末端关键节点</td><td>Storage</td><td>13.63</td><td>4.62</td><td></td></tr><tr><td>J232</td><td>泵站链路节点</td><td>Storage</td><td>34.8</td><td>4.0</td><td></td></tr><tr><td>J234</td><td>关键关联节点</td><td>Junction</td><td>36.917</td><td>1.431</td><td></td></tr><tr><td>J236</td><td>关键关联节点</td><td>Junction</td><td>36.0</td><td>2.698</td><td></td></tr><tr><td>J237</td><td>关键关联节点</td><td>Junction</td><td>35.5</td><td>3.225</td><td></td></tr><tr><td>J238</td><td>关键关联节点</td><td>Junction</td><td>34.25</td><td>3.756</td><td></td></tr><tr><td>J41</td><td>泵站链路节点</td><td>Storage</td><td>37.796</td><td>1.0</td><td></td></tr><tr><td>J49</td><td>关键关联节点</td><td>Junction</td><td>36.84</td><td>3.12</td><td></td></tr><tr><td>J50</td><td>关键关联节点</td><td>Junction</td><td>36.83</td><td>3.07</td><td></td></tr><tr><td>J51</td><td>关键关联节点</td><td>Junction</td><td>36.96</td><td>2.61</td><td></td></tr><tr><td>J52</td><td>关键关联节点</td><td>Junction</td><td>36.89</td><td>2.69</td><td></td></tr><tr><td>J53</td><td>关键关联节点</td><td>Junction</td><td>36.85</td><td>2.33</td><td></td></tr><tr><td>J54</td><td>关键关联节点</td><td>Junction</td><td>36.66</td><td>2.26</td><td></td></tr><tr><td>J55</td><td>关键关联节点</td><td>Junction</td><td>36.4</td><td>2.3</td><td></td></tr><tr><td>J56</td><td>关键关联节点</td><td>Junction</td><td>36.2</td><td>2.48</td><td></td></tr><tr><td>J57</td><td>关键关联节点</td><td>Junction</td><td>36.85</td><td>3.22</td><td></td></tr><tr><td>J58</td><td>关键关联节点</td><td>Junction</td><td>36.97</td><td>2.71</td><td></td></tr><tr><td>J59</td><td>关键关联节点</td><td>Junction</td><td>34.2</td><td>3.78</td><td></td></tr><tr><td>J67</td><td>关键关联节点</td><td>Junction</td><td>14.83</td><td>3.36</td><td></td></tr><tr><td>J75</td><td>关键关联节点</td><td>Junction</td><td>38.86</td><td>3.44</td><td></td></tr><tr><td>J76</td><td>注水点</td><td>Junction</td><td>38.78</td><td>3.8</td><td>TS_J76_0327</td></tr><tr><td>J77</td><td>关键关联节点</td><td>Junction</td><td>39.31</td><td>3.17</td><td></td></tr><tr><td>J92</td><td>关键关联节点</td><td>Junction</td><td>36.24</td><td>3.42</td><td></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script>
+    const nodes = [{"name": "J122", "role": "关键关联节点", "kind": "Junction", "x": 361865.624, "y": 3651861.586, "invert": 27.77, "depth": 4.2, "timeseries": "", "color": "#6b7280", "size": 11}, {"name": "J123", "role": "关键关联节点", "kind": "Junction", "x": 361802.68, "y": 3651839.827, "invert": 27.74, "depth": 4.0, "timeseries": "", "color": "#6b7280", "size": 11}, {"name": "J124", "role": "注水点", "kind": "Junction", "x": 361762.698, "y": 3651827.248, "invert": 27.67, "depth": 3.75, "timeseries": "TS_J124_0327", "color": "#dc2626", "size": 16}, {"name": "J125", "role": "关键关联节点", "kind": "Junction", "x": 361693.15, "y": 3651806.768, "invert": 26.79, "depth": 2.99, "timeseries": "", "color": "#6b7280", "size": 11}, {"name": "J132", "role": "结构排口", "kind": "Outfall", "x": 360225.13, "y": 3651628.586, "invert": 14.63, "depth": "", "timeseries": "", "color": "#111827", "size": 18}, {"name": "J138", "role": "关键关联节点", "kind": "Junction", "x": 360731.725, "y": 3651654.428, "invert": 16.51, "depth": 5.25, "timeseries": "", "color": "#6b7280", "size": 11}, {"name": "J139", "role": "关键关联节点", "kind": "Junction", "x": 360690.505, "y": 3651649.416, "invert": 15.95, "depth": 4.93, "timeseries": "", "color": "#6b7280", "size": 11}, {"name": "J140", "role": "注水点", "kind": "Junction", "x": 360654.707, "y": 3651644.464, "invert": 15.97, "depth": 4.84, "timeseries": "TS_J140_0327", "color": "#dc2626", "size": 16}, {"name": "J141", "role": "关键关联节点", "kind": "Junction", "x": 360607.424, "y": 3651638.464, "invert": 15.99, "depth": 3.53, "timeseries": "", "color": "#6b7280", "size": 11}, {"name": "J142", "role": "关键关联节点", "kind": "Junction", "x": 360570.016, "y": 3651633.23, "invert": 15.86, "depth": 3.89, "timeseries": "", "color": "#6b7280", "size": 11}, {"name": "J144", "role": "关键关联节点", "kind": "Junction", "x": 360528.485, "y": 3651627.763, "invert": 15.87, "depth": 3.57, "timeseries": "", "color": "#6b7280", "size": 11}, {"name": "J202", "role": "关键关联节点", "kind": "Junction", "x": 362782.804, "y": 3653104.957, "invert": 36.57, "depth": 2.17, "timeseries": "", "color": "#6b7280", "size": 11}, {"name": "J218", "role": "关键关联节点", "kind": "Junction", "x": 362782.389, "y": 3653040.19, "invert": 36.18, "depth": 2.5, "timeseries": "", "color": "#6b7280", "size": 11}, {"name": "J229", "role": "关键关联节点", "kind": "Junction", "x": 361728.23, "y": 3651815.89, "invert": 27.74, "depth": 2.32, "timeseries": "", "color": "#6b7280", "size": 11}, {"name": "J230", "role": "关键关联节点", "kind": "Junction", "x": 360492.178, "y": 3651622.839, "invert": 15.77, "depth": 3.66, "timeseries": "", "color": "#6b7280", "size": 11}, {"name": "J231", "role": "末端关键节点", "kind": "Storage", "x": 360276.112, "y": 3651631.448, "invert": 13.63, "depth": 4.62, "timeseries": "", "color": "#2563eb", "size": 16}, {"name": "J232", "role": "泵站链路节点", "kind": "Storage", "x": 362775.247, "y": 3653088.524, "invert": 34.8, "depth": 4.0, "timeseries": "", "color": "#f59e0b", "size": 15}, {"name": "J234", "role": "关键关联节点", "kind": "Junction", "x": 362668.2, "y": 3652396.538, "invert": 36.917, "depth": 1.431, "timeseries": "", "color": "#6b7280", "size": 11}, {"name": "J236", "role": "关键关联节点", "kind": "Junction", "x": 362782.543, "y": 3653059.188, "invert": 36.0, "depth": 2.698, "timeseries": "", "color": "#6b7280", "size": 11}, {"name": "J237", "role": "关键关联节点", "kind": "Junction", "x": 362782.755, "y": 3653088.552, "invert": 35.5, "depth": 3.225, "timeseries": "", "color": "#6b7280", "size": 11}, {"name": "J238", "role": "关键关联节点", "kind": "Junction", "x": 362249.769, "y": 3652076.062, "invert": 34.25, "depth": 3.756, "timeseries": "", "color": "#6b7280", "size": 11}, {"name": "J41", "role": "泵站链路节点", "kind": "Storage", "x": 362775.157, "y": 3653085.677, "invert": 37.796, "depth": 1.0, "timeseries": "", "color": "#f59e0b", "size": 15}, {"name": "J49", "role": "关键关联节点", "kind": "Junction", "x": 362508.976, "y": 3653068.464, "invert": 36.84, "depth": 3.12, "timeseries": "", "color": "#6b7280", "size": 11}, {"name": "J50", "role": "关键关联节点", "kind": "Junction", "x": 362538.786, "y": 3653067.758, "invert": 36.83, "depth": 3.07, "timeseries": "", "color": "#6b7280", "size": 11}, {"name": "J51", "role": "关键关联节点", "kind": "Junction", "x": 362604.983, "y": 3653065.363, "invert": 36.96, "depth": 2.61, "timeseries": "", "color": "#6b7280", "size": 11}, {"name": "J52", "role": "关键关联节点", "kind": "Junction", "x": 362637.832, "y": 3653063.922, "invert": 36.89, "depth": 2.69, "timeseries": "", "color": "#6b7280", "size": 11}, {"name": "J53", "role": "关键关联节点", "kind": "Junction", "x": 362684.029, "y": 3653062.352, "invert": 36.85, "depth": 2.33, "timeseries": "", "color": "#6b7280", "size": 11}, {"name": "J54", "role": "关键关联节点", "kind": "Junction", "x": 362728.482, "y": 3653060.923, "invert": 36.66, "depth": 2.26, "timeseries": "", "color": "#6b7280", "size": 11}, {"name": "J55", "role": "关键关联节点", "kind": "Junction", "x": 362769.585, "y": 3653059.46, "invert": 36.4, "depth": 2.3, "timeseries": "", "color": "#6b7280", "size": 11}, {"name": "J56", "role": "关键关联节点", "kind": "Junction", "x": 362779.335, "y": 3653058.965, "invert": 36.2, "depth": 2.48, "timeseries": "", "color": "#6b7280", "size": 11}, {"name": "J57", "role": "关键关联节点", "kind": "Junction", "x": 362497.099, "y": 3653069.255, "invert": 36.85, "depth": 3.22, "timeseries": "", "color": "#6b7280", "size": 11}, {"name": "J58", "role": "关键关联节点", "kind": "Junction", "x": 362581.534, "y": 3653067.236, "invert": 36.97, "depth": 2.71, "timeseries": "", "color": "#6b7280", "size": 11}, {"name": "J59", "role": "关键关联节点", "kind": "Junction", "x": 362209.698, "y": 3652073.881, "invert": 34.2, "depth": 3.78, "timeseries": "", "color": "#6b7280", "size": 11}, {"name": "J67", "role": "关键关联节点", "kind": "Junction", "x": 360365.715, "y": 3651617.258, "invert": 14.83, "depth": 3.36, "timeseries": "", "color": "#6b7280", "size": 11}, {"name": "J75", "role": "关键关联节点", "kind": "Junction", "x": 362852.642, "y": 3653924.546, "invert": 38.86, "depth": 3.44, "timeseries": "", "color": "#6b7280", "size": 11}, {"name": "J76", "role": "注水点", "kind": "Junction", "x": 362847.023, "y": 3653888.288, "invert": 38.78, "depth": 3.8, "timeseries": "TS_J76_0327", "color": "#dc2626", "size": 16}, {"name": "J77", "role": "关键关联节点", "kind": "Junction", "x": 362842.557, "y": 3653868.711, "invert": 39.31, "depth": 3.17, "timeseries": "", "color": "#6b7280", "size": 11}, {"name": "J92", "role": "关键关联节点", "kind": "Junction", "x": 362780.459, "y": 3653012.632, "invert": 36.24, "depth": 3.42, "timeseries": "", "color": "#6b7280", "size": 11}];
+    const links = [{"name": "C110", "kind": "Conduit", "from_node": "J140", "to_node": "J139"}, {"name": "C111", "kind": "Conduit", "from_node": "J139", "to_node": "J138"}, {"name": "C112", "kind": "Conduit", "from_node": "J141", "to_node": "J140"}, {"name": "C113", "kind": "Conduit", "from_node": "J142", "to_node": "J141"}, {"name": "C114", "kind": "Conduit", "from_node": "J144", "to_node": "J142"}, {"name": "C117", "kind": "Conduit", "from_node": "J144", "to_node": "J230"}, {"name": "C122", "kind": "Conduit", "from_node": "J123", "to_node": "J124"}, {"name": "C123", "kind": "Conduit", "from_node": "J124", "to_node": "J229"}, {"name": "C124", "kind": "Conduit", "from_node": "J229", "to_node": "J125"}, {"name": "C154", "kind": "Conduit", "from_node": "J218", "to_node": "J92"}, {"name": "C174", "kind": "Conduit", "from_node": "J76", "to_node": "J77"}, {"name": "C176", "kind": "Conduit", "from_node": "J75", "to_node": "J76"}, {"name": "C195", "kind": "Conduit", "from_node": "J56", "to_node": "J55"}, {"name": "C196", "kind": "Conduit", "from_node": "J55", "to_node": "J54"}, {"name": "C197", "kind": "Conduit", "from_node": "J54", "to_node": "J53"}, {"name": "C198", "kind": "Conduit", "from_node": "J53", "to_node": "J52"}, {"name": "C199", "kind": "Conduit", "from_node": "J52", "to_node": "J51"}, {"name": "C200", "kind": "Conduit", "from_node": "J51", "to_node": "J58"}, {"name": "C201", "kind": "Conduit", "from_node": "J58", "to_node": "J50"}, {"name": "C202", "kind": "Conduit", "from_node": "J50", "to_node": "J49"}, {"name": "C203", "kind": "Conduit", "from_node": "J49", "to_node": "J57"}, {"name": "C227_1", "kind": "Conduit", "from_node": "J218", "to_node": "J236"}, {"name": "C227_3", "kind": "Conduit", "from_node": "J236", "to_node": "J237"}, {"name": "C227_4", "kind": "Conduit", "from_node": "J237", "to_node": "J202"}, {"name": "C228_3", "kind": "Conduit", "from_node": "J41", "to_node": "J234"}, {"name": "C231", "kind": "Conduit", "from_node": "J56", "to_node": "J236"}, {"name": "C232", "kind": "Conduit", "from_node": "J237", "to_node": "J232"}, {"name": "C233_1", "kind": "Conduit", "from_node": "J234", "to_node": "J238"}, {"name": "C233_2", "kind": "Conduit", "from_node": "J238", "to_node": "J59"}, {"name": "C52", "kind": "Conduit", "from_node": "J67", "to_node": "J231"}, {"name": "C89", "kind": "Conduit", "from_node": "J231", "to_node": "J132"}, {"name": "C97", "kind": "Conduit", "from_node": "J123", "to_node": "J122"}, {"name": "C228_2", "kind": "Pump", "from_node": "J232", "to_node": "J41", "curve": "迎水站", "startup": "0.5", "shutoff": "0.2"}];
+    const nodeMap = Object.fromEntries(nodes.map(n => [n.name, n]));
+
+    const traces = [];
+
+    for (const link of links) {
+      const a = nodeMap[link.from_node];
+      const b = nodeMap[link.to_node];
+      if (!a || !b) continue;
+      const isHighlight = ['C89', 'C228_2'].includes(link.name);
+      traces.push({
+        x: [a.x, b.x],
+        y: [a.y, b.y],
+        mode: 'lines',
+        line: {
+          color: isHighlight ? '#0f172a' : '#94a3b8',
+          width: isHighlight ? 4 : 2,
+          dash: link.kind === 'Pump' ? 'dot' : 'solid'
+        },
+        hovertemplate: `${link.name}<br>${link.kind}<br>${link.from_node} → ${link.to_node}<extra></extra>`,
+        showlegend: false
+      });
+    }
+
+    const roleGroups = [...new Set(nodes.map(n => n.role))];
+    for (const role of roleGroups) {
+      const subset = nodes.filter(n => n.role === role);
+      traces.push({
+        x: subset.map(n => n.x),
+        y: subset.map(n => n.y),
+        text: subset.map(n => n.name),
+        customdata: subset.map(n => [n.role, n.kind, n.invert, n.depth, n.timeseries]),
+        mode: 'markers+text',
+        textposition: 'top center',
+        marker: {
+          size: subset.map(n => n.size),
+          color: subset.map(n => n.color),
+          line: {color: 'white', width: 1.5}
+        },
+        name: role,
+        hovertemplate: '节点=%{text}<br>角色=%{customdata[0]}<br>类型=%{customdata[1]}<br>底高程=%{customdata[2]}<br>最大水深=%{customdata[3]}<br>注水时序=%{customdata[4]}<extra></extra>'
+      });
+    }
+
+    Plotly.newPlot('plot', traces, {
+      title: '排口与关键节点网络位置图',
+      xaxis: {title: 'X 坐标'},
+      yaxis: {title: 'Y 坐标', scaleanchor: 'x', scaleratio: 1},
+      paper_bgcolor: 'white',
+      plot_bgcolor: 'white',
+      legend: {orientation: 'h', y: 1.08}
+    }, {responsive: true});
+  </script>
+</body>
+</html>

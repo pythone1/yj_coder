@@ -1,0 +1,1 @@
+pip --default-timeout=100 install "openpyxl" -i http://pypi.douban.com/simple/ --trusted-host pypi.douban.com

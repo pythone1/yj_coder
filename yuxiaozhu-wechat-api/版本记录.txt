@@ -1,0 +1,4 @@
+web_api_v10：逐文档回答最后整合，豆包API，非流式
+web_api_v11：逐文档回答最后整合，豆包API，流式
+web_api_v12：先检索后回复，ollama-qwen3，流式
+web_api_v20：先检索后回复，ollama-qwen3（本地知识问答+水色工具调用）+智谱API（图片分析螃蟹疾病），流式

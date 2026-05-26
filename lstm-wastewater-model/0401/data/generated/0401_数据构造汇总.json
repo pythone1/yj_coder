@@ -1,0 +1,13 @@
+{
+  "baseline_inp": "E:\\PY\\LSTM\\0401\\models\\current_confirmed_models\\0327_由真值模型去注水重建_旱天基线模型_10分钟_泵站0.5开0.2关.inp",
+  "truth_event_inp": "E:\\PY\\LSTM\\0401\\models\\current_confirmed_models\\0327_由旱天基线重建_三点注水模型_0.3倍.inp",
+  "rows": 287,
+  "truth_total_volume_m3": 22800.000000017997,
+  "truth_scaled_volumes_m3": {
+    "J76": 5400.0,
+    "J124": 7800.0000000102,
+    "J140": 9600.0000000078
+  },
+  "baseline_no_flooding": true,
+  "event_no_flooding": true
+}

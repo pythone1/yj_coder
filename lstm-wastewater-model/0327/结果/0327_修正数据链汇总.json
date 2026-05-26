@@ -1,0 +1,7 @@
+{
+  "time_grid_steps": 287,
+  "time_grid_start_hour": 0.16666666666666666,
+  "time_grid_end_hour": 47.833333333333336,
+  "injection_steps": 144,
+  "Qr_m3": 76000.0
+}

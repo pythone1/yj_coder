@@ -1,0 +1,86 @@
+{
+  "run_mode": "0417 medium run",
+  "solution_scores": {
+    "ga_best": {
+      "mean_nse": 0.9965028261194285,
+      "sse": 0.005014606327104743
+    },
+    "posterior_best_map": {
+      "mean_nse": 0.9999174512425065,
+      "sse": 0.00022664029699636195
+    },
+    "posterior_median_summary": {
+      "mean_nse": 0.9937207076529225,
+      "sse": 0.01787061955690807
+    }
+  },
+  "recommended_solution_name": "posterior_best_map",
+  "final_solution_name": "posterior_best_map",
+  "posterior_median_top3": [
+    "J11",
+    "J21",
+    "J48"
+  ],
+  "ga_last_score_stats": {
+    "max_mean_nse": 0.9965028261194285,
+    "median_mean_nse": 0.8224664865151532,
+    "min_mean_nse": 0.3833104627287067,
+    "unique_count": 96
+  },
+  "initial_ppd_count": 60,
+  "initial_ppd_score_stats": {
+    "max_mean_nse": 0.9965028261194285,
+    "median_mean_nse": 0.8658540990105825,
+    "min_mean_nse": 0.567325793711729
+  },
+  "posterior_validation_sample_count": 64,
+  "posterior_coverage_mean": 0.46260869565217394,
+  "posterior_validation_target": "outlet_flow",
+  "posterior_validation_mode": "same_event_outlet_diagnostic",
+  "posterior_coverage_to_noncoverage": "266:309",
+  "am_accept_rate_by_chain": {
+    "0": 0.49333333333333335,
+    "1": 0.35333333333333333,
+    "2": 0.3333333333333333,
+    "3": 0.425,
+    "4": 0.36333333333333334,
+    "5": 0.42333333333333334,
+    "6": 0.33,
+    "7": 0.4533333333333333
+  },
+  "config": {
+    "ga_population_count": 4,
+    "ga_population_size": 24,
+    "ga_generations": 12,
+    "ga_elite_ratio": 0.12,
+    "ga_mutation_strength": 0.2,
+    "ga_migration_interval": 4,
+    "ga_migration_count": 1,
+    "ga_competition_replace_count": 1,
+    "ga_dedup_decimals": 5,
+    "am_chain_count": 8,
+    "am_samples_per_chain": 600,
+    "am_warmup": 150,
+    "am_adapt_start": 150,
+    "am_initial_covariance": 0.0015,
+    "am_eps": 1e-08,
+    "initial_ppd_keep_fraction": 0.75,
+    "initial_ppd_min_count": 48,
+    "initial_ppd_min_mean_nse": -100.0,
+    "initial_ppd_max_nse_drop": 0.5,
+    "initial_ppd_rank_pressure": 1.5,
+    "am_start_weighted": true,
+    "am_use_prior_in_acceptance": false,
+    "am_use_initial_ppd_covariance": true,
+    "am_prior_kernel_scale": 0.01,
+    "am_proposal_method": "tangent_projected_gaussian",
+    "posterior_validation_samples": 64,
+    "parallel_workers": 8,
+    "random_seed": 20260416,
+    "progress_step_interval": 25
+  },
+  "data_paths": {
+    "output_dir": "E:\\PY\\LSTM\\0416\\results_0417_scheme\\medium_run"
+  },
+  "posterior_validation_coverage_tolerance_note": "Recomputed from saved bands with tolerance max(1e-9, 1e-8*max(abs(p05),abs(p95))) to avoid false misses on floating-point boundary values."
+}

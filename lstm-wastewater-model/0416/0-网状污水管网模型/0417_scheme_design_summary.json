@@ -1,0 +1,433 @@
+{
+  "event_inp": "E:\\PY\\LSTM\\0416\\0-网状污水管网模型\\0417_injection_50pct_J20_J48_J11.inp",
+  "clean_inp": "E:\\PY\\LSTM\\0416\\0-网状污水管网模型\\0417_clean_baseline_no_J20_J48_J11.inp",
+  "candidate_nodes": [
+    "J20",
+    "J48",
+    "J11",
+    "J64",
+    "J91",
+    "J86",
+    "J78",
+    "J10",
+    "J65",
+    "J41",
+    "J72",
+    "J29",
+    "J31",
+    "J52",
+    "J92",
+    "J2",
+    "J1",
+    "J84",
+    "J75",
+    "J21"
+  ],
+  "candidate_metrics": {
+    "J20": {
+      "nearest_candidate": "J21",
+      "nearest_candidate_distance_m": 212.862,
+      "downstream_length_to_outfall_m": 1308.643,
+      "role": "真值注入点"
+    },
+    "J48": {
+      "nearest_candidate": "J75",
+      "nearest_candidate_distance_m": 327.42199999999997,
+      "downstream_length_to_outfall_m": 754.0150000000001,
+      "role": "真值注入点"
+    },
+    "J11": {
+      "nearest_candidate": "J52",
+      "nearest_candidate_distance_m": 383.409,
+      "downstream_length_to_outfall_m": 1223.1409999999998,
+      "role": "真值注入点"
+    },
+    "J64": {
+      "nearest_candidate": "J52",
+      "nearest_candidate_distance_m": 389.912,
+      "downstream_length_to_outfall_m": 1001.9920000000001,
+      "role": "远距覆盖候选井"
+    },
+    "J91": {
+      "nearest_candidate": "J92",
+      "nearest_candidate_distance_m": 366.092,
+      "downstream_length_to_outfall_m": 835.835,
+      "role": "远距覆盖候选井"
+    },
+    "J86": {
+      "nearest_candidate": "J84",
+      "nearest_candidate_distance_m": 353.83099999999996,
+      "downstream_length_to_outfall_m": 1460.0900000000001,
+      "role": "远距覆盖候选井"
+    },
+    "J78": {
+      "nearest_candidate": "J75",
+      "nearest_candidate_distance_m": 327.172,
+      "downstream_length_to_outfall_m": 99.421,
+      "role": "远距覆盖候选井"
+    },
+    "J10": {
+      "nearest_candidate": "J52",
+      "nearest_candidate_distance_m": 386.23,
+      "downstream_length_to_outfall_m": 1225.962,
+      "role": "远距覆盖候选井"
+    },
+    "J65": {
+      "nearest_candidate": "J52",
+      "nearest_candidate_distance_m": 386.65299999999996,
+      "downstream_length_to_outfall_m": 998.7330000000001,
+      "role": "远距覆盖候选井"
+    },
+    "J41": {
+      "nearest_candidate": "J84",
+      "nearest_candidate_distance_m": 324.861,
+      "downstream_length_to_outfall_m": 1208.136,
+      "role": "远距覆盖候选井"
+    },
+    "J72": {
+      "nearest_candidate": "J84",
+      "nearest_candidate_distance_m": 331.70099999999996,
+      "downstream_length_to_outfall_m": 1437.96,
+      "role": "远距覆盖候选井"
+    },
+    "J29": {
+      "nearest_candidate": "J20",
+      "nearest_candidate_distance_m": 390.692,
+      "downstream_length_to_outfall_m": 1337.581,
+      "role": "远距覆盖候选井"
+    },
+    "J31": {
+      "nearest_candidate": "J20",
+      "nearest_candidate_distance_m": 390.00300000000004,
+      "downstream_length_to_outfall_m": 1336.892,
+      "role": "远距覆盖候选井"
+    },
+    "J52": {
+      "nearest_candidate": "J11",
+      "nearest_candidate_distance_m": 383.409,
+      "downstream_length_to_outfall_m": 839.7320000000001,
+      "role": "远距覆盖候选井"
+    },
+    "J92": {
+      "nearest_candidate": "J91",
+      "nearest_candidate_distance_m": 366.092,
+      "downstream_length_to_outfall_m": 797.2410000000001,
+      "role": "远距覆盖候选井"
+    },
+    "J2": {
+      "nearest_candidate": "J20",
+      "nearest_candidate_distance_m": 334.301,
+      "downstream_length_to_outfall_m": 1642.9440000000002,
+      "role": "远距覆盖候选井"
+    },
+    "J1": {
+      "nearest_candidate": "J20",
+      "nearest_candidate_distance_m": 328.32,
+      "downstream_length_to_outfall_m": 1636.9630000000002,
+      "role": "远距覆盖候选井"
+    },
+    "J84": {
+      "nearest_candidate": "J41",
+      "nearest_candidate_distance_m": 324.861,
+      "downstream_length_to_outfall_m": 1106.259,
+      "role": "远距覆盖候选井"
+    },
+    "J75": {
+      "nearest_candidate": "J78",
+      "nearest_candidate_distance_m": 327.172,
+      "downstream_length_to_outfall_m": 426.593,
+      "role": "远距覆盖候选井"
+    },
+    "J21": {
+      "nearest_candidate": "J20",
+      "nearest_candidate_distance_m": 212.86200000000002,
+      "downstream_length_to_outfall_m": 1521.505,
+      "role": "远距覆盖候选井"
+    }
+  },
+  "monitor_nodes": [
+    "J25",
+    "J27",
+    "J47",
+    "J49",
+    "J62",
+    "J61",
+    "J9",
+    "J50",
+    "J7",
+    "J75",
+    "J78"
+  ],
+  "monitor_rows": [
+    {
+      "node": "J25",
+      "role": "J20近下游，先于J48，用于区分J20与J48",
+      "downstream_of": "J20",
+      "distance_from_sources": "J20:59.8m",
+      "max_abs_delta_cms": 0.047622810550963325,
+      "positive_delta_m3": 1260.022083716773,
+      "peak_hour": 15.0
+    },
+    {
+      "node": "J27",
+      "role": "J20支路中段，仍先于J48，增强J20局部约束",
+      "downstream_of": "J20",
+      "distance_from_sources": "J20:180.9m",
+      "max_abs_delta_cms": 0.04763932307342374,
+      "positive_delta_m3": 1259.9839065161445,
+      "peak_hour": 15.0
+    },
+    {
+      "node": "J47",
+      "role": "J48近下游，先于J7汇合",
+      "downstream_of": "J20,J48",
+      "distance_from_sources": "J20:637.2m; J48:82.6m",
+      "max_abs_delta_cms": 0.09357672018556024,
+      "positive_delta_m3": 2520.0151827304676,
+      "peak_hour": 15.166666666666666
+    },
+    {
+      "node": "J49",
+      "role": "J48支路汇合前，约束J48下游响应",
+      "downstream_of": "J20,J48",
+      "distance_from_sources": "J20:717.8m; J48:163.1m",
+      "max_abs_delta_cms": 0.093447817202707,
+      "positive_delta_m3": 2520.012284847568,
+      "peak_hour": 15.166666666666666
+    },
+    {
+      "node": "J62",
+      "role": "J11近下游，直接捕捉J11分支响应",
+      "downstream_of": "J11",
+      "distance_from_sources": "J11:66.8m",
+      "max_abs_delta_cms": 0.047794270244928154,
+      "positive_delta_m3": 1260.0103095477468,
+      "peak_hour": 14.916666666666666
+    },
+    {
+      "node": "J61",
+      "role": "J11支路中上段，增强J11局部约束",
+      "downstream_of": "J11",
+      "distance_from_sources": "J11:203.0m",
+      "max_abs_delta_cms": 0.04768723178661205,
+      "positive_delta_m3": 1259.976075355558,
+      "peak_hour": 15.0
+    },
+    {
+      "node": "J9",
+      "role": "J11支路中段，避免只靠末端公共响应",
+      "downstream_of": "J11",
+      "distance_from_sources": "J11:275.8m",
+      "max_abs_delta_cms": 0.047756874308218,
+      "positive_delta_m3": 1259.9827594652575,
+      "peak_hour": 15.0
+    },
+    {
+      "node": "J50",
+      "role": "J11支路汇合前，约束J11进入J7前的响应",
+      "downstream_of": "J11",
+      "distance_from_sources": "J11:497.2m",
+      "max_abs_delta_cms": 0.047589113419663806,
+      "positive_delta_m3": 1260.0020965275917,
+      "peak_hour": 15.083333333333334
+    },
+    {
+      "node": "J7",
+      "role": "两条主响应路径汇合点，检测总响应是否闭合",
+      "downstream_of": "J20,J48,J11",
+      "distance_from_sources": "J20:803.2m; J48:248.6m; J11:717.7m",
+      "max_abs_delta_cms": 0.1406718090317137,
+      "positive_delta_m3": 3779.9503313879704,
+      "peak_hour": 15.166666666666666
+    },
+    {
+      "node": "J75",
+      "role": "共同下游中段，检验汇合后传播",
+      "downstream_of": "J20,J48,J11",
+      "distance_from_sources": "J20:882.0m; J48:327.4m; J11:796.5m",
+      "max_abs_delta_cms": 0.14049670337292752,
+      "positive_delta_m3": 3779.953438032704,
+      "peak_hour": 15.166666666666666
+    },
+    {
+      "node": "J78",
+      "role": "近排口末端，检验最终出流响应",
+      "downstream_of": "J20,J48,J11",
+      "distance_from_sources": "J20:1209.2m; J48:654.6m; J11:1123.7m",
+      "max_abs_delta_cms": 0.14024873825822923,
+      "positive_delta_m3": 3780.0031268251,
+      "peak_hour": 15.25
+    }
+  ],
+  "truth_paths": [
+    {
+      "source": "J20",
+      "path": "J20 -> J25 -> J26 -> J27 -> J28 -> J4 -> J45 -> J46 -> J48 -> J47 -> J49 -> J7 -> J75 -> J76 -> J74 -> J77 -> J78 -> J6",
+      "link_count": 17,
+      "length_m": 1308.643,
+      "downstream_monitors": "J25, J27, J47, J49, J7, J75, J78"
+    },
+    {
+      "source": "J48",
+      "path": "J48 -> J47 -> J49 -> J7 -> J75 -> J76 -> J74 -> J77 -> J78 -> J6",
+      "link_count": 9,
+      "length_m": 754.0150000000001,
+      "downstream_monitors": "J47, J49, J7, J75, J78"
+    },
+    {
+      "source": "J11",
+      "path": "J11 -> J62 -> J60 -> J61 -> J9 -> J53 -> J52 -> J54 -> J50 -> J55 -> J51 -> J56 -> J7 -> J75 -> J76 -> J74 -> J77 -> J78 -> J6",
+      "link_count": 18,
+      "length_m": 1223.1409999999998,
+      "downstream_monitors": "J62, J61, J9, J50, J7, J75, J78"
+    }
+  ],
+  "min_candidate_spacing_m": 212.862,
+  "median_candidate_spacing_m": 344.066,
+  "top_sensitive_nodes": [
+    {
+      "node": "J7",
+      "max_abs_delta_cms": 0.1406718090317137,
+      "sum_abs_delta_m3": 3779.9503313879704,
+      "positive_delta_m3": 3779.9503313879704,
+      "peak_hour": 15.166666666666666
+    },
+    {
+      "node": "J75",
+      "max_abs_delta_cms": 0.14049670337292752,
+      "sum_abs_delta_m3": 3779.953438032705,
+      "positive_delta_m3": 3779.953438032704,
+      "peak_hour": 15.166666666666666
+    },
+    {
+      "node": "J76",
+      "max_abs_delta_cms": 0.140331598224527,
+      "sum_abs_delta_m3": 3779.968400787911,
+      "positive_delta_m3": 3779.968400787911,
+      "peak_hour": 15.25
+    },
+    {
+      "node": "J74",
+      "max_abs_delta_cms": 0.14032523643156594,
+      "sum_abs_delta_m3": 3780.005553522948,
+      "positive_delta_m3": 3780.0055535229476,
+      "peak_hour": 15.25
+    },
+    {
+      "node": "J77",
+      "max_abs_delta_cms": 0.1402902640100303,
+      "sum_abs_delta_m3": 3780.0097806185586,
+      "positive_delta_m3": 3780.009780618558,
+      "peak_hour": 15.25
+    },
+    {
+      "node": "J78",
+      "max_abs_delta_cms": 0.14024873825822923,
+      "sum_abs_delta_m3": 3780.0031268251,
+      "positive_delta_m3": 3780.0031268251,
+      "peak_hour": 15.25
+    },
+    {
+      "node": "J48",
+      "max_abs_delta_cms": 0.09391798147023668,
+      "sum_abs_delta_m3": 2519.9768800722513,
+      "positive_delta_m3": 2519.9768800722513,
+      "peak_hour": 15.083333333333334
+    },
+    {
+      "node": "J47",
+      "max_abs_delta_cms": 0.09357672018556024,
+      "sum_abs_delta_m3": 2520.0151827304676,
+      "positive_delta_m3": 2520.0151827304676,
+      "peak_hour": 15.166666666666666
+    },
+    {
+      "node": "J49",
+      "max_abs_delta_cms": 0.093447817202707,
+      "sum_abs_delta_m3": 2520.012284847568,
+      "positive_delta_m3": 2520.012284847568,
+      "peak_hour": 15.166666666666666
+    },
+    {
+      "node": "J11",
+      "max_abs_delta_cms": 0.047925213292949784,
+      "sum_abs_delta_m3": 1259.9999999992162,
+      "positive_delta_m3": 1259.9999999992162,
+      "peak_hour": 14.916666666666666
+    },
+    {
+      "node": "J62",
+      "max_abs_delta_cms": 0.047794270244928154,
+      "sum_abs_delta_m3": 1260.0103095477468,
+      "positive_delta_m3": 1260.0103095477468,
+      "peak_hour": 14.916666666666666
+    },
+    {
+      "node": "J53",
+      "max_abs_delta_cms": 0.047766979886281806,
+      "sum_abs_delta_m3": 1259.990322322832,
+      "positive_delta_m3": 1259.990322322832,
+      "peak_hour": 15.0
+    },
+    {
+      "node": "J9",
+      "max_abs_delta_cms": 0.047756874308218,
+      "sum_abs_delta_m3": 1259.9827594652575,
+      "positive_delta_m3": 1259.9827594652575,
+      "peak_hour": 15.0
+    },
+    {
+      "node": "J52",
+      "max_abs_delta_cms": 0.04773562709039553,
+      "sum_abs_delta_m3": 1259.9975480899486,
+      "positive_delta_m3": 1259.9975480899486,
+      "peak_hour": 15.0
+    },
+    {
+      "node": "J56",
+      "max_abs_delta_cms": 0.04772980352265528,
+      "sum_abs_delta_m3": 1259.979128540452,
+      "positive_delta_m3": 1259.979128540452,
+      "peak_hour": 15.083333333333334
+    },
+    {
+      "node": "J51",
+      "max_abs_delta_cms": 0.047688043878992045,
+      "sum_abs_delta_m3": 1259.9813914620559,
+      "positive_delta_m3": 1259.9813914620559,
+      "peak_hour": 15.083333333333334
+    },
+    {
+      "node": "J61",
+      "max_abs_delta_cms": 0.04768723178661205,
+      "sum_abs_delta_m3": 1259.976075355558,
+      "positive_delta_m3": 1259.976075355558,
+      "peak_hour": 15.0
+    },
+    {
+      "node": "J26",
+      "max_abs_delta_cms": 0.04765637097069304,
+      "sum_abs_delta_m3": 1259.9914203671221,
+      "positive_delta_m3": 1259.9914203671221,
+      "peak_hour": 15.0
+    },
+    {
+      "node": "J54",
+      "max_abs_delta_cms": 0.04765223475913861,
+      "sum_abs_delta_m3": 1259.9932153177917,
+      "positive_delta_m3": 1259.9932153177917,
+      "peak_hour": 15.0
+    },
+    {
+      "node": "J20",
+      "max_abs_delta_cms": 0.047643055204181876,
+      "sum_abs_delta_m3": 1260.0252413107341,
+      "positive_delta_m3": 1260.0252413107341,
+      "peak_hour": 14.916666666666666
+    }
+  ],
+  "html": "E:\\PY\\LSTM\\0416\\0-网状污水管网模型\\0417_scheme_design_candidates_monitors.html",
+  "report": "E:\\PY\\LSTM\\0416\\0-网状污水管网模型\\0417_scheme_design_report.md",
+  "config_snippet": "E:\\PY\\LSTM\\0416\\0-网状污水管网模型\\0417_scheme_config_snippet.py",
+  "all_node_delta_csv": "E:\\PY\\LSTM\\0416\\0-网状污水管网模型\\0417_scheme_all_node_delta_metrics.csv"
+}

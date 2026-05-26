@@ -1,0 +1,4 @@
+cmd
+cd D:\ProcessingData\TEMP\test\无人机数据处理\库\pyexiv2-master
+d:
+python setup.py install

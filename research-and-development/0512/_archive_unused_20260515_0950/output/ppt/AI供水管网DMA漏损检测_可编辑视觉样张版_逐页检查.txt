@@ -1,0 +1,5 @@
+01	OK	chars=110	shapes=69	pics=0	min_font=8.5	
+02	OK	chars=270	shapes=92	pics=0	min_font=8.5	
+03	OK	chars=250	shapes=36	pics=0	min_font=10.0	
+04	OK	chars=200	shapes=37	pics=0	min_font=9.5	
+05	OK	chars=261	shapes=98	pics=0	min_font=8.5	

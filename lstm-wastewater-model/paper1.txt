@@ -1,0 +1,970 @@
+Uncertainty analysis method for diagnosing multi-point defects in urban
+drainage systems
+Chutian Zhou a,b,c, Pan Liu a,b,c,*, Xinran Luo a,b,c, Yang Liu a,b,c,
+Weibo Liu a,b,c, Huan Xu a,b,c, Qian Cheng a,b,c, Jun Zhang d, Kunming Wu d
+a State Key Laboratory of Water Resources Engineering and Management, Wuhan University, Wuhan 430072, China
+b Research Institute for Water Security (RIWS), Wuhan University, Wuhan 430072, China
+c Hubei Provincial Key Lab of Water System Science for Sponge City Construction, Wuhan University, Wuhan 430072, China
+d Yangtze Ecology and Environment Co., Ltd., Wuhan 430072, China
+A R T I C L E I N F O
+Keywords:
+Urban drainage system
+Multi-point defect diagnosis
+Uncertainty analysis
+Hybrid method
+Posterior probability distribution
+A B S T R A C T
+Urban drainage system (UDS) plays a key role in city urbanization, where defective pipes can lead to seepage.
+Previous studies have identified the locations of defects in UDS using inverse optimization models. However, the
+unique optimal solution neglects uncertainty analysis, which may lead to misdiagnosis. In addition, the multi-
+point defect diagnosis has heavy computational burden due to high dimensional parameters space. To address
+these issues, this paper proposes a hybrid method that leverages the genetic algorithm (GA) to identify probable
+space, and then utilizes the adaptive Metropolis (AM) to provide an estimation of the posterior probability
+distribution (PPD). Firstly, a multi-population GA is employed for the maximum exploration within the model
+space. Then, AM algorithm is used to explore the final PPD of each pipe defect parameter. The metrics accuracy
+(ACC), Matthews correlation coefficient (MCC) and mean absolute error (MAE) are used to evaluate the diagnosis
+performance. A synthetic UDS case with randomized multi-point seepage scenarios is used to validate the
+method. Results indicate that the proposed hybrid method is effective in diagnosing multi-point defect, with
+0.91, 0.78 of the hybrid method and 0.87, 0.69 of the DiffeRential Evolution Adaptive Metropolis method for the
+ACC and MCC, respectively. Meanwhile, the diagnosis speed has increased by 32 %. The result PPD passes the 90
+% confidence interval validation. The proposed method can provide effective uncertainty analysis to reduce
+misdiagnosis of the traditional method.
+1. Introduction
+Complex urban drainage system (UDS) plays a key role in city rapid
+urbanization development (Luo et al., 2024). A scientific UDS signifi-
+cantly contributes to urban flood control (Karn et al., 2023; Lund et al.,
+2019). However, especially in developing countries, for the long years of
+UDS construction, unscientific operation, materials aging and external
+disturbance, existing pipes have suffered a lot of damage, leading to
+defects (Kumar et al., 2018; Tariq et al., 2022). Sewage leakage, flow
+seepage, groundwater infiltration and pollution will occur with defec-
+tive pipes (Grimmeisen et al., 2017; Harvey and McBean, 2014; Liu
+et al., 2018). For example, studies have shown that water loss caused by
+defective aging pipe systems can reach up to 50 % (Kanakoudis and
+Muhammetoglu, 2014). Municipal authorities often employ a passive
+strategy, waiting to conduct repairs until defects cause significant
+failures (Rokstad and Ugarelli, 2016). As a result, with the increasing
+urban population and environmental pressure, the failure caused by
+defective UDS requires significant manpower, financial resources and
+material resources to repair, even not thoroughly addressing the un-
+derlying defects. Thus, large budgets have been devoted to conduct
+preventive maintenance work by municipalities (Sinha and Knight,
+2004). Specifically, the issue of timely defect monitoring is of great
+importance for UDS.
+Closed circuit television (CCTV) is so far the most common method to
+evaluate the defects of pipe networks worldwide (Nguyen et al., 2021).
+However, such manual interpretation of inspection images or videos is
+time-consuming and labour-intensive. Limited by technical threshold
+and equipment costs, CCTV is not suitable for large spatial scales and
+high temporal frequency inspections (Blackwood et al., 2005). Thus,
+diagnosis methods based on model approaches are widely applied
+* Corresponding author.
+E-mail address: liupan@whu.edu.cn (P. Liu).
+Contents lists available at ScienceDirect
+Water Research
+journal homepage: www.elsevier.com/locate/watres
+https://doi.org/10.1016/j.watres.2024.122849
+Received 17 September 2024; Received in revised form 9 November 2024; Accepted 23 November 2024
+Water Research 270 (2025) 122849 
+Available online 24 November 2024 
+0043-1354/© 2024 Elsevier Ltd. All rights are reserved, including those for text and data mining, AI training, and similar technologies. 
+
+(Zheng et al., 2018). Several typical success cases are presented in the
+water distribution system (WDS) (Huang et al., 2020; Zhou et al., 2019).
+Unlike the use of high precision pressure monitoring equipment on
+WDS (Gupta and Kulat, 2018; Huang et al., 2020; Qi et al., 2018), the
+flow in UDS is typically characterized as a non-pressure flow. Thus, the
+diagnosis model-based method of UDS often relies on more compre-
+hensive simulation. For example, the storm water management model
+(SWMM) is used to simulate UDS (Sadler et al., 2019; Shao et al., 2021)
+for inverse model diagnosis. Through a trial-and-error process, the in-
+verse model determines the parameters that most closely match the
+monitoring values, thus obtaining the defect diagnosis results. Inverse
+model based on optimization methods is a common approach in existing
+research. Xu et al. (2016) used water balance and chemical mass balance
+method to estimate the sewage inflow into the stormwater network,
+which successfully determined the defects and illicit connections of
+pipes. Zhao et al. (2020) optimized the specific infiltration locations by
+an inverse model with the support of chemical tracers and optimization
+model, which identified groundwater infiltration in success. Xu et al.
+(2021) coupled a genetic algorithm (GA) with SWMM to track the illicit
+connections of sewer system, which provided data basis for pipe
+reconstruction and rehabilitation.
+However, the objective of obtaining a “single” optimal solution by
+optimization algorithms does not align with the inherent nature of UDS
+pipe diagnosis. In fact, the diagnosis process should encompass uncer-
+tainty, such as monitoring data uncertainty (Shao et al., 2021) and
+model simulation uncertainty (Luo et al., 2023). From the start to the
+end, the uncertainty accompanies the inverse model for diagnosis (Wang
+and Harrison, 2013). In this regard, the posterior probability distribu-
+tion (PPD) obtained by uncertainty analysis methods (Pan et al., 2019),
+such as Markov chain Monte Carlo (MCMC) series methods, instead of
+the optimal solution of the optimization algorithm, contains more in-
+formation for diagnosis.
+So far, MCMC methods have been successfully applied to inverse
+problem.
+For
+example,
+the
+Metropolis-Hastings
+(MH)
+algorithm
+(Hastings, 1970), is suitable for any situation where the relative density
+of the target distribution can be calculated. Wang et al. (2014, 2013)
+utilized the MCMC method to devise sampling strategies for WDS to
+ascertain the optimal sensor placement locations. Wu et al. (2020)
+coupled the Bayesian inference theory with a surrogate model, which
+was constructed to determine the source of sudden water pollution in-
+cidents
+in
+rivers
+and
+lakes.
+Shao
+et
+al.
+(2021)
+established
+a
+Bayesian-SWMM coupled stochastic model to reconstruct the complete
+profile of an unknown discharging incidence.
+Unlike aforementioned issues, the diagnosis of UDS with multi-point
+defects is an inverse problem in a high-dimensional space. Due to the
+uncertainty in the number of defects and the extent of the damage, the
+computational workload becomes a burden. Limited by an appropriate
+proposal distribution, and in high-dimensional spaces, MH method
+convergence can be difficult. To address the issue, adaptive Metropolis
+(AM) was proposed (Andrieu and Thoms, 2008). Through automatically
+optimized by adjustment based on the sampling history, AM sampling
+can perform better in convergence. In addition, to enhance the efficiency
+of MCMC sampling, evolution algorithms are often integrated. For
+example, Yang et al. (2016) combined differential evolution algorithm
+and MH algorithm to identify multi-point sudden water pollution sour-
+ces. To ensure the reliability of the final probability estimates, the in-
+tegrated evolution algorithms must maximize the exploration of the
+parameter space. The multi-population GA has been proven to possess
+the ability to maximize the exploration of the parameter space (Aleardi
+and Mazzotti, 2017). By appropriately structuring the population size
+and
+establishing
+competition
+and
+migration
+mechanisms,
+multi-population GA can effectively mitigate genetic drift and thor-
+oughly explore the parameter space (Pourvaziri and Naderi, 2014; Sun
+et al., 2022). However, there is currently a lack of researches employing
+uncertainty analysis methods for diagnosing multi-point defective pipes
+in UDS. Moreover, the study of combining AM with multi-population GA
+to enhance the efficiency of uncertainty diagnosis is still not available.
+The aim of this study is to enhance performance of multi-point defect
+diagnosis in UDS. The innovation of this study is diagnosing multi-defect
+in UDS using uncertainty analysis methods. The proposed method can
+provide effective uncertainty analysis to reduce misdiagnosis of the
+traditional method. In addition, a hybrid method has been proposed,
+broadly exploring the parameter space through a multi-population GA,
+and outputting the PPD of the defect level parameters by the AM
+method. More specifically, two questions are addressed: (1) Can the
+proposed hybrid method effectively diagnose multi-point defects? (2)
+Can the PPD provide accurate probabilistic UDS simulation with
+defective status?
+2. Case study
+A UDS case in Hangzhou, China, is selected to conduct the method. It
+is taken from the work of Lin et al (2020). It has 19 subcatchments with
+19 pipes, 19 manholes and 1 outfall, covering 0.081 km2. Fig. 1 shows
+the sketch map. A 2-hour typical rainfall event is applied to diagnosis.
+Monitoring data intervals are 20 minutes.
+3. Methodology
+As shown in Fig. 2, the study consists of parts as follows:
+(1) The SWMM model and the defect parameter are chosen to
+represent the defective pipes (Section 3.1).
+(2) A hybrid method is developed to diagnose the multi-point
+defective pipes (Section 3.2).
+(3) Synthetic cases with various factors are generated randomly to
+evaluate the diagnosis efficiency (Section 3.3).
+(4) Metrics are used to evaluate the efficiency of diagnosis (Section
+3.4).
+3.1. SWMM simulation with defects
+In this study, the simulation of UDS system defect is based on SWMM.
+SWMM is widely used to simulate the rainfall-runoff, pipe flow, and
+groundwater in UDS (Luo et al., 2022, 2023). PySWMM, an open-source
+software based on Python language, is used to enable Pythonic to access
+Fig. 1. The graph drainage system diagram.
+C. Zhou et al.
+Water Research 270 (2025) 122849 
+2 
+
+the SWMM model (McDonnell et al., 2020).
+Pipe defects can manifest in various forms. This study focuses on the
+seepage case. It is assumed that: 1) the seepage loss is uniformly
+distributed throughout the pipe, with each unit length slice of the pipe
+experiencing the same level of seepage loss. 2) for most drainage pipes
+that operate under non-pressure flow, seepage occurs only in the vertical
+direction. Based on the assumptions, a parameter named as the seepage
+rate is introduced to represent the seepage capacity of the pipe in
+SWMM. The calculation of seepage loss is defined as the following
+equation (McDonnell et al., 2020):
+SL = SR⋅XW⋅L⋅Δt
+(1)
+where SL is the seepage loss of the pipe (m3), SR is the seepage rate of the
+pipe (m⋅s−1), XW is the maximum width of the flow in the pipe (m), L is
+the length of the pipe (m), Δt is the simulation step time (s).
+To prevent the water imbalance, the seepage loss must be less than
+the available water volume in the pipe in a step time. Upper limit of SR
+named SRmax is calculated by Eq. (1) when the SL is equal to the
+maximum water volume in the pipe.
+For facilitating diagnosis calculations and unifying defect parameters
+into dimensionless units, the seepage rate ratio (SRR) is employed to
+represent the extent of defects in various pipes. The equation for
+calculating the ratio is as follows:
+SRR =
+SR
+SRmax
+(2)
+3.2. The hybrid diagnosis method
+A hybrid method containing GA and AM algorithms is proposed to
+take the advantages of both. Fig. 3 illustrates the method’s flowchart. A
+brief description of this hybrid two-step method is as follows:
+(1) Multiple populations will be generated for a multi-population GA.
+The migration and competition among populations are carried
+out at fixed intervals. Upon reaching the designated number of
+evolutionary generations, the resulting new population forms the
+initial PPD.
+(2) Utilizing the initial PPD as a form of prior information, AM
+sampling is conducted, resulting in the determination of the PPD
+of the parameters.
+Further technical details will be provided in the following sections.
+3.2.1. Step 1: multi-population genetic algorithm
+Traditional GA are computationally efficient but often suffer from
+genetic drift effect (Rogers and Prugel-Bennett, 1999), leading to being
+stuck in local optimum and struggling to explore the parameter space in
+depth. To address the issue, a multi-population GA is employed for
+searching the initial PPD. The multi-population mechanism ensures the
+diversification capability of the algorithm (Pourvaziri and Naderi,
+2014). Multiple populations will be generated in different parameter
+spaces. They will undergo evolutionary iterations within each popula-
+tion following the typical GA crossover and mutation operations.
+Meanwhile, at regular intervals, competition and migration occur
+among the populations. Upon reaching the designated number of
+evolutionary generations, the individuals from all independent pop-
+ulations are merged, and inferior individuals are removed based on the
+roulette wheel selection method. In the implementation of the method, a
+total of five populations are generated, each consisting of 80 individuals.
+The evolutionary process spans 25 generations, with population
+competition and migration occurring every five generations.
+The individual in the population has a chromosome with genes
+(represents the defect level value of each pipe). These genes are set as the
+pipe parameters in the SWMM. The length of gene in the GA is decided
+by the number of pipes in UDS. The choice of objective function is
+crucial to the performance of algorithm. Due to the presence of multiple
+Fig. 2. Framework of the study.
+C. Zhou et al.
+Water Research 270 (2025) 122849 
+3 
+
+monitoring sites, the mean of Nash–Sutcliffe efficiency (NSE) is chosen,
+as follows (Zhou et al., 2023):
+NSE = 1
+N⋅
+∑
+N
+n=1
+[
+1 −
+∑
+T
+t=1
+(Mt
+n −St
+n
+St
+n −μ0
+)2]
+(3)
+where N is number of monitoring site. T is the number of moments of
+simulation. Mt
+n is the monitoring flow of node n at the moment t. St
+n is the
+simulation flow of node n at the moment t. μ0 is the mean of the
+monitoring flow.
+3.2.2. Step 2: adaptive metropolis sampling
+3.2.2.1. Bayesian inferential model. The likelihood function of the
+Bayesian model is constructed by calculating the difference between the
+monitoring values and the simulation values. Assuming that the com-
+posite error follows a normal distribution with a mean of 0 and a stan-
+dard deviation of σ, the likelihood function p(M|X) can be expressed by
+the following equation (An et al., 2021):
+p(M|X) =
+1
+(2πσ2)
+π
+2
+⋅exp
+( ∑
+N
+n=1
+∑
+T
+t=1
+[
+−
+(
+Mt
+n −St
+n
+)2
+2σ2
+])
+(4)
+where X is the vector of defect parameters. M are the monitor values.
+According to Bayesian theory, the posterior probability distribution
+p(X|M) can be expressed by the following equation (Shao et al., 2021):
+p(X|M) = p(M)⋅p(X)⋅
+1
+(2πσ2)
+π
+2
+⋅exp
+( ∑
+N
+n=1
+∑
+T
+t=1
+[
+−
+(
+Mt
+n −St
+n
+)2
+2σ2
+])
+(5)
+where p(M) is usually considered as a constant. p(X) is the prior prob-
+ability generated by Step 1.
+3.2.2.2. AM sampling process. The proposal distribution of AM algo-
+rithm is defined as a multi-dimensional normal distribution N(θn, Cn),
+with mean θn at the current point Xn−1 and covariance Cn calculated by
+the following equation:
+Cn =
+{
+C0
+sdCov(X0, X1, ⋯, Xn−1) + sdεId
+n ≤tn
+n > tn
+(6)
+where the ε is a small positive number to ensure the Cn is not a singular
+matrix. The sd is normally set to 2.42/d, where d is the variable
+dimension. The Id is unit matrix with d dimension. The tn is initial sample
+size.
+The new generated sample fits the following equation:
+Xn ∼N(θn, Cn)
+(7)
+The acceptance probability fits the following equation:
+β = min
+(
+1, p(M|Xn)
+p(M|Xn−1)
+)
+(8)
+The sampling process convergence criteria is set to be the maximum
+iteration times of 2000.
+Fig. 3. The flowchart of proposed hybrid method.
+C. Zhou et al.
+Water Research 270 (2025) 122849 
+4 
+
+3.3. Generation of synthetic scenarios
+To simulate multiple scenarios of multi-point defects, four groups
+sample data is generated randomly by PySWMM. The data is listed in the
+Table 1. Each group has 100 samples. To detect the accuracy of multi-
+point seepage diagnosis, the number of seepage pipe ranges from 1 to
+5 with 20 samples of each number. Specific seepage pipe index is
+determined by non-release sampling. SRR is assumed to follow to a
+uniform distribution between 0.1 and 1.0. Simulation error and moni-
+toring error are significant sources of uncertainty in defect diagnosis.
+Errors are simulated by adding noise. Referring to prior research, the
+noise follows a normal distribution N(0,σ), with the standard deviation σ
+reflecting the level of noise. Existing studies typically use σ values be-
+tween 0.01 and 0.05 (Shao et al., 2021; Yang et al., 2016). To reflect the
+impact of varying degrees of error, the standard deviation σ is set to
+0.01, 0.02 or 0.05. To analyze the impact of the number of monitoring
+sites, control group 4 is set with 1 site while group 1, 2 and 3 have 3 sites.
+3.4. Evaluation metrics
+Although uncertainty analysis methods often yield PPD, it remains
+necessary to evaluate the effectiveness using statistical indicators. Due
+to the parameter value being zero (intact) or greater than zero (defec-
+tive), the distribution is likely to be skewed. The mean can be heavily
+influenced by extreme values, leading to a misleading representation of
+the diagnosis. For reflecting the typical defect severity by being robust to
+outliers and providing a clearer picture of the distribution center, the
+median is used to represent the final estimation of the PPD.
+3.4.1. Binary classification evaluation metrics
+In an identification method, each pipe diagnosis result can fall in one
+of the following four cases: actual defective pipe that is correctly diag-
+nosed, actual intact pipe that is wrongly diagnosed, actual defective pipe
+that is wrongly diagnosed and actual intact pipe that is correctly diag-
+nosed. This is similar to binary classifications problem in machine
+learning. In binary classifications, a 2 × 2 table called confusion matrix
+M =
+(
+TP
+FN
+FP
+TN
+)
+is presented to describe the classification results. In
+seepage diagnosis problem, the confusion matrix can be described as the
+Table 2 (Caelen, 2017):
+Based on confusion matrix, several metrics have been proposed to
+evaluate the performance. Accuracy (ACC) is a convenient metric which
+represents the ratio between the number of correctly classified samples
+and the overall number of samples. ACC is calculated by the following
+equation (Chicco and Jurman, 2020):
+ACC =
+TP + TN
+TP + TN + FP + FN
+(9)
+The metric ACC ranges in the real unit interval [0, 1] with the worst
+value 0 and the best value 1. The best value means the most perfect
+classification and the worst value means that all samples are diagnosed
+as misclassification.
+Another metric Matthews correlation coefficient (MCC), is widely
+used in binary classification. The MCC equation is as follows (Chicco and
+Jurman, 2020):
+MCC =
+TP⋅TN −FP⋅FN
+̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅̅
+(TP + FP)⋅(TP + FN)⋅(TN + FP)⋅(TN + FN)
+√
+(10)
+The metric MCC ranges in the [-1, 1] with the worst value -1 and the
+best value 1.
+3.4.2. Numerical evaluation metric
+This paper employs mean absolute error (MAE) as the metric for
+assessing the numerical accuracy of the diagnosis. The MAE equation is
+as follows (Zhang and Liu, 2021):
+MAE = 1
+NTP
+∑
+NTP
+n=1
+⃒⃒SRRT
+n −SRRD
+n
+⃒⃒
+(11)
+where NTP is number of TP diagnosis, SRRT
+n is the true SRR value of the
+pipe, SRRD
+n is the diagnosis SRR value of the pipe. Only pipes with actual
+and diagnosed defects are considered, as the numerical severity of
+misdiagnosed defects is meaningless.
+4. Results and discussion
+4.1. Comparison of hybrid method with original method
+4.1.1. Multi-population GA versus standard GA
+The self-organizing map (SOM) (Kalteh et al., 2008; Kohonen, 2013)
+method is used to demonstrate the advantages of the proposed GA. As
+shown in Fig. 4, a 7 × 7 hexagonal grid, comprising a total of 49 neurons,
+is utilized in the SOM network. Employing a hexagonal grid, implies that
+each neuron node is closest in distance to the six surrounding adjacent
+nodes. Although SOM, as an unsupervised method, yields different re-
+sults after each training session, the resulting cluster distribution dia-
+gram can still reflect the distribution of all individuals in the parameter
+space within the GA. Clearly, after only 25 generations of evolution the
+standard GA individuals have already clustered in several parts of the
+space. As a contrast, the multi-population GA is still attempting to
+explore the entire parameter space at this point. When it comes to the
+point of 50 generations, the standard GA may have fallen into a possible
+local optimum, evidencing the genetic drift effect. In contrast, the
+multi-population GA continues to explore the possibilities in each in-
+dividual space, without converging to specific optimal solutions. This
+provides a better initial PPD for the subsequent AM sampling process.
+4.1.2. Hybrid method versus DREAM
+To demonstrate the advantages of the hybrid method, the dataset G1,
+consisting of 100 samples, is used to compare the hybrid method with
+the DiffeRential Evolution Adaptive Metropolis (DREAM) method.
+DREAM is an improved AM sampling method by adopting differential
+evolution. It is widely applied in areas such as Bayesian inference (Han
+et al., 2023; Ho et al., 2022). The results are illustrated in Fig. 5. In terms
+of the ACC and MCC metrics, the hybrid method demonstrates advan-
+tages. The mean ACC and MCC values for the hybrid method are 0.91
+and 0.78, respectively, showing an improvement compared to 0.87 and
+0.69 for the DREAM method. The mean MAE values for both methods
+are 0.19 and 0.18, respectively, indicating that both methods can
+accurately assess defect parameters in qualitative terms. Additionally,
+the boxplot indicates that the hybrid method exhibits a more compact
+box, suggesting more stable diagnosis performance. Moreover, in addi-
+tion to the improvement in accuracy, the hybrid method can also
+enhance the diagnosis speed after a deep search of the parameter space
+Table 1
+Table of sample datasets. A total of four groups consisting of 400 sample data are
+set up, each with varying numbers of defects, numbers of monitoring sites, and
+monitoring errors. The identification number of sites is shown in Fig. 1.
+Sample group serial number
+Utilized monitoring site
+Monitoring error
+G1
+M1, M2, M3
+δ ∼N(0,0.01)
+G2
+M1, M2, M3
+δ ∼N(0,0.02)
+G3
+M1, M2, M3
+δ ∼N(0,0.05)
+G4
+M3
+δ ∼N(0,0.01)
+Table 2
+Defect diagnosis confusion matrix.
+Diagnosed defect
+Diagnosed intact
+Actual defect
+True positives TP
+False negatives FN
+Actual intact
+False positives FP
+True negatives TN
+C. Zhou et al.
+Water Research 270 (2025) 122849 
+5 
+
+Fig. 4. Individual space distribution plot on different generations of standard GA and multi-population GA. The SOM method is employed to perform dimensionality
+reduction on all individuals at corresponding generations, which are then represented on a two-dimensional hexagonal neuron grid. The standard GA case is rep-
+resented in (a) and (b), whereas (c) and (d) represent the multi-population GA. The figure demonstrates that the multi-population GA can explore a wider parameter
+space compared with the standard GA.
+Fig. 5. Comparison of the effectiveness between the Hybrid method and the DREAM method. Box plots comparing the (a) ACC, (b) MCC, and (c) MAE metrics for
+both methods. Bar chart comparing the average diagnosis time (d) for both methods. Here, A represents the hybrid method, and B represents the DREAM method.
+C. Zhou et al.
+Water Research 270 (2025) 122849 
+6 
+
+using a multi-population GA. By effectively utilizing parallel computing,
+testing on a machine with an I5–9400 CPU and 16 GB of RAM shows that
+the proposed hybrid method has an average runtime of 394 seconds,
+compared to an average runtime of 521 seconds for DREAM sampling
+until convergence, resulting in a 32 % increase in speed. Due to the deep
+search capability of multi-population GA, the least likely parameter
+values are discarded, thereby enhancing the sampling efficiency of the
+AM method.
+4.2. Performance of synthetic scenarios
+4.2.1. Impacts of the number of seepage pipes
+In the effectiveness of multi-point seepage diagnosis, 1 to 5 seepage
+pipes of synthetic scenarios are considered in the study work. The
+metrics results are shown in the Fig. 6. The ACC metric decreases with
+the increase of seepage pipes, which decreases from 0.99 in 1 pipe
+scenario to 0.82 in 5 pipes scenario. The other four datasets follow the
+same pattern. Different from the ACC metric, except the dataset G1, with
+the change of number of seepage pipes, there is no obvious change
+pattern of the MCC metric. For example, from 1 pipe to 5 pipes, in
+dataset G2, the mean values of MCC metric are 0.55, 0.69, 0.59, 0.66,
+0.63, which is small variation. The phenomenon is mainly due to the
+metric difference.
+The MAE results are shown in Fig. 7. Like the ACC and MCC metrics,
+with the increase of seepage pipes and monitoring error, the metric MAE
+increases. However, in the experimental results of G1, G2 and G3
+dataset, the maximum MAE is 0.28, which indicates that the model can
+provide a relatively accurate assessment of pipe damage level.
+4.2.2. Impacts of monitoring error and number of monitoring site
+The flow monitor plays a significant role in the diagnosis model.
+According to existing research, three different monitoring errors are
+separately appended to three datasets of the monitoring values. As
+shown in the Fig. 6, for example, in single seepage scenario, the ACC and
+MCC metrics of G1, G2, and G3 datasets are respectively 0.99, 0.92, 0.89
+and 0.93, 0.55, 0.40. Generally, as the monitoring error increases, the
+diagnosis performance exhibits a decreasing trend. Meanwhile, with the
+increase of seepage pipes, the gap in diagnosis performance under
+different monitoring error decreases. It is hypothesized that the
+complexity brought by multi-point tasks may have a greater impact on
+diagnosis performance than monitoring error.
+At the scenario of decreasing monitoring site in dataset G4, obvi-
+ously, as shown in the Fig. 6, except the single-pipe seepage diagnosis,
+both metrics show a significant decrease. The worst performance is
+observed in the 2 pipes seepage scenario, with a mean MCC metric of
+only 0.11. Like the correlation coefficient, this indicates that the diag-
+nosis results are less than ideal. Unexpectedly, with only one monitoring
+site, the single-pipe seepage diagnosis results still maintain a relatively
+high level. This confirms the previous point that the complexity chal-
+lenge brought by multi-point seepage exceeds that brought by the
+Fig. 6. Box plot of ACC and MCC metric evaluation results from the diagnosis of four datasets. Displayed in the form of a grouped graph, the vertical axis of the graph
+represents different ACC and MCC metrics, the horizontal axis represents the number of actual seepage pipes, and the color of the box indicates different data groups.
+C. Zhou et al.
+Water Research 270 (2025) 122849 
+7 
+
+monitoring uncertainty.
+In the numerical value precision experimental results shown in
+Fig. 7, in dataset G4, for pipes that successfully diagnosis seepage, the
+model can still provide SRR values diagnosis that the MAE does not
+exceed 0.3. The result values when successfully diagnosed are relatively
+accurate.
+4.2.3. Impacts of pipes location
+Limited by practical circumstances, a UDS cannot achieve monitor
+for each manhole. In the study, data from up to three monitoring sites is
+used. To analyze the impact of the pipe location on the ACC and MCC
+metrics of seepage diagnosis on each pipe, the diagnosis ACC and MCC
+for each pipe in each dataset is calculated by Eq. (9).
+As shown in Fig. 8, the trend of diagnosis metrics changing with pipe
+index is similar across the four datasets, which indicates the diagnosis
+metrics are significantly influenced by pipe location. The specific pipe
+index location and monitoring site position can be found in Fig. 9.
+Meanwhile, metrics of each pipe in four datasets are averaged and color-
+coded in Fig. 9 to better observe the impact of pipe location on diagnosis
+performance. As shown in Fig. 9, in G1, G2, and G3 datasets, 3
+Fig. 7. Bar chart of MAE metric evaluation results from the diagnosis of four datasets. Displayed in the form of a grouped graph, the horizontal axis represents the
+number of actual seepage pipes, and the color of the box indicates different data groups.
+Fig. 8. The plot of ACC and MCC metrics for each pipe. The metrics here are calculated based on the diagnosis results at specific pipe across all samples.
+C. Zhou et al.
+Water Research 270 (2025) 122849 
+8 
+
+monitoring sites are set at J6, J12, and J19. Overall, most of the pipes
+have good performance on seepage diagnosis. Almost all pipes with poor
+diagnosis performance are located far from the monitoring site or at
+network branches. For example, due to the lack of monitoring site J6,
+the pipe 1 and 2 diagnosis performances in G4 are significantly worse
+than the other datasets. In addition, the poor performance at network
+branches is easily explained. In node J12, the flow from two paths of
+pipes is combined. The inflow change resulting from seepage change
+propagating to a node is attenuated by the inflow from other path, which
+results in the insensitivity to changes at branches. Adding monitoring
+sites at branches can effectively solve the problem.
+4.3. The validation of uncertainty diagnosis result PPD
+Although the evaluation metrics ACC, MCC, and MAE can charac-
+terize the effectiveness of the proposed method within the sample range,
+the more crucial objective for individual diagnosis cases is to derive the
+defect PPD for all pipes within the case. Therefore, the accuracy of the
+PPD must first be demonstrated. As shown in Fig. 10, this study selects a
+sample from the G2 dataset, where the MCC metric performed the worst.
+The ACC and MCC of this case are 0.33 and 0.19, respectively. To verify
+the effectiveness, the PPD, along with a different observed 3-hour
+rainfall event, is inputted into the UDS model. The resulting outlet
+flow is outputted within the probability simulation, passing the 90 %
+confidence interval validation with coverage to non-coverage ratio
+being 11:1. This indicates that the PPD obtained from the uncertainty
+analysis diagnosis is effective, and the results can simultaneously guide
+the calibration of the UDS model, future simulation and prediction
+efforts.
+Additionally, as shown in Fig. 11, the PPD for all pipe SRR is fully
+mapped. It is known that more valuable information can be discovered
+from the PPD to aid in decision-making. The case includes two actual
+defect locations, both of which are successfully diagnosed. Furthermore,
+the diagnosis values are nearly identical to the true values, and the
+probability peak values of the PPD are also concentrated at the true
+values. This indicates that the proposed method effectively converges to
+the damage locations when diagnosing significant defects. The primary
+reason for the lower evaluation metrics is the high number of FP diag-
+nosis pipes, totaling 12. However, by prioritizing inspections based on
+probability, one can avoid the pitfall of optimal solution errors in the
+diagnosis process, thereby enhancing the efficiency of diagnosis.
+4.4. Advantages and limitations
+4.4.1. Form of defects
+In this study, a defect parameter seepage rate is used to characterize
+the seepage condition of defective pipes. Compared to existing studies
+(Xu et al., 2021), the parameter does not require additional time pa-
+rameters for changes in seepage volume, more accurately reflecting the
+actual flow process in pipes. The parameter significantly simplifies the
+sampling complexity of the inverse problem. In fact, many other forms of
+defect can also be characterized by such simple parameters. For
+instance, in pipes that experience blockage, the condition can be
+modeled by using a "blockage rate" to limit the maximum allowable
+flow, effectively simulating the blockage scenario in the UDS opera-
+tional model. However, a limitation of this study is that the case only
+considers UDS pipes with a single defect parameter. In actual diagnosis
+cases, multiple defect forms often occur in combination. The uncertainty
+of these defect forms should also be a focus of future research. Although
+multiple defect forms increase parameter dimensions, certain data
+encoding methods can circumvent or mitigate this issue (e.g., variables
+greater than 0 indicate seepage, while those less than 0 indicate
+blockage).
+4.4.2. Method efficiency
+The proposed hybrid method employes a multi-population GA to
+explore the parameter space, followed by AM method sampling to obtain
+uncertainty
+analysis
+results.
+Thanks
+to
+the
+robust
+exploratory
+Fig. 9. UDS map of ACC and MCC metrics of each pipe. The plot (a) presents
+ACC metric results, while the plot (b) displays MCC metric results. The color of
+the pipes signifies the range of the respective metrics. Annotations next to the
+pipes represent the pipe index.
+Fig. 10. The UDS defect probabilistic simulation plot of a new rainfall with the
+diagnosis result PPD. Running simulation from PPD yields probability results,
+passing the 90 % confidence interval validation.
+C. Zhou et al.
+Water Research 270 (2025) 122849 
+9 
+
+capabilities of the multi-population GA and the adaptive sampling
+mechanism of AM, this method demonstrated an efficiency improve-
+ment compared to mainstream methods. The hybrid method is also well-
+suited for parallel computing to further enhance speed. This is crucial for
+the maintenance of the increasingly expanding UDS. However, the na-
+ture of the inverse model is essentially a continual trial-and-error pro-
+cess. For large-scale parallel computing, the limitation of this method
+lies in the computational speed of the SWMM model (Luo et al., 2023).
+One potential solution is to accelerate computation through surrogate
+model. A key focus of future research will be constructing a SWMM
+surrogate model with a defective parameter module.
+4.4.3. Case study
+The research case in this study is drawn from an actual UDS.
+Although covering only 0.081 km2 with 19 pipes, the case still repre-
+sents a complete drainage system of a school and a fundamental unit in a
+large UDS. This case study does not seem to demonstrate the application
+of the proposed method on a city-scale UDS. However, even a more
+complex large-scale UDS can be decomposed by using complex network
+theory tools (Simone et al., 2022; Yang et al., 2017). Thus, block diag-
+nosis can be achieved by decomposing the large UDS into unit UDSs.
+Since the outlets of these small UDSs often converging into a main
+drainage pipe, a segmented diagnosis of the large UDS can be achieved
+by
+diagnosing
+the
+small
+UDS
+linked
+to
+the
+main
+pipe.
+This
+decomposition-based diagnosis strategy
+is more efficient. Future
+research can focus on decomposition strategies and the efficiency of
+parallel diagnosis.
+5. Conclusions
+Pipe diagnosis is key to enhancing the efficiency of UDS mainte-
+nance. A hybrid method, combining the rapid spatial exploration
+capability of multi-population GA with the uncertainty analysis capa-
+bility of AM sampling, is developed to diagnose the multi-point defective
+pipes. This method conducts through SWMM and outputs the PPD of
+defect level parameter for each pipe in the UDS. The effectiveness of
+diagnosing seepage is demonstrated through case studies. The follow-
+ings are the major findings:
+(1) The proposed hybrid method outperforms the DREAM method in
+diagnosing multi-point defects. The mean ACC and MCC values for
+the hybrid method are 0.91 and 0.78, respectively, showing an
+improvement compared to 0.87 and 0.69 for the DREAM method.
+Through extensive exploration of the parameter space using multi-
+population GA, the diagnosis speed has increased by 32 %. In the
+synthetic samples with three monitoring stations, the mean ACC and
+MCC range from 0.93 to 0.75 and from 0.63 to 0.47, respectively.
+Similarly, the mean MAE ranges from 0.16 to 0.23. With increasing
+monitoring error, the mean ACC and MCC decrease from 0.91 to 0.82
+and from 0.79 to 0.44, respectively, while the mean MAE increases
+from 0.19 to 0.20.
+(2) The PPD can provide accurate probabilistic UDS simulation with
+defective status. By inputting PPD and a new observed rainfall into
+the UDS model, the resulting outlet flow validation passes the 90 %
+confidence interval validation. Even with a sample of ACC and MCC
+values of only 0.33 and 0.19, respectively, through probabilistic
+detection, the diagnosis can avoid the pitfall of optimal solution er-
+rors, thereby enhancing diagnosis efficiency.
+Future research will focus on multiple forms of defects diagnosis,
+surrogate model diagnosis and large UDS decomposition diagnosis.
+CRediT authorship contribution statement
+Chutian Zhou: Writing – original draft, Visualization, Validation,
+Methodology, Data curation, Conceptualization. Pan Liu: Writing – re-
+view & editing, Validation, Resources, Conceptualization. Xinran Luo:
+Methodology, Conceptualization. Yang Liu: Methodology, Conceptual-
+ization. Weibo Liu: Writing – review & editing, Conceptualization.
+Huan Xu: Writing – review & editing. Qian Cheng: Validation. Jun
+Fig. 11. The PPD result plot of one case in G2 dataset. The blue line represents the actual value, while the red dashed line indicates the diagnosis value calculated
+based on the median PPD. The diagnosis confusion matrix results for each pipe are marked in the upper right corner.
+C. Zhou et al.
+Water Research 270 (2025) 122849 
+10 
+
+Zhang: Validation. Kunming Wu: Validation.
+Declaration of competing interest
+The authors declare that they have no known competing financial
+interests or personal relationships that could have appeared to influence
+the work reported in this paper.
+Acknowledgements
+This study is supported by the National Key R&D Program of China
+(Grant No. 2022YFC3202804), the National Science Fund for Distin-
+guished Young Scholars of China (Grant No. 52225901), the Ministry of
+Water Resources of the People’s Republic of China (SKS-2022014), and
+the Yangtze Ecology and Environment Co., Ltd (HBZB2024029). The
+numerical calculations in this paper have been done on the super-
+computing system in the Supercomputing Center of Wuhan University.
+Data availability
+Data will be made available on request.
+References
+Aleardi, M., Mazzotti, A., 2017. 1D elastic full-waveform inversion and uncertainty
+estimation by means of a hybrid genetic algorithm–Gibbs sampler approach.
+Geophys. Prospect. 65, 64–85. https://doi.org/10.1111/1365-2478.12397.
+An, R., Liu, P., Cheng, L., Yao, M., Li, H., Wang, Y., 2021. Network analysis of the
+food–energy–water nexus in China’s yangtze river economic belt from a synergetic
+perspective. Environ. Res. Lett. 16, 054001. https://doi.org/10.1088/1748-9326/
+abe25e.
+Andrieu, C., Thoms, J., 2008. A tutorial on adaptive MCMC. Stat. Comput. 18, 343–373.
+https://doi.org/10.1007/s11222-008-9110-y.
+Blackwood, D.J., Ellis, J.B., Revitt, D.M., Gilmour, D.J., 2005. Factors influencing
+exfiltration processes in sewers. Water Sci. Technol. 51, 147–154. https://doi.org/
+10.2166/wst.2005.0042.
+Caelen, O., 2017. A Bayesian interpretation of the confusion matrix. Ann. Math. Artif.
+Intell. 81, 429–450. https://doi.org/10.1007/s10472-017-9564-8.
+Chicco, D., Jurman, G., 2020. The advantages of the Matthews correlation coefficient
+(MCC) over F1 score and accuracy in binary classification evaluation. BMC
+Genomics. 21, 6. https://doi.org/10.1186/s12864-019-6413-7.
+Grimmeisen, F., Lehmann, M.F., Liesch, T., Goeppert, N., Klinger, J., Zopfi, J.,
+Goldscheider, N., 2017. Isotopic constraints on water source mixing, network
+leakage and contamination in an urban groundwater system. Sci. Total Environ. 583,
+202–213. https://doi.org/10.1016/j.scitotenv.2017.01.054.
+Gupta, A., Kulat, K.D., 2018. A selective literature review on leak management
+techniques for water distribution system. Water Resour. Manag. 32, 3247–3269.
+https://doi.org/10.1007/s11269-018-1985-6.
+Han, F., Hu, Z., Chen, N., Wang, Y., Jiang, J., Zheng, Y., 2023. Assimilating low-cost
+high-frequency sensor data in watershed water quality modeling: a bayesian
+approach. Water Resour. Res. 59, e2022WR033673. https://doi.org/10.1029/
+2022WR033673.
+Harvey, R.R., McBean, E.A., 2014. Predicting the structural condition of individual
+sanitary sewer pipes with random forests. Can. J. Civ. Eng. 41, 294–303. https://doi.
+org/10.1139/cjce-2013-0431.
+Hastings, W.K., 1970. Monte Carlo sampling methods using markov chains and their
+applications. Biometrika 57, 97–109. https://doi.org/10.1093/biomet/57.1.97.
+Ho, Q.N., Fettweis, M., Hur, J., Desmit, X., Kim, J.I., Jung, D.W., Lee, S.D., Lee, S.,
+Choi, Y.Y., Lee, B.J., 2022. Flocculation kinetics and mechanisms of microalgae- and
+clay-containing suspensions in different microalgal growth phases. Water Res. 226,
+119300. https://doi.org/10.1016/j.watres.2022.119300.
+Huang, Y., Zheng, F., Kapelan, Z., Savic, D., Duan, H.-F., Zhang, Q., 2020. Efficient leak
+localization in water distribution systems using multistage optimal valve operations
+and smart demand metering. Water Resour. Res. 56, e2020WR028285. https://doi.
+org/10.1029/2020WR028285.
+Kalteh, A.M., Hjorth, P., Berndtsson, R., 2008. Review of the self-organizing map (SOM)
+approach in water resources: analysis, modelling and application. Environ. Model.
+Softw. 23, 835–845. https://doi.org/10.1016/j.envsoft.2007.10.001.
+Kanakoudis, V., Muhammetoglu, H., 2014. Urban water pipe networks management
+towards non-revenue water reduction: two case studies from greece and turkey.
+Clean Soil Air Water 42, 880–892. https://doi.org/10.1002/clen.201300138.
+Karn, A.L., Pandya, S., Mehbodniya, A., Arslan, F., Sharma, D.K., Phasinam, K., Aftab, M.
+N., Rajan, R., Bommisetti, R.K., Sengan, S., 2023. An integrated approach for
+sustainable development of wastewater treatment and management system using IoT
+in smart cities. Soft. comput. 27, 5159–5175. https://doi.org/10.1007/s00500-021-
+06244-9.
+Kohonen, T., 2013. Essentials of the self-organizing map. Neural Networks, Twenty-fifth
+Anniversay Commemorative Issue 37, 52–65. https://doi.org/10.1016/j.
+neunet.2012.09.018.
+Kumar, S.S., Abraham, D.M., Jahanshahi, M.R., Iseley, T., Starr, J., 2018. Automated
+defect classification in sewer closed circuit television inspections using deep
+convolutional neural networks. Autom. Constr. 91, 273–283. https://doi.org/
+10.1016/j.autcon.2018.03.028.
+Lin, R., Zheng, F., Savic, D., Zhang, Q., Fang, X., 2020. Improving the effectiveness of
+multiobjective optimization design of urban drainage systems. Water Resour. Res.
+56, e2019WR026656. https://doi.org/10.1029/2019WR026656.
+Liu, T., Su, X., Prigiobbe, V., 2018. Groundwater-Sewer Interaction in Urban Coastal
+Areas. Water (Basel) 10, 1774. https://doi.org/10.3390/w10121774.
+Lund, N.S.V., Borup, M., Madsen, H., Mark, O., Arnbjerg-Nielsen, K., Mikkelsen, P.S.,
+2019. Integrated stormwater inflow control for sewers and green structures in urban
+landscapes. Nat. Sustain. 2, 1003–1010. https://doi.org/10.1038/s41893-019-0392-
+1.
+Luo, X., Liu, P., Cheng, L., Liu, W., Cheng, Q., Zhou, C., 2022. Optimization of in-pipe
+storage capacity use in urban drainage systems with improved DP considering the
+time lag of flow routing. Water Res. 227, 119350. https://doi.org/10.1016/j.
+watres.2022.119350.
+Luo, X., Liu, P., Cheng, Q., Liu, W., Zhou, C., Zheng, Y., Wang, D., Cheng, L., 2024.
+Reinforcing resilience for integrated design of green and grey infrastructure with
+real-time control rules by considering system failures. J. Hydrol. (Amst) 638,
+131498. https://doi.org/10.1016/j.jhydrol.2024.131498.
+Luo, X., Liu, P., Xia, Q., Cheng, Q., Liu, W., Mai, Y., Zhou, C., Zheng, Y., Wang, D., 2023.
+Machine learning-based surrogate model assisting stochastic model predictive
+control of urban drainage systems. J. Environ. Manag. 346, 118974. https://doi.org/
+10.1016/j.jenvman.2023.118974.
+McDonnell, B.E., Ratliff, K., Tryby, M.E., Wu, J.J.X., Mullapudi, A., 2020. PySWMM: the
+python interface to stormwater management model (SWMM). J. Open. Source Softw.
+5, 2292. https://doi.org/10.21105/joss.02292.
+Nguyen, H.H., Peche, A., Venohr, M., 2021. Modelling of sewer exfiltration to
+groundwater in urban wastewater systems: A critical review. J. Hydrol. (Amst) 596,
+126130. https://doi.org/10.1016/j.jhydrol.2021.126130.
+Pan, Z., Liu, P., Gao, S., Cheng, L., Chen, J., Zhang, X., 2019. Reducing the uncertainty of
+time-varying hydrological model parameters using spatial coherence within a
+hierarchical Bayesian framework. J. Hydrol. (Amst) 577, 123927. https://doi.org/
+10.1016/j.jhydrol.2019.123927.
+Pourvaziri, H., Naderi, B., 2014. A hybrid multi-population genetic algorithm for the
+dynamic facility layout problem. Appl. Soft. Comput. 24, 457–469. https://doi.org/
+10.1016/j.asoc.2014.06.051.
+Qi, Z., Zheng, F., Guo, D., Maier, H.R., Zhang, T., Yu, T., Shao, Y., 2018. Better
+understanding of the capacity of pressure sensor systems to detect pipe burst within
+water distribution networks. J. Water Resour. Plann. Manag. 144, 04018035.
+https://doi.org/10.1061/(ASCE)WR.1943-5452.0000957.
+Rogers, A., Prugel-Bennett, A., 1999. Genetic drift in genetic algorithm selection
+schemes. IEEE Trans. Evol. Comput. 3, 298–303. https://doi.org/10.1109/
+4235.797972.
+Rokstad, M.M., Ugarelli, R.M., 2016. Improving the benefits of sewer condition
+deterioration modelling through information content analysis. Water Sc. Technol.
+74, 2270–2279. https://doi.org/10.2166/wst.2016.419.
+Sadler, J.M., Goodall, J.L., Behl, M., Morsy, M.M., Culver, T.B., Bowes, B.D., 2019.
+Leveraging open source software and parallel computing for model predictive
+control of urban drainage systems using EPA-SWMM5. Environ. Model. Softw. 120,
+104484. https://doi.org/10.1016/j.envsoft.2019.07.009.
+Shao, Z., Xu, L., Chai, H., Yost, S.A., Zheng, Z., Wu, Z., He, Q., 2021. A Bayesian-SWMM
+coupled stochastic model developed to reconstruct the complete profile of an
+unknown discharging incidence in sewer networks. J. Environ. Manag. 297, 113211.
+https://doi.org/10.1016/j.jenvman.2021.113211.
+Simone, A., Cesaro, A., Del Giudice, G., Di Cristo, C., Fecarotta, O., 2022. Potentialities of
+complex network theory tools for urban drainage networks analysis. Water. Resour.
+Res. 58, e2022WR032277. https://doi.org/10.1029/2022WR032277.
+Sinha, S.K., Knight, M.A., 2004. Intelligent system for condition monitoring of
+underground pipelines. Comput. Aided Civ. Inf. Eng. 19, 42–53. https://doi.org/
+10.1111/j.1467-8667.2004.00336.x.
+Sun, Y., Silvestrov, I., Bakulin, A., 2022. Enhancing 3-D land seismic data using nonlinear
+beamforming based on the efficiency-improved genetic algorithm. IEEE Trans. Evol.
+Comput. 26, 1192–1199. https://doi.org/10.1109/TEVC.2022.3149579.
+Tariq, S., Bakhtawar, B., Zayed, T., 2022. Data-driven application of MEMS-based
+accelerometers for leak detection in water distribution networks. Sci. Total Environ.
+809, 151110. https://doi.org/10.1016/j.scitotenv.2021.151110.
+Wang, H., Harrison, K.W., 2013. Bayesian approach to contaminant source
+characterization in water distribution systems: adaptive sampling framework. Stoch.
+Environ. Res. Risk. Assess. 27, 1921–1928. https://doi.org/10.1007/s00477-013-
+0727-9.
+Wu, W., Ren, J., Zhou, X., Wang, J., Guo, M., 2020. Identification of source information
+for sudden water pollution incidents in rivers and lakes based on variable-fidelity
+surrogate-DREAM optimization. Environ. Model. Softw. 133, 104811. https://doi.
+org/10.1016/j.envsoft.2020.104811.
+Xu, Z., Qu, Y., Wang, S., Chu, W., 2021. Diagnosis of pipe illicit connections and
+damaged points in urban stormwater system using an inversed optimization model.
+J. Clean. Prod. 292, 126011. https://doi.org/10.1016/j.jclepro.2021.126011.
+Xu, Z., Wang, L., Yin, H., Li, H., Schwegler, B.R., 2016. Source apportionment of non-
+storm water entries into storm drains using marker species: Modeling approach and
+verification. Ecol. Indic. 61, 546–557. https://doi.org/10.1016/j.
+ecolind.2015.10.006.
+Yang, H., Shao, D., Liu, B., Huang, J., Ye, X., 2016. Multi-point source identification of
+sudden water pollution accidents in surface waters based on differential evolution
+C. Zhou et al.
+Water Research 270 (2025) 122849 
+11 
+
+and Metropolis–Hastings–Markov Chain Monte Carlo. Stoch. Environ. Res. Risk.
+Assess. 30, 507–522. https://doi.org/10.1007/s00477-015-1191-5.
+Yang, S., Paik, K., McGrath, G.S., Urich, C., Krueger, E., Kumar, P., Rao, P.S.C., 2017.
+Functional topology of evolving urban drainage networks. Water. Resour. Res. 53,
+8966–8979. https://doi.org/10.1002/2017WR021555.
+Zhang, X., Liu, P., 2021. A time-varying parameter estimation approach using split-
+sample calibration based on dynamic programming. Hydrol. Earth Syst. Sci. 25,
+711–733. https://doi.org/10.5194/hess-25-711-2021.
+Zhao, Z., Yin, H., Xu, Z., Peng, J., Yu, Z., 2020. Pin-pointing groundwater infiltration into
+urban sewers using chemical tracer in conjunction with physically based
+optimization model. Water Res. 175, 115689. https://doi.org/10.1016/j.
+watres.2020.115689.
+Zheng, F., Tao, R., Maier, H.R., See, L., Savic, D., Zhang, T., Chen, Q., Assumpç˜ao, T.H.,
+Yang, P., Heidari, B., Rieckermann, J., Minsker, B., Bi, W., Cai, X., Solomatine, D.,
+Popescu, I., 2018. Crowdsourcing Methods for Data Collection in Geophysics: State
+of the Art, Issues, and Future Directions. Rev. Geophys. 56, 698–740. https://doi.
+org/10.1029/2018RG000616.
+Zhou, L., Liu, P., Zhang, X., Cheng, L., Xia, Q., Xie, K., Liu, W., Xia, J., 2023. Improving
+structure identifiability of hydrological processes by temporal sensitivity with a
+flexible modeling framework. J. Hydrol. (Amst) 616, 128843. https://doi.org/
+10.1016/j.jhydrol.2022.128843.
+Zhou, X., Tang, Z., Xu, W., Meng, F., Chu, X., Xin, K., Fu, G., 2019. Deep learning
+identifies accurate burst locations in water distribution networks. Water Res. 166,
+115058. https://doi.org/10.1016/j.watres.2019.115058.
+C. Zhou et al.
+Water Research 270 (2025) 122849 
+12 

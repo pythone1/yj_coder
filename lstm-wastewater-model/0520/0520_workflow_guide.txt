@@ -1,0 +1,40 @@
+0520 管网溯源工作流说明
+
+一、模型文件
+1. 原始模型：E:\PY\LSTM\0520\data\0519_新模型.inp
+2. 干净旱天基线：E:\PY\LSTM\0520\data\0520_clean_baseline.inp
+3. 真值注入事件模型：E:\PY\LSTM\0520\data\0520_truth_event.inp
+
+二、当前布点
+1. 候选井 20 个：10, 62, 124, 42, 178, 63, 103, 241, 273, 215, 216, 60, 308, 310, 312, 118, 304, 64, 91, 85
+2. 监测点 9 个：286, 223, 239, 267, 8, 251, 252, 189, 37
+3. 真值注入点 5 个：103, 304, 10, 178, 42
+
+三、真值注入设置
+1. 注入开始：第 0.0 小时
+2. 注入时长：1440 分钟
+3. INP 注入时序步长：10 分钟
+4. 波形：沿用上一版 0417 的 48h降雨量(50%) 形态，平移为第 0-24 小时注入，并插值到 10 分钟
+5. 总注入量：3780.000 m3
+6. 峰值总流量：0.144512 m3/s
+7. 分配比例：{"103": 0.2, "304": 0.2, "10": 0.2, "178": 0.2, "42": 0.2}
+8. 数据构造时会再按“事件排口总出流 - 旱天排口总出流”校准总入流量，最终识别使用的校准量见 E:\PY\LSTM\0520\data\generated_0520\0520_data_summary.json
+
+四、运行命令
+1. 初始化模型和说明：
+   & "D:\APP\anaconda\envs\LSTM\python.exe" "E:\PY\LSTM\0520\code\setup_0520_workflow.py"
+2. 只构造数据并校验真值回放：
+   & "D:\APP\anaconda\envs\LSTM\python.exe" "E:\PY\LSTM\0520\code\build_0416_data.py"
+3. 小参数测试：
+   & "D:\APP\anaconda\envs\LSTM\python.exe" "E:\PY\LSTM\0520\code\run_small_0416.py"
+4. 中参数运行：
+   & "D:\APP\anaconda\envs\LSTM\python.exe" "E:\PY\LSTM\0520\code\run_medium_0416.py"
+5. 大参数运行：
+   & "D:\APP\anaconda\envs\LSTM\python.exe" "E:\PY\LSTM\0520\code\run_large_0416.py"
+
+五、参数位置
+1. 点位、模型路径、步长和真值注入参数：E:\PY\LSTM\0520\code\config_0416.py
+2. 数据构造和真值回放：E:\PY\LSTM\0520\code\build_0416_data.py
+3. 水力模拟和评分：E:\PY\LSTM\0520\code\simulation_0416.py
+4. GA/AM 主算法：E:\PY\LSTM\0520\code\ga_am_0416.py
+5. 小中大参数规模：run_small_0416.py、run_medium_0416.py、run_large_0416.py

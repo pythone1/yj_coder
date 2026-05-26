@@ -1,0 +1,82 @@
+{
+  "run_mode": "0417 large run",
+  "solution_scores": {
+    "ga_best": {
+      "mean_nse": 0.9977177642818957,
+      "sse": 0.00802651096895529
+    },
+    "posterior_best_map": {
+      "mean_nse": 0.999865530569683,
+      "sse": 0.00024844171872228065
+    },
+    "posterior_median_summary": {
+      "mean_nse": 0.9870205567509437,
+      "sse": 0.02913104336117152
+    }
+  },
+  "recommended_solution_name": "posterior_best_map",
+  "final_solution_name": "posterior_best_map",
+  "posterior_median_top3": [
+    "J11",
+    "J84",
+    "J20"
+  ],
+  "ga_last_score_stats": {
+    "max_mean_nse": 0.9977177642818957,
+    "median_mean_nse": 0.8321302086901932,
+    "min_mean_nse": -0.09573988097358771,
+    "unique_count": 400
+  },
+  "initial_ppd_count": 278,
+  "initial_ppd_score_stats": {
+    "max_mean_nse": 0.9977177642818957,
+    "median_mean_nse": 0.8902230454250084,
+    "min_mean_nse": 0.5776539709242661
+  },
+  "posterior_validation_sample_count": 100,
+  "posterior_coverage_mean": 0.6640316205533596,
+  "am_accept_rate_by_chain": {
+    "0": 0.38333333333333336,
+    "1": 0.3825,
+    "2": 0.335,
+    "3": 0.38166666666666665,
+    "4": 0.3025,
+    "5": 0.39416666666666667,
+    "6": 0.39916666666666667,
+    "7": 0.35083333333333333
+  },
+  "config": {
+    "ga_population_count": 5,
+    "ga_population_size": 80,
+    "ga_generations": 15,
+    "ga_elite_ratio": 0.1,
+    "ga_mutation_strength": 0.18,
+    "ga_migration_interval": 5,
+    "ga_migration_count": 1,
+    "ga_competition_replace_count": 1,
+    "ga_dedup_decimals": 5,
+    "am_chain_count": 8,
+    "am_samples_per_chain": 1200,
+    "am_warmup": 300,
+    "am_adapt_start": 300,
+    "am_initial_covariance": 0.0013,
+    "am_eps": 1e-08,
+    "initial_ppd_keep_fraction": 0.75,
+    "initial_ppd_min_count": 150,
+    "initial_ppd_min_mean_nse": -100.0,
+    "initial_ppd_max_nse_drop": 0.5,
+    "initial_ppd_rank_pressure": 1.5,
+    "am_start_weighted": true,
+    "am_use_prior_in_acceptance": false,
+    "am_use_initial_ppd_covariance": true,
+    "am_prior_kernel_scale": 0.01,
+    "am_proposal_method": "tangent_projected_gaussian",
+    "posterior_validation_samples": 100,
+    "parallel_workers": 8,
+    "random_seed": 20260416,
+    "progress_step_interval": 50
+  },
+  "data_paths": {
+    "output_dir": "E:\\PY\\LSTM\\0416\\results_0417_scheme\\large_run"
+  }
+}

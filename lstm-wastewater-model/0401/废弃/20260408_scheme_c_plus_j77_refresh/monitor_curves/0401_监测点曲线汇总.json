@@ -1,0 +1,17 @@
+{
+  "baseline_out": "E:\\PY\\LSTM\\0401\\models\\current_confirmed_models\\0327_由真值模型去注水重建_旱天基线模型_10分钟_泵站0.5开0.2关.out",
+  "event_out": "E:\\PY\\LSTM\\0401\\models\\current_confirmed_models\\0327_由旱天基线重建_三点注水模型_0.3倍.out",
+  "monitor_count": 8,
+  "font": "Microsoft YaHei",
+  "detail_csv": "E:\\PY\\LSTM\\0401\\results\\monitor_curves\\0401_监测点流量水位明细.csv",
+  "plot_files": [
+    "E:\\PY\\LSTM\\0401\\results\\monitor_curves\\J74_监测点流量水位对照.png",
+    "E:\\PY\\LSTM\\0401\\results\\monitor_curves\\J78_监测点流量水位对照.png",
+    "E:\\PY\\LSTM\\0401\\results\\monitor_curves\\J123_监测点流量水位对照.png",
+    "E:\\PY\\LSTM\\0401\\results\\monitor_curves\\J126_监测点流量水位对照.png",
+    "E:\\PY\\LSTM\\0401\\results\\monitor_curves\\J141_监测点流量水位对照.png",
+    "E:\\PY\\LSTM\\0401\\results\\monitor_curves\\J139_监测点流量水位对照.png",
+    "E:\\PY\\LSTM\\0401\\results\\monitor_curves\\J145_监测点流量水位对照.png",
+    "E:\\PY\\LSTM\\0401\\results\\monitor_curves\\J231_监测点流量水位对照.png"
+  ]
+}

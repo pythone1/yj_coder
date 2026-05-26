@@ -1,0 +1,17 @@
+{
+  "report_docx": "E:\\PY\\LSTM\\0520\\results_0520\\medium_run\\analysis_report_0520_medium\\0520中参数版本结果分析汇报_修正版.docx",
+  "network_html": "E:\\PY\\LSTM\\0520\\results_0520\\medium_run\\analysis_report_0520_medium\\0520中参数管网识别热力图.html",
+  "figures": {
+    "score": "E:\\PY\\LSTM\\0520\\results_0520\\medium_run\\analysis_report_0520_medium\\figures\\01_核心结果评分对比.png",
+    "ga": "E:\\PY\\LSTM\\0520\\results_0520\\medium_run\\analysis_report_0520_medium\\figures\\02_GA逐代收敛过程.png",
+    "share": "E:\\PY\\LSTM\\0520\\results_0520\\medium_run\\analysis_report_0520_medium\\figures\\03_真值与识别比例对比.png",
+    "am": "E:\\PY\\LSTM\\0520\\results_0520\\medium_run\\analysis_report_0520_medium\\figures\\04_AM多链搜索过程.png",
+    "fit": "E:\\PY\\LSTM\\0520\\results_0520\\medium_run\\analysis_report_0520_medium\\figures\\05_AM最优解各监测点拟合曲线.png",
+    "net_ga": "E:\\PY\\LSTM\\0520\\results_0520\\medium_run\\analysis_report_0520_medium\\figures\\06_GA最佳解管网热力图.png",
+    "net_map": "E:\\PY\\LSTM\\0520\\results_0520\\medium_run\\analysis_report_0520_medium\\figures\\07_AM最优解管网热力图.png"
+  },
+  "tables": {
+    "detection": "E:\\PY\\LSTM\\0520\\results_0520\\medium_run\\analysis_report_0520_medium\\0520中参数识别命中与代偿统计.csv",
+    "monitor_metrics": "E:\\PY\\LSTM\\0520\\results_0520\\medium_run\\analysis_report_0520_medium\\0520_AM最优解监测点拟合指标.csv"
+  }
+}

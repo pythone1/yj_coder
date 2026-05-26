@@ -1,0 +1,27 @@
+01	OK	chars=70	pics=1	min_font=12.5	bottom=6.92	
+02	OK	chars=197	pics=0	min_font=10.5	bottom=7.36	
+03	OK	chars=78	pics=0	min_font=14.5	bottom=7.5	
+04	OK	chars=368	pics=0	min_font=10.5	bottom=7.36	
+05	OK	chars=0	pics=1	min_font=-	bottom=7.5	
+06	OK	chars=0	pics=1	min_font=-	bottom=7.5	
+07	OK	chars=182	pics=0	min_font=10.5	bottom=7.36	
+08	OK	chars=75	pics=0	min_font=14.5	bottom=7.5	
+09	OK	chars=0	pics=1	min_font=-	bottom=7.5	
+10	OK	chars=200	pics=0	min_font=10.5	bottom=7.36	
+11	OK	chars=299	pics=0	min_font=10.5	bottom=7.36	
+12	OK	chars=190	pics=0	min_font=10.5	bottom=7.36	
+13	OK	chars=200	pics=0	min_font=10.5	bottom=7.36	
+14	OK	chars=59	pics=0	min_font=14.5	bottom=7.5	
+15	OK	chars=0	pics=1	min_font=-	bottom=7.5	
+16	OK	chars=0	pics=1	min_font=-	bottom=7.5	
+17	OK	chars=0	pics=1	min_font=-	bottom=7.5	
+18	OK	chars=196	pics=0	min_font=10.5	bottom=7.36	
+19	OK	chars=69	pics=0	min_font=14.5	bottom=7.5	
+20	OK	chars=136	pics=0	min_font=10.5	bottom=7.36	
+21	OK	chars=210	pics=0	min_font=10.5	bottom=7.36	
+22	OK	chars=176	pics=0	min_font=10.5	bottom=7.36	
+23	OK	chars=194	pics=0	min_font=10.5	bottom=7.36	
+24	OK	chars=114	pics=1	min_font=11.5	bottom=6.94	
+
+图片重复检查：
+唯一图片=6，总图片=8

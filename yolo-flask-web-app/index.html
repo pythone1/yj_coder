@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>智谱 (02513.HK) 机构级盯盘终端 V2.7 (全指标回归版)</title>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
+    <style>
+        :root { --bg: #0b0e11; --panel: #181a20; --border: #2b3139; --up: #f6465d; --down: #0ecb81; --text: #eaecef; --text-muted: #848e9c; --vwap: #fcd535; }
+        body { margin: 0; background: var(--bg); color: var(--text); font-family: "Segoe UI", sans-serif; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+        .top-bar { display: flex; justify-content: space-between; padding: 10px 20px; background: var(--panel); border-bottom: 1px solid var(--border); align-items: center; }
+        .ticker { display: flex; align-items: center; gap: 20px; }
+        .title { font-size: 20px; font-weight: bold; color: #fcd535; }
+
+        /* 价格呼吸灯 */
+        .price-box { padding: 4px 10px; border-radius: 4px; transition: background 0.3s; }
+        @keyframes flashRed { 0% { background-color: rgba(246, 70, 93, 0.5); } 100% { background-color: transparent; } }
+        @keyframes flashGreen { 0% { background-color: rgba(14, 203, 129, 0.5); } 100% { background-color: transparent; } }
+        .flash-up { animation: flashRed 0.5s ease-out; }
+        .flash-down { animation: flashGreen 0.5s ease-out; }
+
+        .price { font-size: 32px; font-weight: bold; font-family: monospace; }
+        .change { font-size: 18px; font-weight: bold; }
+        .stats { display: flex; gap: 20px; font-size: 12px; }
+        .stat-item { display: flex; flex-direction: column; color: var(--text-muted); }
+        .stat-val { color: var(--text); font-weight: bold; margin-top: 2px; font-size: 15px;}
+        .main-content { display: flex; flex: 1; padding: 10px; gap: 10px; }
+        .chart-container { flex: 3; background: var(--panel); border: 1px solid var(--border); display: flex; flex-direction: column; position: relative;}
+        .chart-tabs { display: flex; border-bottom: 1px solid var(--border); background: #121418;}
+        .tab-btn { padding: 10px 20px; color: var(--text-muted); cursor: pointer; font-size: 14px; font-weight: bold; transition: 0.2s;}
+        .tab-btn:hover { color: var(--text); }
+        .tab-btn.active { color: #fcd535; border-bottom: 2px solid #fcd535; background: var(--panel);}
+        #echarts-main { width: 100%; height: 100%; flex: 1; padding: 5px;}
+        .sidebar { flex: 1; display: flex; flex-direction: column; gap: 10px; min-width: 320px;}
+        .panel { background: var(--panel); border: 1px solid var(--border); padding: 15px; display: flex; flex-direction: column;}
+        .panel-title { font-size: 14px; font-weight: bold; color: var(--text-muted); border-bottom: 1px dashed var(--border); padding-bottom: 8px; margin-bottom: 10px; }
+        .order-book { font-size: 13px; font-family: monospace; display: flex; flex-direction: column; gap: 3px;}
+        .ob-row { display: flex; justify-content: space-between; padding: 2px 5px; position: relative;}
+        .ob-vol-bar-ask { position: absolute; right: 0; top: 0; bottom: 0; background: rgba(246, 70, 93, 0.15); z-index: 1;}
+        .ob-vol-bar-bid { position: absolute; right: 0; top: 0; bottom: 0; background: rgba(14, 203, 129, 0.15); z-index: 1;}
+        .ob-text { z-index: 2; display: flex; justify-content: space-between; width: 100%;}
+        .indicator-row { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 13px; }
+        .lbl { color: var(--text-muted); }
+        .val { font-weight: bold; }
+        .up { color: var(--up) !important; }
+        .down { color: var(--down) !important; }
+        .neutral { color: var(--vwap) !important; }
+        .live-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; background: #333; transition: 0.2s; }
+        .live-active { background: #0ecb81; box-shadow: 0 0 5px #0ecb81; }
+    </style>
+</head>
+<body>
+    <div class="top-bar">
+        <div class="ticker">
+            <div class="title">智谱 (02513.HK)</div>
+            <div class="price-box" id="price-box">
+                <span class="price" id="rt-price">---</span>
+                <span class="change" id="rt-change">---%</span>
+            </div>
+        </div>
+        <div class="stats">
+            <div class="stat-item">最高 <span class="stat-val up" id="rt-high">---</span></div>
+            <div class="stat-item">最低 <span class="stat-val down" id="rt-low">---</span></div>
+            <div class="stat-item">总成交量 <span class="stat-val" id="rt-vol">---</span></div>
+            <div class="stat-item">数据流 <div class="live-dot" id="live-indicator"></div> <span style="margin-left:5px" id="rt-time">连接中...</span></div>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <div class="chart-container">
+            <div class="chart-tabs">
+                <div class="tab-btn active" id="tab-intraday" onclick="switchTab('intraday')">分时图 (全指标)</div>
+                <div class="tab-btn" id="tab-daily" onclick="switchTab('daily')">日K线 (趋势)</div>
+            </div>
+            <div id="echarts-main"></div>
+        </div>
+
+        <div class="sidebar">
+            <div class="panel" style="flex: 1.2;">
+                <div class="panel-title">📊 实时五档盘口 (真实挂单)</div>
+                <div class="order-book" id="asks-container"></div>
+                <div style="text-align: center; border-top: 1px solid #2b3139; border-bottom: 1px solid #2b3139; margin: 8px 0; padding: 4px; font-size: 18px; font-weight: bold;" id="mid-price">---</div>
+                <div class="order-book" id="bids-container"></div>
+            </div>
+
+            <div class="panel" style="flex: 1;">
+                <div class="panel-title">⚡ AI 量化分析 (实时运算)</div>
+                <div class="indicator-row"><span class="lbl">日内趋势</span><span class="val" id="q-trend">---</span></div>
+                <div class="indicator-row"><span class="lbl">MACD 信号</span><span class="val" id="q-macd">---</span></div>
+                <div class="indicator-row"><span class="lbl">布林带状态</span><span class="val" id="q-boll">---</span></div>
+                <div class="indicator-row"><span class="lbl">AI 运算时间</span><span class="val neutral" id="q-time">---</span></div>
+
+                <div style="background: #1f2329; padding: 15px; border-radius: 4px; text-align: center; margin-top: 10px; border: 1px solid #2b3139;">
+                    <span style="font-size: 12px; color: var(--text-muted);">操作建议</span><br>
+                    <span id="ai-advice" style="font-size: 18px; font-weight: bold; color: #fcd535; display: inline-block; margin-top: 5px;">等待数据...</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        var chartDom = document.getElementById('echarts-main');
+        var myChart = echarts.init(chartDom);
+        var currentTab = 'intraday';
+        var isLayoutDirty = true;
+        var globalData = null;
+        var lastPrice = 0;
+
+        function switchTab(tabName) {
+            if(currentTab === tabName) return;
+            currentTab = tabName;
+            isLayoutDirty = true;
+            document.getElementById('tab-intraday').className = tabName === 'intraday' ? 'tab-btn active' : 'tab-btn';
+            document.getElementById('tab-daily').className = tabName === 'daily' ? 'tab-btn active' : 'tab-btn';
+            if(globalData) renderChart();
+        }
+
+        // 强壮的文本更新函数
+        function updateTextDashboard() {
+            if(!globalData) return;
+            const rt = globalData.realtime;
+            const qs = globalData.quant_signals;
+            const isUp = rt.change_pct >= 0;
+            const cls = isUp ? 'up' : 'down';
+
+            document.getElementById('rt-price').innerText = rt.price.toFixed(2);
+            document.getElementById('rt-price').className = `price ${cls}`;
+            document.getElementById('rt-change').innerText = `${isUp?'+':''}${rt.change_pct}%`;
+            document.getElementById('rt-change').className = `change ${cls}`;
+            document.getElementById('rt-high').innerText = rt.high.toFixed(2);
+            document.getElementById('rt-low').innerText = rt.low.toFixed(2);
+            document.getElementById('rt-vol').innerText = (rt.vol / 10000).toFixed(2) + "万";
+            document.getElementById('rt-time').innerText = rt.time;
+
+            const box = document.getElementById('price-box');
+            if (rt.price > lastPrice && lastPrice !== 0) {
+                box.classList.remove('flash-up', 'flash-down');
+                void box.offsetWidth;
+                box.classList.add('flash-up');
+            } else if (rt.price < lastPrice && lastPrice !== 0) {
+                box.classList.remove('flash-up', 'flash-down');
+                void box.offsetWidth;
+                box.classList.add('flash-down');
+            }
+            lastPrice = rt.price;
+
+            document.getElementById('mid-price').innerText = rt.price.toFixed(2);
+            document.getElementById('mid-price').className = cls;
+
+            renderOrderBook(globalData.order_book, rt.prev_close);
+
+            document.getElementById('q-trend').innerText = qs.intraday_trend;
+            document.getElementById('q-trend').className = qs.intraday_trend.includes("强") ? "val up" : "val down";
+            document.getElementById('q-macd').innerText = qs.macd_signal;
+            document.getElementById('q-macd').className = qs.macd_signal.includes("金叉") ? "val up" : "val neutral";
+            document.getElementById('q-boll').innerText = qs.boll_signal;
+            document.getElementById('q-boll').className = qs.boll_signal.includes("触及") ? "val down" : "val";
+            document.getElementById('q-time').innerText = qs.update_time;
+
+            const ad = document.getElementById('ai-advice');
+            ad.innerText = qs.advice;
+            ad.style.color = qs.advice.includes("买") ? "#f6465d" : (qs.advice.includes("观望") ? "#fcd535" : "#0ecb81");
+
+            const dot = document.getElementById('live-indicator');
+            dot.classList.add('live-active');
+            setTimeout(() => dot.classList.remove('live-active'), 500);
+        }
+
+        // ==========================================
+        // 图表渲染逻辑 (V2.7 全指标回归版)
+        // ==========================================
+        function renderChart() {
+            if(!globalData) return;
+            let option = {};
+
+            if(currentTab === 'intraday') {
+                const intData = globalData.intraday;
+
+                // 1. 资金净量染色 (红/绿)
+                const netVolData = intData.net_vols.map(val => ({ value: val, itemStyle: { color: val >= 0 ? '#f6465d' : '#0ecb81' } }));
+                // 2. MACD 柱染色 (红/绿)
+                const macdBar = intData.macd.map(val => ({ value: val, itemStyle: { color: val >= 0 ? '#f6465d' : '#0ecb81' } }));
+
+                option = {
+                    animation: false,
+                    backgroundColor: 'transparent',
+                    // 【关键修复】图例与Series名称完全对应
+                    legend: { data: ['现价', '均价(VWAP)', 'BOLL上轨', 'BOLL下轨', '资金净量', 'MACD', 'DIF', 'DEA'], top: 5, textStyle: {color: '#eaecef', fontSize: 11} },
+                    tooltip: {
+                        trigger: 'axis', axisPointer: { type: 'cross' },
+                        formatter: function (params) {
+                            let html = `时间: ${params[0].name}<br/>`;
+                            params.forEach(p => {
+                                // 隐藏 BOLL 线的数值提示，太乱了
+                                if(p.seriesName !== 'BOLL上轨' && p.seriesName !== 'BOLL下轨') {
+                                    let valStr = p.value;
+                                    if (p.seriesName === '资金净量') {
+                                        let direct = p.value >= 0 ? '流入' : '流出';
+                                        valStr = `<span style="color:${p.color}">${Math.abs(p.value)} (${direct})</span>`;
+                                    }
+                                    html += `<span style="color:${p.color}">●</span> ${p.seriesName}: ${valStr}<br/>`;
+                                }
+                            });
+                            return html;
+                        }
+                    },
+                    axisPointer: { link: [{ xAxisIndex: 'all' }] },
+                    grid: [
+                        { left: '8%', right: '3%', top: '10%', height: '48%' },
+                        { left: '8%', right: '3%', top: '63%', height: '14%' },
+                        { left: '8%', right: '3%', top: '82%', height: '15%' }
+                    ],
+                    xAxis: [
+                        { type: 'category', data: intData.times, axisLine: { lineStyle: {color: '#848e9c'} }, splitLine: {show: false} },
+                        { type: 'category', gridIndex: 1, data: intData.times, axisLabel: {show: false}, axisLine: { lineStyle: {color: '#848e9c'} }, splitLine: {show: false} },
+                        { type: 'category', gridIndex: 2, data: intData.times, axisLabel: {show: false}, axisLine: { lineStyle: {color: '#848e9c'} }, splitLine: {show: false} }
+                    ],
+                    yAxis: [
+                        // 主图：只保留虚线网格
+                        { scale: true, splitLine: {lineStyle:{color:'#2b3139',type:'dashed'}} },
+                        // 副图1：去掉网格线，去掉刻度标签，更清爽
+                        { scale: true, gridIndex: 1, splitNumber: 2, splitLine: {show: false}, axisLabel: {show: false} },
+                        // 副图2：去掉网格线，去掉刻度标签
+                        { scale: true, gridIndex: 2, splitNumber: 2, splitLine: {show: false}, axisLabel: {show: false} }
+                    ],
+                    series: [
+                        { name: '现价', type: 'line', data: intData.prices, smooth: true, symbol: 'none', itemStyle: {color: '#eaecef'}, lineStyle: {width: 2} },
+                        { name: '均价(VWAP)', type: 'line', data: intData.vwaps, smooth: true, symbol: 'none', itemStyle: {color: '#fcd535'}, lineStyle: {width: 2} },
+                        // 【恢复】BOLL 上下轨
+                        { name: 'BOLL上轨', type: 'line', data: intData.upper, smooth: true, symbol: 'none', itemStyle: {color: '#ff9800'}, lineStyle: {type: 'dashed', width: 1} },
+                        { name: 'BOLL下轨', type: 'line', data: intData.lower, smooth: true, symbol: 'none', itemStyle: {color: '#00bcd4'}, lineStyle: {type: 'dashed', width: 1} },
+                        // 【恢复】资金净量 (红绿柱)
+                        { name: '资金净量', type: 'bar', xAxisIndex: 1, yAxisIndex: 1, data: netVolData },
+                        // 【恢复】MACD (红绿柱)
+                        { name: 'MACD', type: 'bar', xAxisIndex: 2, yAxisIndex: 2, data: macdBar },
+                        { name: 'DIF', type: 'line', xAxisIndex: 2, yAxisIndex: 2, data: intData.dif, symbol: 'none', itemStyle: {color: '#fcd535'}, lineStyle: {width: 1} },
+                        { name: 'DEA', type: 'line', xAxisIndex: 2, yAxisIndex: 2, data: intData.dea, symbol: 'none', itemStyle: {color: '#0ecb81'}, lineStyle: {width: 1} }
+                    ]
+                };
+
+            } else {
+                 const kData = globalData.kline;
+                 const dailyNetVolData = kData.net_vols.map(val => ({ value: val, itemStyle: { color: val >= 0 ? '#f6465d' : '#0ecb81' } }));
+
+                 option = {
+                    animation: false,
+                    backgroundColor: 'transparent',
+                    legend: { data: ['日K线', 'MA5', 'MA20', '日资金净量', 'MACD', 'DIF', 'DEA'], top: 5, textStyle: {color: '#eaecef'} },
+                    xAxis: [{ data: kData.dates }, { data: kData.dates }, { data: kData.dates }],
+                    yAxis: [
+                        { scale: true, splitLine: {lineStyle:{color:'#2b3139',type:'dashed'}} },
+                        { scale: true, gridIndex: 1, splitLine: {show: false}, axisLabel: {show: false} }, // 隐藏刻度
+                        { scale: true, gridIndex: 2, splitLine: {show: false}, axisLabel: {show: false} }  // 隐藏刻度
+                    ],
+                    grid: [{ left: '8%', right: '3%', top: '10%', height: '48%' }, { left: '8%', right: '3%', top: '63%', height: '14%' }, { left: '8%', right: '3%', top: '82%', height: '15%' }],
+                    series: [
+                        { name: '日K线', type: 'candlestick', data: kData.values, itemStyle: { color: '#f6465d', color0: '#0ecb81', borderColor: '#f6465d', borderColor0: '#0ecb81' } },
+                        { name: 'MA5', type: 'line', data: kData.ma5, smooth: true, symbol: 'none', itemStyle: {color: '#fcd535'} },
+                        { name: 'MA20', type: 'line', data: kData.ma20, smooth: true, symbol: 'none', itemStyle: {color: '#0ecb81'} },
+                        { name: '日资金净量', type: 'bar', xAxisIndex: 1, yAxisIndex: 1, data: dailyNetVolData },
+                        { name: 'MACD', type: 'bar', xAxisIndex: 2, yAxisIndex: 2, data: kData.macd.map(val => ({ value: val, itemStyle: { color: val >= 0 ? '#f6465d' : '#0ecb81' } })) },
+                        { name: 'DIF', type: 'line', xAxisIndex: 2, yAxisIndex: 2, data: kData.dif, symbol: 'none', itemStyle: {color: '#fcd535'} },
+                        { name: 'DEA', type: 'line', xAxisIndex: 2, yAxisIndex: 2, data: kData.dea, symbol: 'none', itemStyle: {color: '#0ecb81'} }
+                    ]
+                 };
+            }
+
+            // 增量更新模式
+            myChart.setOption(option, { notMerge: isLayoutDirty });
+            isLayoutDirty = false;
+        }
+
+        // 盘口渲染
+        function renderOrderBook(ob, prev_close) {
+            let maxVol = 0;
+            ob.asks.forEach(p => maxVol = Math.max(maxVol, p[1]));
+            ob.bids.forEach(p => maxVol = Math.max(maxVol, p[1]));
+
+            let asksHtml = '';
+            for(let i=4; i>=0; i--) {
+                const price = ob.asks[i][0] === 0 ? '--' : ob.asks[i][0].toFixed(2);
+                const vol = ob.asks[i][1] === 0 ? '--' : ob.asks[i][1];
+                const width = ob.asks[i][1] === 0 ? 0 : (ob.asks[i][1] / maxVol * 100);
+                const colorCls = price === '--' ? 'neutral' : (price > prev_close ? 'up' : (price < prev_close ? 'down' : 'neutral'));
+                asksHtml += `<div class="ob-row"><div class="ob-vol-bar-ask" style="width: ${width}%;"></div><div class="ob-text"><span style="color:#848e9c">卖${i+1}</span> <span class="${colorCls}">${price}</span> <span>${vol}</span></div></div>`;
+            }
+            document.getElementById('asks-container').innerHTML = asksHtml;
+
+            let bidsHtml = '';
+            for(let i=0; i<5; i++) {
+                const price = ob.bids[i][0] === 0 ? '--' : ob.bids[i][0].toFixed(2);
+                const vol = ob.bids[i][1] === 0 ? '--' : ob.bids[i][1];
+                const width = ob.bids[i][1] === 0 ? 0 : (ob.bids[i][1] / maxVol * 100);
+                const colorCls = price === '--' ? 'neutral' : (price > prev_close ? 'up' : (price < prev_close ? 'down' : 'neutral'));
+                bidsHtml += `<div class="ob-row"><div class="ob-vol-bar-bid" style="width: ${width}%;"></div><div class="ob-text"><span style="color:#848e9c">买${i+1}</span> <span class="${colorCls}">${price}</span> <span>${vol}</span></div></div>`;
+            }
+            document.getElementById('bids-container').innerHTML = bidsHtml;
+        }
+
+        function loadLocalData() {
+            fetch(`zhipu_data.json?t=${new Date().getTime() + Math.random()}`)
+                .then(res => res.json())
+                .then(data => {
+                    globalData = data;
+                    updateTextDashboard();
+                    renderChart();
+                })
+                .catch(err => { console.log("等待数据..."); });
+        }
+
+        setInterval(loadLocalData, 2000);
+        setTimeout(loadLocalData, 100);
+        window.addEventListener('resize', () => myChart.resize());
+    </script>
+</body>
+</html>

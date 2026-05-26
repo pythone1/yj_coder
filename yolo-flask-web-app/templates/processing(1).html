@@ -1,0 +1,13 @@
+<!doctype html>
+<html>
+<head>
+  <title>Processing...</title>
+</head>
+<body>
+  <h1>Processing your video...</h1>
+  <video width="320" height="240" controls>
+    <source src="{{ url_for('uploaded_file', filename=filename) }}" type="video/mp4">
+    Your browser does not support the video tag.
+  </video>
+</body>
+</html>
