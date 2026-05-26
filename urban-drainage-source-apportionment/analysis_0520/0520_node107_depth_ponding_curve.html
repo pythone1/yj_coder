@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>节点107水深曲线</title>
+<style>
+body{font-family:'Microsoft YaHei','SimHei',Arial,sans-serif;margin:28px;background:#f7fafc;color:#172033;}
+.card{background:white;border-radius:14px;padding:20px;box-shadow:0 8px 24px #12304a18;margin-bottom:18px;}
+img{max-width:100%;border-radius:10px;border:1px solid #e5e7eb;background:white;}
+table{border-collapse:collapse;width:100%;}td,th{border-bottom:1px solid #e5e7eb;padding:8px;text-align:left;}th{background:#eff6ff;}
+</style>
+</head>
+<body>
+<div class="card">
+<h1>节点107水深曲线与RPT最大积水深对照</h1>
+<table>
+<tr><th>项目</th><th>数值</th></tr>
+<tr><td>井深/井盖高度</td><td>1.940 m</td></tr>
+<tr><td>OUT曲线最大总水深</td><td>0.047 m</td></tr>
+<tr><td>RPT报告步长最大水深</td><td>0.050 m</td></tr>
+<tr><td>RPT内部最大总水深</td><td>6.890 m，出现时间 0 00:00</td></tr>
+<tr><td>OUT换算最大井上积水深</td><td>0.0 cm</td></tr>
+<tr><td>RPT内部最大井上积水深</td><td>494.6 cm，出现时间 0 00:00</td></tr>
+<tr><td>OUT曲线是否达到RPT内部最大井上积水深</td><td>否</td></tr>
+<tr><td>OUT曲线是否接近RPT报告步长最大水深</td><td>是</td></tr>
+</table>
+<p>计算关系：井上积水深 = max(0, OUT节点总水深 - INP井深)。节点107的RPT内部最大值出现在0 00:00，而OUT报告时间序列从00:10开始，因此OUT曲线没有达到RPT内部最大井上积水深；OUT曲线只对应报告步长保存下来的水深。</p>
+</div>
+<div class="card"><img src="0520_node107_depth_ponding_curve.png" alt="节点107水深曲线"></div>
+</body>
+</html>

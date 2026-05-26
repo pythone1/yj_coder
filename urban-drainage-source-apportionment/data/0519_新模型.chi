@@ -1,0 +1,38 @@
+#PCSWMM项目文件
+#请不要编辑
+[General]
+PCSWMM.NET Version=7.6.3605
+SWMM5 Version=5.2.3
+Version=3
+Package Path=E:\2026\盱眙\20260519\0-模型文件\0519_新模型.pcz
+Map EPSG=4528
+CS Name=CGCS2000 3 degree Gauss Kruger zone 40
+Last Report Date=05/20/2026 12:45:49
+[2D]
+2DModeling=False
+[Project Summary]
+Compute Time=37秒
+Routing Error=-0.553
+Runoff Error=0
+Run Incomplete=False
+[Layers]
+layer0=Subcatchments
+layer1=Outlets
+layer2=Weirs
+layer3=Orifices
+layer4=Pumps
+layer5=Conduits
+layer6=Storages
+layer7=Dividers
+layer8=Outfalls
+layer9=Junctions
+[Scenarios]
+"Scenarios0"="E:\2026\盱眙\数据构造(1)\0327_旱天基线模型_10分钟.inp",False,False,0327_旱天基线模型_10分钟
+"Scenarios1"="E:\2026\盱眙\20260519\0-模型文件\0519_新模型.inp",False,False,0519_新模型
+[Graph]
+Plotting Position=Gringorten
+[Erosion]
+ErosionOn=False
+Use C TS=False
+Calculate LS=False
+Use TSS=False

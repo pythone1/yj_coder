@@ -1,0 +1,56 @@
+# Exclude environment and IDE configurations
+.idea/
+.vscode/
+__pycache__/
+*.pyc
+.venv/
+venv/
+node_modules/
+
+# Exclude heavy dataset and raster formats
+*.shp
+*.dbf
+*.shx
+*.prj
+*.tif
+*.tiff
+*.gpkg
+*.geojson
+*.kml
+*.kmz
+*.xml
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.pdf
+*.docx
+*.doc
+*.xlsx
+*.xls
+*.csv
+*.zip
+*.rar
+*.tar.gz
+*.7z
+
+# Exclude compiled binaries
+*.exe
+*.dll
+*.so
+*.dylib
+*.bin
+*.weights
+
+# Exclude ML/DL model files and serialized objects
+*.h5
+*.pkl
+*.pb
+*.pth
+*.onnx
+
+# Exclude SWMM simulation temporary inputs and outputs
+runtime_ascii/
+*.inp
+*.out
+*.rpt
