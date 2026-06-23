@@ -186,3 +186,38 @@
 - Hugging Face Model Cards：`https://huggingface.co/docs/hub/model-cards`
 - SLSA：`https://slsa.dev/`
 - CycloneDX ML-BOM：`https://cyclonedx.org/capabilities/mlbom/`
+
+## 2026-06-23：时序基础模型、水系统控制与安全优化补强
+
+本轮新增 10 个条目，覆盖你水处理、养殖和遥感项目中高价值的时序预测、表格建模、因果干预、安全优化和机理-AI 混合建模能力。
+
+## 新增条目
+
+- Time-series Foundation Models
+- Chronos / Probabilistic Forecasting
+- TimeGPT / Forecasting API
+- TabPFN / Tabular Foundation Model
+- Causal ML for Intervention Effects
+- Safe Bayesian Optimization
+- Digital Twin + Model Predictive Control
+- Physics-informed Neural Operators
+- SWMM + AI Surrogate Modeling
+- Sensor Drift & Data Quality Monitoring
+
+## 主要参考源
+
+- Google TimesFM：`https://github.com/google-research/timesfm`
+- Amazon Chronos：`https://github.com/amazon-science/chronos-forecasting`
+- Nixtla TimeGPT：`https://docs.nixtla.io/`
+- TabPFN：`https://github.com/PriorLabs/TabPFN`
+- DoWhy：`https://www.pywhy.org/dowhy/`
+- EconML：`https://econml.azurewebsites.net/`
+- BoTorch：`https://botorch.org/`
+- SafeOpt：`https://github.com/befelix/SafeOpt`
+- GEKKO：`https://gekko.readthedocs.io/en/latest/`
+- do-mpc：`https://www.do-mpc.com/`
+- NeuralOperator：`https://neuraloperator.github.io/dev/`
+- NVIDIA PhysicsNeMo：`https://docs.nvidia.com/physicsnemo/latest/`
+- EPA SWMM：`https://www.epa.gov/water-research/storm-water-management-model-swmm`
+- Evidently：`https://docs.evidentlyai.com/`
+- Great Expectations：`https://docs.greatexpectations.io/`
