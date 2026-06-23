@@ -40,3 +40,34 @@
 - Personal knowledge vault with evidence-level permissions
 - Multi-modal remote-sensing VLM workflows
 - Edge/on-device agent routing
+
+## 2026-06-23：协议、安全、评测与 GeoAI 补强
+
+本轮新增 12 个条目，补齐 Agent 互操作协议、Agent UI、标准化安全框架、生产评测，以及 AI算法/遥感算法工程师方向必须跟进的地球观测基础模型。
+
+## 新增条目
+
+- Agent2Agent Protocol (A2A)
+- AG-UI / Agent User Interaction Protocol
+- OWASP LLM Top 10 2025
+- Agent Eval Regression
+- OpenTelemetry GenAI Semantic Conventions
+- AlphaEarth Foundations / Satellite Embeddings
+- Prithvi EO 2.0 / HLS Foundation Model
+- Clay Foundation Model
+- SAMGeo / Segment Geospatial
+- Remote Sensing VLM Grounding
+- Geospatial Embedding Retrieval
+- Few-shot GeoAI Adaptation
+
+## 主要参考源
+
+- Google A2A：`https://developers.googleblog.com/en/a2a-a-new-era-of-agent-interoperability/`
+- AG-UI：`https://docs.ag-ui.com/`
+- OWASP LLM Top 10：`https://owasp.org/www-project-top-10-for-large-language-model-applications/`
+- LangSmith Evaluation：`https://docs.langchain.com/langsmith/evaluation-concepts`
+- OpenTelemetry GenAI：`https://opentelemetry.io/docs/specs/semconv/gen-ai/`
+- AlphaEarth Foundations：`https://deepmind.google/blog/alphaearth-foundations-helps-map-our-planet-in-unprecedented-detail/`
+- Prithvi EO 2.0：`https://huggingface.co/ibm-nasa-geospatial/Prithvi-EO-2.0-300M`
+- Clay Foundation Model：`https://github.com/Clay-foundation/model`
+- SAMGeo：`https://github.com/opengeos/segment-geospatial`
