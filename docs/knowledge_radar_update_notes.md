@@ -99,3 +99,33 @@
 - TiTiler：`https://developmentseed.org/titiler/`
 - Overture Maps：`https://overturemaps.org/`
 - PMTiles：`https://pmtiles.io/`
+
+## 2026-06-23：Computer Use、浏览器 Agent 与开放词汇视觉补强
+
+本轮新增 10 个条目，覆盖能真实操作网页/桌面的 Agent、GUI Agent 评测，以及遥感视觉中更贴近项目落地的开放词汇检测、时序分割、自监督视觉骨干和实时 DETR 检测器。
+
+## 新增条目
+
+- Computer Use Agents (CUA)
+- Browser-use / Web Task Agents
+- OSWorld / GUI Agent Benchmark
+- UI-TARS / Native GUI Agents
+- PANGAEA / Geospatial FM Benchmark
+- TerraMind / Multimodal EO Foundation Model
+- DINOv3 / Self-supervised Vision Backbone
+- Grounded SAM / Open-vocabulary Segmentation
+- SAM 2 for Video & Temporal Geospatial
+- RF-DETR / Real-time Transformer Detection
+
+## 主要参考源
+
+- OpenAI Computer Use：`https://platform.openai.com/docs/guides/tools-computer-use`
+- Browser Use：`https://docs.browser-use.com/`
+- OSWorld：`https://os-world.github.io/`
+- UI-TARS：`https://github.com/bytedance/UI-TARS`
+- PANGAEA：`https://github.com/VMarsocci/pangaea-bench`
+- TerraMind：`https://arxiv.org/abs/2504.11171`
+- DINOv3：`https://github.com/facebookresearch/dinov3`
+- Grounded SAM：`https://github.com/IDEA-Research/Grounded-Segment-Anything`
+- SAM 2：`https://github.com/facebookresearch/sam2`
+- RF-DETR：`https://github.com/roboflow/rf-detr`
