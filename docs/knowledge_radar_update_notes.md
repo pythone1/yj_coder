@@ -156,3 +156,33 @@
 - NVIDIA Dynamo Disaggregated Serving：`https://docs.nvidia.com/dynamo/v-0-7-1/design-docs/disaggregated-serving`
 - LMCache：`https://docs.lmcache.ai/`
 - OpenTelemetry GenAI：`https://opentelemetry.io/docs/specs/semconv/gen-ai/`
+
+## 2026-06-23：RAG 质量闭环与 AI 治理补强
+
+本轮新增 10 个条目，覆盖从“能检索回答”到“可评测、可优化、可治理”的完整闭环：prompt 编译、RAG 组件指标、混合检索、视觉文档检索、LLM 评审校准、主动学习、合成评测、模型/数据卡和 AI 供应链。
+
+## 新增条目
+
+- DSPy / Prompt Compilation
+- Ragas Component Metrics
+- Hybrid Search + RRF + Rerank
+- ColPali / Visual Document Retrieval
+- Late Interaction Retrieval / ColBERT
+- LLM-as-Judge Calibration
+- Active Learning Data Engine
+- Synthetic Eval Dataset Generation
+- Model Cards / Data Cards / Lineage
+- AI Supply Chain Provenance
+
+## 主要参考源
+
+- DSPy：`https://dspy.ai/`
+- Ragas Metrics：`https://docs.ragas.io/en/stable/concepts/metrics/available_metrics/`
+- LangChain Retrieval：`https://docs.langchain.com/oss/python/langchain/retrieval`
+- ColPali：`https://github.com/illuin-tech/colpali`
+- LangSmith Evaluation：`https://docs.langchain.com/langsmith/evaluation-concepts`
+- OpenAI Evals：`https://github.com/openai/evals`
+- Label Studio Active Learning：`https://labelstud.io/guide/active_learning`
+- Hugging Face Model Cards：`https://huggingface.co/docs/hub/model-cards`
+- SLSA：`https://slsa.dev/`
+- CycloneDX ML-BOM：`https://cyclonedx.org/capabilities/mlbom/`
