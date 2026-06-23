@@ -27,7 +27,9 @@ http://localhost:8000
 - `js/app.js`：应用状态、导航、搜索、卡片、PPT 等交互逻辑。
 - `css/style.css`：全局样式和作品集页面样式。
 - `scripts/update_resume_content.js`：结构化更新在线简历、JSON 备份和 Markdown 简历。
+- `scripts/update_radar_frontier.js`：增量补充前沿 AI/Agent 工程知识雷达条目。
 - `docs/resume_evidence_notes.md`：简历项目内容的本地文档依据与待补指标清单。
+- `docs/knowledge_radar_update_notes.md`：知识雷达新增概念、来源和后续待收录方向。
 
 ## 内容边界
 
