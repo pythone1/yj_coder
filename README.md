@@ -31,6 +31,7 @@ http://localhost:8000
 - `scripts/update_radar_geoai_frontier.js`：增量补充 Agent 协议、安全评测和 GeoAI/遥感基础模型条目。
 - `scripts/update_radar_geospatial_infra.js`：增量补充云原生地理空间数据工程与遥感产品化条目。
 - `scripts/update_radar_cua_vision_frontier.js`：增量补充 Computer Use、浏览器 Agent、GUI 评测和开放词汇视觉条目。
+- `scripts/update_radar_inference_frontier.js`：增量补充 LLM 推理系统、KV cache、结构化生成和成本治理条目。
 - `docs/resume_evidence_notes.md`：简历项目内容的本地文档依据与待补指标清单。
 - `docs/knowledge_radar_update_notes.md`：知识雷达新增概念、来源和后续待收录方向。
 

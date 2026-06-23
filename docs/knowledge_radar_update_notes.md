@@ -129,3 +129,30 @@
 - Grounded SAM：`https://github.com/IDEA-Research/Grounded-Segment-Anything`
 - SAM 2：`https://github.com/facebookresearch/sam2`
 - RF-DETR：`https://github.com/roboflow/rf-detr`
+
+## 2026-06-23：LLM 推理系统与成本治理补强
+
+本轮新增 10 个条目，覆盖商用 LLM/Agent 后端必须掌握的性能栈：KV cache、prefix caching、continuous batching、prefill/decode 分离、结构化生成、量化部署和 SLO/成本治理。
+
+## 新增条目
+
+- vLLM / PagedAttention
+- Automatic Prefix Caching
+- SGLang / RadixAttention
+- Disaggregated Prefill/Decode Serving
+- LMCache / Persistent KV Cache
+- KV-aware Routing
+- Continuous Batching
+- Structured Generation Runtime
+- LLM SLO / Cost Governance
+- Quantized LLM Serving
+
+## 主要参考源
+
+- vLLM Prefix Caching：`https://docs.vllm.ai/en/stable/design/prefix_caching/`
+- vLLM Metrics：`https://docs.vllm.ai/en/stable/serving/metrics.html`
+- SGLang：`https://docs.sglang.ai/`
+- SGLang GitHub：`https://github.com/sgl-project/sglang`
+- NVIDIA Dynamo Disaggregated Serving：`https://docs.nvidia.com/dynamo/v-0-7-1/design-docs/disaggregated-serving`
+- LMCache：`https://docs.lmcache.ai/`
+- OpenTelemetry GenAI：`https://opentelemetry.io/docs/specs/semconv/gen-ai/`
