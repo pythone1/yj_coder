@@ -1,0 +1,816 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Agent 技术路线与核心技术深度解析</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&family=Outfit:wght@400;600;800&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        :root {
+            --bg-color: #080B16;
+            --card-bg: rgba(17, 25, 44, 0.7);
+            --card-border: rgba(0, 245, 212, 0.2);
+            --text-title: #FFFFFF;
+            --text-body: #E2E8F0;
+            --text-muted: #94A3B8;
+            --accent-cyan: #00F5D4;
+            --accent-blue: #00B4D8;
+            --accent-purple: #7209B7;
+            --shadow-cyan: rgba(0, 245, 212, 0.3);
+            --shadow-blue: rgba(0, 180, 216, 0.3);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', 'Microsoft YaHei', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-body);
+            overflow: hidden;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(114, 9, 183, 0.15) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(0, 180, 216, 0.15) 0%, transparent 40%);
+        }
+
+        /* Top Navbar */
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 40px;
+            background: rgba(8, 11, 22, 0.8);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            z-index: 100;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-family: 'Outfit', sans-serif;
+            font-weight: 800;
+            font-size: 1.3rem;
+            letter-spacing: 1px;
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-blue));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .nav-controls {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--text-body);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+        }
+
+        .btn:hover {
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-blue));
+            color: #080B16;
+            border-color: transparent;
+            box-shadow: 0 0 15px var(--shadow-cyan);
+            transform: translateY(-2px);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-blue));
+            color: #080B16;
+            border-color: transparent;
+            box-shadow: 0 0 10px var(--shadow-cyan);
+        }
+
+        .btn-primary:hover {
+            box-shadow: 0 0 20px var(--shadow-cyan);
+        }
+
+        /* Presentation Wrapper */
+        .presentation-container {
+            flex: 1;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .slide-stage {
+            width: 100%;
+            max-width: 1100px;
+            height: 620px;
+            position: relative;
+            perspective: 1500px;
+        }
+
+        .slide {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 24px;
+            padding: 40px 60px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(16px);
+            opacity: 0;
+            transform: rotateY(45deg) translateZ(-200px);
+            pointer-events: none;
+            transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .slide.active {
+            opacity: 1;
+            transform: rotateY(0deg) translateZ(0);
+            pointer-events: auto;
+            z-index: 10;
+        }
+
+        .slide.prev-slide {
+            opacity: 0;
+            transform: rotateY(-45deg) translateZ(-200px);
+        }
+
+        /* Cover Slide Styling */
+        .cover-slide {
+            justify-content: center;
+            align-items: flex-start;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .cover-slide::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle, rgba(0, 245, 212, 0.15) 0%, transparent 60%);
+            z-index: -1;
+        }
+
+        .cover-tag {
+            font-family: 'Fira Code', monospace;
+            color: var(--accent-cyan);
+            font-weight: 600;
+            font-size: 0.95rem;
+            letter-spacing: 2px;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            border-left: 3px solid var(--accent-cyan);
+            padding-left: 10px;
+        }
+
+        .cover-title {
+            font-family: 'Outfit', 'Microsoft YaHei', sans-serif;
+            font-size: 3.2rem;
+            font-weight: 800;
+            line-height: 1.2;
+            margin-bottom: 15px;
+            background: linear-gradient(to right, #FFFFFF, #94A3B8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .cover-subtitle {
+            font-size: 1.25rem;
+            color: var(--accent-blue);
+            font-weight: 600;
+            margin-bottom: 40px;
+        }
+
+        .cover-meta {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            line-height: 1.8;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            padding-top: 20px;
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        /* Standard Slide Layouts */
+        .slide-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .slide-title-indicator {
+            width: 8px;
+            height: 35px;
+            background: linear-gradient(to bottom, var(--accent-cyan), var(--accent-blue));
+            border-radius: 4px;
+            box-shadow: 0 0 10px var(--shadow-cyan);
+        }
+
+        .slide-title {
+            font-family: 'Outfit', 'Microsoft YaHei', sans-serif;
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--text-title);
+        }
+
+        .slide-subtitle {
+            font-size: 0.95rem;
+            color: var(--accent-blue);
+            margin-top: 4px;
+            font-weight: 600;
+        }
+
+        /* 2 Column Layout */
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            flex: 1;
+        }
+
+        /* 3 Column Layout */
+        .grid-3 {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 20px;
+            flex: 1;
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 16px;
+            padding: 24px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .glass-card:hover {
+            transform: translateY(-5px);
+            background: rgba(255, 255, 255, 0.04);
+            border-color: var(--card-border);
+            box-shadow: 0 10px 25px rgba(0, 245, 212, 0.05);
+        }
+
+        .glass-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: var(--accent-blue);
+        }
+
+        .glass-card.accent-purple::before { background: var(--accent-purple); }
+        .glass-card.accent-cyan::before { background: var(--accent-cyan); }
+        .glass-card.accent-blue::before { background: var(--accent-blue); }
+
+        .card-num {
+            font-family: 'Fira Code', monospace;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .card-title {
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: var(--accent-cyan);
+            margin-bottom: 15px;
+        }
+
+        .card-bullets {
+            list-style: none;
+        }
+
+        .card-bullets li {
+            font-size: 0.9rem;
+            line-height: 1.6;
+            color: var(--text-body);
+            margin-bottom: 12px;
+            position: relative;
+            padding-left: 15px;
+        }
+
+        .card-bullets li::before {
+            content: '▪';
+            position: absolute;
+            left: 0;
+            color: var(--accent-blue);
+        }
+
+        /* Flow Layout (Horizontal Steps) */
+        .flow-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: stretch;
+            gap: 20px;
+            flex: 1;
+            position: relative;
+        }
+
+        .flow-step {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 16px;
+            padding: 24px;
+            position: relative;
+        }
+
+        .flow-step::after {
+            content: '→';
+            position: absolute;
+            right: -18px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 1.5rem;
+            color: var(--accent-cyan);
+            z-index: 5;
+        }
+
+        .flow-step:last-child::after {
+            display: none;
+        }
+
+        .flow-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            margin-bottom: 15px;
+            background: var(--accent-purple);
+            color: white;
+        }
+
+        /* Interactive Footer Controls */
+        .footer-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 40px;
+            background: rgba(8, 11, 22, 0.9);
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            z-index: 100;
+        }
+
+        .progress-bar-container {
+            flex: 1;
+            max-width: 500px;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 2px;
+            margin: 0 40px;
+            position: relative;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            background: linear-gradient(to right, var(--accent-cyan), var(--accent-blue));
+            width: 12.5%;
+            border-radius: 2px;
+            transition: width 0.3s ease;
+            box-shadow: 0 0 8px var(--shadow-cyan);
+        }
+
+        .slide-num-indicator {
+            font-family: 'Fira Code', monospace;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        .arrow-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--text-body);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .arrow-btn:hover {
+            background: var(--accent-cyan);
+            color: #080B16;
+            box-shadow: 0 0 15px var(--shadow-cyan);
+            transform: scale(1.1);
+        }
+
+        .arrow-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+            background: rgba(255, 255, 255, 0.02);
+            color: var(--text-muted);
+        }
+
+        /* SVG Vector Diagram placeholders (built-in inline CSS charts) */
+        .diagram-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 12px;
+            border: 1px dashed rgba(255, 255, 255, 0.1);
+            height: 100%;
+            min-height: 250px;
+            position: relative;
+        }
+
+        /* Code highlight formatting */
+        pre {
+            background: #0f172a;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            font-family: 'Fira Code', monospace;
+            font-size: 0.8rem;
+            overflow-x: auto;
+            color: #38bdf8;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Navbar -->
+    <header class="navbar">
+        <div class="logo">
+            <i data-lucide="cpu" style="width: 24px; height: 24px; color: var(--accent-cyan)"></i>
+            <span>AI AGENT ROADMAP</span>
+        </div>
+        <div class="nav-controls">
+            <a href="index.html" class="btn">
+                <i data-lucide="home"></i> 返回大厅
+            </a>
+            <a href="AI_Agent_技术路线与核心技术深度解析.pptx" download class="btn btn-primary">
+                <i data-lucide="download"></i> 下载 PPTX 演示文稿
+            </a>
+        </div>
+    </header>
+
+    <!-- Presentation Stage -->
+    <main class="presentation-container">
+        <div class="slide-stage">
+
+            <!-- Slide 1: Cover -->
+            <div class="slide cover-slide active" id="slide-1">
+                <div>
+                    <div class="cover-tag">Technical Roadmap & Core Architecture</div>
+                    <h1 class="cover-title">AI Agent 技术路线与核心技术深度解析</h1>
+                    <div class="cover-subtitle">深度拆解自主智能体的规划、记忆、工具调用与多智能体协同网络</div>
+                </div>
+                
+                <div class="cover-meta">
+                    <div>
+                        <i data-lucide="user" style="display:inline; width:14px; margin-right:4px;"></i>
+                        主讲人：全栈 AI 算法 & 智能体系统架构专家
+                    </div>
+                    <div>
+                        <i data-lucide="sliders" style="display:inline; width:14px; margin-right:4px;"></i>
+                        汇报形式：高交互式 Web 演示 + 原生 PPTX 导出
+                    </div>
+                    <div>
+                        <i data-lucide="calendar" style="display:inline; width:14px; margin-right:4px;"></i>
+                        时间：2026年5月
+                    </div>
+                </div>
+            </div>
+
+            <!-- Slide 2: Architecture -->
+            <div class="slide" id="slide-2">
+                <div class="slide-header">
+                    <div class="slide-title-indicator"></div>
+                    <div>
+                        <h2 class="slide-title">一、AI Agent 经典架构总览</h2>
+                        <p class="slide-subtitle">面向闭环控制的“感知 - 思考 - 行动”核心三要素体系</p>
+                    </div>
+                </div>
+                
+                <div class="grid-3">
+                    <div class="glass-card accent-purple">
+                        <div class="card-num">INPUT SYSTEM</div>
+                        <div class="card-title">01 / 感知层 (Perception)</div>
+                        <ul class="card-bullets">
+                            <li><strong>多模态输入解析：</strong>支持文本、图像、语音、视频等多模态特征提取与语义交叉理解。</li>
+                            <li><strong>具身环境融合：</strong>可对接激光雷达、IMU、触觉等各种物联网与机器人传感器数据。</li>
+                            <li><strong>主动感知流：</strong>实现定时轮询拉取（如系统日志或视频帧），由被动响应转为主动感知。</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="glass-card accent-cyan">
+                        <div class="card-num">DECISION CORE</div>
+                        <div class="card-title">02 / 核心大脑 (Brain)</div>
+                        <ul class="card-bullets">
+                            <li><strong>目标分解规划：</strong>将模糊的顶层大目标逐步拆解为清晰的子任务节点，并支持动态调整。</li>
+                            <li><strong>记忆存取召回：</strong>结合短期会话缓存与长期向量数据库，秒级召回关联背景事实。</li>
+                            <li><strong>意图决策引擎：</strong>根据上下文与 Prompt 边界，推理出最佳下一步策略。</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="glass-card accent-blue">
+                        <div class="card-num">EXECUTION UNIT</div>
+                        <div class="card-title">03 / 执行层 (Action)</div>
+                        <ul class="card-bullets">
+                            <li><strong>结构化 API 调用：</strong>通过大模型 Function Calling 输出标准的 JSON 参数结构。</li>
+                            <li><strong>代码执行器：</strong>动态编写 Python 并在封闭隔离的沙盒中运行计算与数据可视化。</li>
+                            <li><strong>环境反向输入：</strong>执行结果作为新的观测数据重传给大脑，构成闭环自适应反馈。</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Slide 3: Planning -->
+            <div class="slide" id="slide-3">
+                <div class="slide-header">
+                    <div class="slide-title-indicator"></div>
+                    <div>
+                        <h2 class="slide-title">二、大脑核心之：Planning 规划与推理技术</h2>
+                        <p class="slide-subtitle">从一步直觉式回复走向深度搜索与反思反馈控制</p>
+                    </div>
+                </div>
+                
+                <div class="grid-2">
+                    <div class="glass-card accent-cyan">
+                        <div class="card-title">经典思维路径拓扑 (From Chain to Tree)</div>
+                        <ul class="card-bullets">
+                            <li><strong>思维链 (Chain of Thought, CoT)：</strong>诱导模型逐步写出推理链路，降低逻辑断层，显著提高数值计算与逻辑推理准确率。</li>
+                            <li><strong>思维树 (Tree of Thoughts, ToT)：</strong>在多步规划中引入搜索树，生成多个解题方向，结合深度/广度优先搜索进行回溯评估。</li>
+                            <li><strong>蒙特卡洛树搜索 (MCTS)：</strong>大模型作为启发式估值器，配合 MCTS 进行多轮 Rollout 仿真，用以在超大行动空间下计算最优决策链。</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="glass-card accent-blue">
+                        <div class="card-title">动作与反思闭环机制 (Act & Reflexion)</div>
+                        <ul class="card-bullets">
+                            <li><strong>ReAct 协同工作流：</strong>将『Thought（思考） $\rightarrow$ Action（动作） $\rightarrow$ Observation（观察）』交替演进。思考指挥动作，动作改变环境产生观察，观察修正思考。</li>
+                            <li><strong>Reflexion 自我修正网络：</strong>当任务运行报错或偏离目标时，由独立的 Evaluator Agent 提取执行日志进行自我反思，将失败教训编码为反思向量注入短期上下文，实现零参数微调自适应进化。</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Slide 4: Memory -->
+            <div class="slide" id="slide-4">
+                <div class="slide-header">
+                    <div class="slide-title-indicator"></div>
+                    <div>
+                        <h2 class="slide-title">三、大脑核心之：Memory 记忆机制与知识存取</h2>
+                        <p class="slide-subtitle">融合短期序列关联与长期外挂多维检索的双轨记忆架构</p>
+                    </div>
+                </div>
+                
+                <div class="grid-2">
+                    <div class="glass-card accent-cyan">
+                        <div class="card-title">短期记忆：会话上下文与状态机</div>
+                        <ul class="card-bullets">
+                            <li><strong>滑动会话窗口：</strong>为防止长对话撑爆 Token，使用滑动窗口或自动触发“总结 Agent”对历史轨迹进行特征聚合压缩。</li>
+                            <li><strong>严格系统状态机：</strong>利用后端强状态表记录业务流核心字段（如支付金额、履约状态），保证业务流程不随 LLM 的意图漂移而失控。</li>
+                            <li><strong>Prefill KV Cache 共享：</strong>优化高并发请求下 System Prompt 与长模版的显存消耗与耗时。</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="glass-card accent-blue">
+                        <div class="card-title">长期记忆：向量数据库与高精 RAG</div>
+                        <ul class="card-bullets">
+                            <li><strong>混合检索 (Hybrid Search)：</strong>将 Dense 稠密向量的语义检索与 Sparse 稀疏向量（BM25）的字面碰撞相结合，对中英混合和缩写具备更强召回率。</li>
+                            <li><strong>两阶段检索管道：</strong>第一阶段利用 ANN 算法从向量库秒级筛选 Top-K 节点；第二阶段采用双向交互的 Cross-Encoder Reranker 模型剔除弱关联噪声。</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Slide 5: Action & Integration -->
+            <div class="slide" id="slide-5">
+                <div class="slide-header">
+                    <div class="slide-title-indicator"></div>
+                    <div>
+                        <h2 class="slide-title">四、工具调用与沙盒安全 (Actions & Tool Integration)</h2>
+                        <p class="slide-subtitle">打通大模型与外界操作系统的矢量互通与安全防护隔离</p>
+                    </div>
+                </div>
+                
+                <div class="grid-3">
+                    <div class="glass-card accent-cyan">
+                        <div class="card-title">工具描述与匹配</div>
+                        <ul class="card-bullets">
+                            <li><strong>JSON Schema 定义：</strong>用极其标准的 JSON Schema 注册工具名称、参数类型及业务说明。</li>
+                            <li><strong>动态意图路由：</strong>计算 Query 向量与所有工具描述向量的相似度，动态分配最切合的 API。</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="glass-card accent-blue">
+                        <div class="card-title">代码解释器</div>
+                        <ul class="card-bullets">
+                            <li><strong>动态脚本编写：</strong>大模型遇到高阶复杂计算或数据分析时，主动在内存中写出 Python 脚本。</li>
+                            <li><strong>Traceback 自检循环：</strong>运行出错时，错误信息反传，驱动大模型自我调试，直至成功运行。</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="glass-card accent-purple">
+                        <div class="card-title">隔离沙盒与防护</div>
+                        <ul class="card-bullets">
+                            <li><strong>Docker 隔离机制：</strong>运行代码必须放置在一次性、轻量的 Docker 容器中。</li>
+                            <li><strong>E2B 运行时：</strong>采用定制化的云端或本地 Agent 执行环境，严格封锁宿主机系统，防范危险脚本的破坏。</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Slide 6: Multi-Agent -->
+            <div class="slide" id="slide-6">
+                <div class="slide-header">
+                    <div class="slide-title-indicator"></div>
+                    <div>
+                        <h2 class="slide-title">五、多智能体协同与编排架构 (Multi-Agent Systems)</h2>
+                        <p class="slide-subtitle">从单兵作战演进为有组织、有状态的多角色生产线网络</p>
+                    </div>
+                </div>
+                
+                <div class="grid-2">
+                    <div class="glass-card accent-cyan">
+                        <div class="card-title">多智能体协同范式分类</div>
+                        <ul class="card-bullets">
+                            <li><strong>主从模型 (Manager-Worker)：</strong>Manager 分解目标，Worker 执行具体任务并向 Manager 汇报，最后由 Manager 统筹合并与质检。</li>
+                            <li><strong>对等辩论模型 (Peer-to-Peer & Debate)：</strong>设定不同角色 Agent。例如『开发 Agent』写码，『测试 Agent』挑刺，『安全 Agent』合规审核，在消息总线上异步协作博弈。</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="glass-card accent-blue">
+                        <div class="card-title">主流 Agent 开发框架剖析</div>
+                        <ul class="card-bullets">
+                            <li><strong>LangGraph (基于状态图)：</strong>将智能体工作流建模为有向图。核心是定义共享的全局 State，支持循环、条件分支和人类干预环节（Human-in-the-loop），具备极高工程可控度。</li>
+                            <li><strong>CrewAI (角色团队编排)：</strong>定义 Role、Task 和 Crew，能够快速模拟职场多人分工流水线，上手门槛低。</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Slide 7: Roadmap -->
+            <div class="slide" id="slide-7">
+                <div class="slide-header">
+                    <div class="slide-title-indicator"></div>
+                    <div>
+                        <h2 class="slide-title">六、智能体落地演进路线与行业挑战</h2>
+                        <p class="slide-subtitle">从低阶提示词包装，向深度微调、高并发状态编排迈进</p>
+                    </div>
+                </div>
+                
+                <div class="flow-container">
+                    <div class="flow-step">
+                        <div class="flow-badge">STAGE 1: STANDARD</div>
+                        <div class="card-title">L1 - RAG与工具浅层封装</div>
+                        <ul class="card-bullets">
+                            <li>基于 LangChain、LlamaIndex 快速搭建本地知识库问答。</li>
+                            <li>模型多为一次性对话，缺乏反思回溯，容易陷入指令死循环。</li>
+                            <li>适合简单客服、基础知识库检索。</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="flow-step">
+                        <div class="flow-badge" style="background: var(--accent-cyan); color: #080B16;">STAGE 2: ADVANCED</div>
+                        <div class="card-title">L2 - 复杂状态工作流编排</div>
+                        <ul class="card-bullets">
+                            <li>引入 LangGraph 进行多角色协同图设计，支持状态持久化与回溯。</li>
+                            <li>引入 Human-in-the-loop (人工审批) 以及代码解释器隔离沙盒。</li>
+                            <li>适合复杂合同审核、软件自动化测试。</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="flow-step">
+                        <div class="flow-badge" style="background: var(--accent-blue); color: #080B16;">STAGE 3: AUTONOMOUS</div>
+                        <div class="card-title">L3 - 垂直微调与完全自主进化</div>
+                        <ul class="card-bullets">
+                            <li>通过轨迹与 Function Calling 微调强固化底层大模型能力，摆脱冗长 Prompt。</li>
+                            <li>结合长时反思日志，利用 RL 算法实现策略优化自主学习。</li>
+                            <li>适合高并发、全自动的特定岗位数字员工。</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Slide 8: Closing -->
+            <div class="slide cover-slide" id="slide-8" style="align-items: center; justify-content: center; text-align: center;">
+                <h1 class="cover-title" style="background: linear-gradient(to right, var(--accent-cyan), var(--accent-blue)); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">谢谢观看，期待共同探讨！</h1>
+                <p class="cover-subtitle" style="margin-bottom: 20px;">AI Agent 技术路线与核心技术深度解析</p>
+                <div style="font-size: 0.95rem; color: var(--text-muted); max-width: 600px; line-height: 1.6;">
+                    演示文稿与可编辑的 PPTX 导出版已同步为您生成至项目根目录，您可以点击右上方按钮直接下载、微调或进行二次开发。
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Footer Controls -->
+    <footer class="footer-controls">
+        <button class="arrow-btn" id="prev-btn" onclick="prevSlide()" disabled>
+            <i data-lucide="chevron-left"></i>
+        </button>
+        
+        <div class="progress-bar-container">
+            <div class="progress-bar-fill" id="progress-fill"></div>
+        </div>
+        
+        <span class="slide-num-indicator" id="slide-num">Slide 1 / 8</span>
+        
+        <button class="arrow-btn" id="next-btn" onclick="nextSlide()">
+            <i data-lucide="chevron-right"></i>
+        </button>
+    </footer>
+
+    <script>
+        // Initialize Lucide Icons
+        lucide.createIcons();
+
+        let currentSlide = 1;
+        const totalSlides = 8;
+
+        const prevBtn = document.getElementById('prev-btn');
+        const nextBtn = document.getElementById('next-btn');
+        const progressFill = document.getElementById('progress-fill');
+        const slideNum = document.getElementById('slide-num');
+
+        function updateSlidePosition() {
+            // Update Active Slide class
+            for (let i = 1; i <= totalSlides; i++) {
+                const slide = document.getElementById(`slide-${i}`);
+                slide.classList.remove('active', 'prev-slide');
+                if (i === currentSlide) {
+                    slide.classList.add('active');
+                } else if (i < currentSlide) {
+                    slide.classList.add('prev-slide');
+                }
+            }
+
+            // Update Progress Bar
+            const progress = (currentSlide / totalSlides) * 100;
+            progressFill.style.width = `${progress}%`;
+
+            // Update Indicator Text
+            slideNum.textContent = `Slide ${currentSlide} / ${totalSlides}`;
+
+            // Update Button States
+            prevBtn.disabled = currentSlide === 1;
+            nextBtn.disabled = currentSlide === totalSlides;
+        }
+
+        window.prevSlide = function() {
+            if (currentSlide > 1) {
+                currentSlide--;
+                updateSlidePosition();
+            }
+        }
+
+        window.nextSlide = function() {
+            if (currentSlide < totalSlides) {
+                currentSlide++;
+                updateSlidePosition();
+            }
+        }
+
+        // Add keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight' || e.key === ' ') {
+                window.nextSlide();
+            } else if (e.key === 'ArrowLeft') {
+                window.prevSlide();
+            }
+        });
+    </script>
+</body>
+</html>

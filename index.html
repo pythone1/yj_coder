@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI & 遥感测绘高级面试备战中心 2.0</title>
+    <!-- 全局样式表 -->
+    <link rel="stylesheet" href="css/style.css">
+    <!-- Lucide 极简图标库 -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- PptxGenJS 纯前端 PPTX 生成库 -->
+    <script src="https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js"></script>
+    <!-- KaTeX 数学公式渲染库 -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js" onload="initMathRendering()"></script>
+</head>
+<body>
+
+    <div class="app-container">
+        
+        <!-- 左侧导航侧边栏 -->
+        <aside class="sidebar">
+            <div class="sidebar-brand">
+                <div class="sidebar-logo-icon">Ω</div>
+                <div class="sidebar-brand-text">面试备战中心 2.0</div>
+            </div>
+            
+            <ul class="sidebar-menu">
+                <li>
+                    <a class="menu-item active" data-view="dashboard">
+                        <i data-lucide="layout-dashboard"></i>
+                        <span>学习仪表盘</span>
+                    </a>
+                </li>
+                <li>
+                    <a class="menu-item" data-view="resume">
+                        <i data-lucide="file-text"></i>
+                        <span>在线简历编辑器</span>
+                    </a>
+                </li>
+                <li>
+                    <a class="menu-item" data-view="portfolio">
+                        <i data-lucide="briefcase-business"></i>
+                        <span>项目作品集</span>
+                    </a>
+                </li>
+                <li>
+                    <a class="menu-item" data-view="radar">
+                        <i data-lucide="radar"></i>
+                        <span>知识雷达</span>
+                    </a>
+                </li>
+                <li>
+                    <a class="menu-item" data-view="knowledge">
+                        <i data-lucide="book-open"></i>
+                        <span>核心算法浏览器</span>
+                    </a>
+                </li>
+                <li>
+                    <a class="menu-item" data-view="quiz">
+                        <i data-lucide="help-circle"></i>
+                        <span>大厂面试模拟器</span>
+                    </a>
+                </li>
+                <li>
+                    <a class="menu-item" data-view="flashcards">
+                        <i data-lucide="layers"></i>
+                        <span>高频考点背诵卡</span>
+                    </a>
+                </li>
+                <li>
+                    <a class="menu-item" data-view="ppt">
+                        <i data-lucide="presentation"></i>
+                        <span>面试汇报PPT生成器</span>
+                    </a>
+                </li>
+            </ul>
+            
+            <div class="sidebar-footer">
+                <p>AI & RS Prep Hub v2.0</p>
+                <p style="margin-top: 4px;">由 Antigravity 强力驱动</p>
+            </div>
+        </aside>
+
+        <!-- 右侧主内容区 -->
+        <main class="main-content">
+            
+            <!-- 顶部工具栏 -->
+            <header class="top-header">
+                <div style="display: flex; align-items: center; gap: 16px;">
+                    <!-- 移动端侧边栏开关 -->
+                    <button onclick="toggleMobileSidebar()" class="btn btn-secondary" style="padding: 8px 12px; display: none;" id="mobile-toggle-btn">
+                        <i data-lucide="menu" style="width: 20px; height: 20px;"></i>
+                    </button>
+                    <!-- 全局搜索框 -->
+                    <div class="search-box">
+                        <i data-lucide="search"></i>
+                        <input type="text" id="global-search" placeholder="在海量知识库中搜索算法/考点 (如: RoPE, GQA, OBB)...">
+                    </div>
+                </div>
+                
+                <div class="header-user">
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        <i data-lucide="palette" style="width:16px;height:16px;color:var(--primary)"></i>
+                        <select id="global-theme-select" class="dropdown-select" onchange="setGlobalTheme(this.value)" style="padding: 6px 12px; font-size: 0.8rem; border-radius: 20px; background: var(--card-bg); border-color: var(--card-border);">
+                            <option value="light-teal" selected>🌿 春华雅致 (亮色蓝绿)</option>
+                            <option value="dark-sea">💻 极客深海 (暗色科技)</option>
+                            <option value="minimal-slate">🎓 象牙学术 (极简灰白)</option>
+                        </select>
+                    </div>
+                    <span class="badge-tag">全栈 AI & 空间计算专家</span>
+                </div>
+            </header>
+
+            <!-- 1. 仪表盘视图 -->
+            <section id="dashboard-view" class="page-view active">
+                <div class="section-header">
+                    <h1 class="section-title">学习控制台 2.0</h1>
+                    <p class="section-desc">欢迎回来！已为您深度扩充大模型、遥感测绘、数据湖仓与 CV 最新算法体系，助力通关面试。</p>
+                </div>
+                
+                <!-- 进度卡片网格 -->
+                <div class="dashboard-grid">
+                    <div class="glass-card metric-card">
+                        <div class="metric-icon indigo">
+                            <i data-lucide="book-open"></i>
+                        </div>
+                        <div class="metric-info">
+                            <h3>知识库总条目</h3>
+                            <div class="metric-value" id="stat-total-knowledge">0</div>
+                        </div>
+                    </div>
+                    <div class="glass-card metric-card">
+                        <div class="metric-icon cyan">
+                            <i data-lucide="check-square"></i>
+                        </div>
+                        <div class="metric-info">
+                            <h3>卡片熟练度</h3>
+                            <div class="metric-value" id="stat-mastered-cards">0 / 0</div>
+                        </div>
+                    </div>
+                    <div class="glass-card metric-card">
+                        <div class="metric-icon emerald">
+                            <i data-lucide="award"></i>
+                        </div>
+                        <div class="metric-info">
+                            <h3>面试拟合度</h3>
+                            <div class="metric-value" id="stat-quiz-attempts">0</div>
+                        </div>
+                    </div>
+                    <div class="glass-card metric-card">
+                        <div class="metric-icon indigo">
+                            <i data-lucide="briefcase-business"></i>
+                        </div>
+                        <div class="metric-info">
+                            <h3>求职项目案例</h3>
+                            <div class="metric-value" id="stat-portfolio-cases">0</div>
+                        </div>
+                    </div>
+                    <div class="glass-card metric-card">
+                        <div class="metric-icon cyan">
+                            <i data-lucide="radar"></i>
+                        </div>
+                        <div class="metric-info">
+                            <h3>前沿技术雷达</h3>
+                            <div class="metric-value" id="stat-radar-topics">0</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 下方面板布局 -->
+                <div class="dashboard-sections">
+                    <div class="glass-card">
+                        <h2 style="font-family:'Outfit';font-size:1.25rem;margin-bottom:20px;display:flex;align-items:center;gap:8px;">
+                            <i data-lucide="compass" style="color:var(--primary)"></i> 2.0 版核心升级指南
+                        </h2>
+                        <div style="line-height:1.7; color:var(--text-secondary); font-size:0.95rem; display:flex; flex-direction:column; gap:16px;">
+                            <p>📝 <strong>可视化简历编辑</strong>：切换至“在线简历编辑器”，直接点击简历上的文字即可随意修改。您可以自主润色个人项目数据，修改完毕后点击上方各格式导出即可。</p>
+                            <p>📥 <strong>多格式完美导出</strong>：新增了 <strong>导出 Word</strong>、<strong>导出 Markdown</strong> 及 <strong>导出 HTML</strong>。生成的 Word 格式采用标准微软排版标准，便于投递和离线修改。</p>
+                            <p>📖 <strong>算法广度倍增</strong>：核心知识浏览器深度收录了 <strong>旋转位置编码 (RoPE)</strong>、<strong>MQA/GQA 架构</strong>、<strong>FlashAttention 原理</strong>、<strong>YOLO-OBB 遥感旋转框检测</strong>、<strong>Delta Lake/Iceberg 湖仓对比</strong> 等前沿与经典共 40+ 核心算法，具备深厚的公式与物理机制解析。</p>
+                            <p>🗂️ <strong>背诵卡片双版本</strong>：卡片背诵新增了 <strong>“精简版”与“详细版”</strong> 自由切换，帮助您在快速记忆与深度答题话术之间弹性过渡。</p>
+                            <p>✨ <strong>专属幻灯片生成</strong>：已生成 <strong><a href="agent_roadmap_slide.html" target="_blank" style="color:var(--primary); font-weight:700; text-decoration:underline;">AI Agent 技术路线与核心技术深度解析</a></strong> 交互式网页演示文稿，且项目根目录下已导出同名 <strong><a href="AI_Agent_技术路线与核心技术深度解析.pptx" download style="color:var(--secondary); font-weight:700; text-decoration:underline;">可编辑原生 PPTX 幻灯片</a></strong>。</p>
+                        </div>
+                    </div>
+                    
+                    <div class="glass-card">
+                        <h2 style="font-family:'Outfit';font-size:1.25rem;margin-bottom:20px;display:flex;align-items:center;gap:8px;">
+                            <i data-lucide="history" style="color:var(--secondary)"></i> 最近学习活动
+                        </h2>
+                        <div class="recent-activities" id="recent-activities-list">
+                            <!-- JS 动态渲染 -->
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 2. 项目作品集视图 -->
+            <section id="portfolio-view" class="page-view">
+                <div class="section-header">
+                    <h1 class="section-title">项目作品集</h1>
+                    <p class="section-desc">从本机项目中筛出的求职相关案例，只保留能支撑 AI 工程、遥感 GIS、工业视觉和水务建模岗位表达的内容。</p>
+                </div>
+
+                <div class="portfolio-hero">
+                    <div>
+                        <span class="portfolio-eyebrow">Interview Portfolio</span>
+                        <h2>把本地项目整理成可投递、可答辩、可追溯的证据链。</h2>
+                        <p>每个案例都带有岗位角色、技术栈、量化指标、证据路径和面试讲法，方便你在简历、PPT 和面试中保持同一套叙事。</p>
+                    </div>
+                    <button class="btn btn-primary" onclick="switchView('resume')">
+                        <i data-lucide="file-text"></i>
+                        回到简历编辑
+                    </button>
+                </div>
+
+                <div id="portfolio-stats" class="portfolio-stats"></div>
+                <div id="portfolio-grid" class="portfolio-grid"></div>
+            </section>
+
+            <!-- 3. 知识雷达视图 -->
+            <section id="radar-view" class="page-view">
+                <div class="section-header">
+                    <h1 class="section-title">知识雷达</h1>
+                    <p class="section-desc">持续跟踪 AI 工程、Agent、RAG、推理优化、多模态和遥感基础模型的新概念，并转化为求职材料、项目表达和面试话术。</p>
+                </div>
+
+                <div class="radar-workspace">
+                    <div class="radar-overview">
+                        <div>
+                            <span class="radar-eyebrow">Frontier AI Radar</span>
+                            <h2>从新概念到可投递能力的更新面板</h2>
+                            <p>优先收录对 AI 工程、遥感 GIS、工业视觉和数据工程岗位有直接帮助的技术词汇，不做无关堆砌。</p>
+                        </div>
+                        <button class="btn btn-primary" onclick="switchView('knowledge')">
+                            <i data-lucide="book-open"></i>
+                            打开知识库
+                        </button>
+                    </div>
+
+                    <div id="radar-stats" class="radar-stats"></div>
+
+                    <div class="radar-controls">
+                        <div class="radar-search">
+                            <i data-lucide="search"></i>
+                            <input id="radar-search-input" type="text" placeholder="搜索概念、领域、面试话术..." oninput="renderKnowledgeRadar()">
+                        </div>
+                        <select id="radar-domain-filter" class="dropdown-select" onchange="renderKnowledgeRadar()">
+                            <option value="all">全部领域</option>
+                        </select>
+                        <select id="radar-horizon-filter" class="dropdown-select" onchange="renderKnowledgeRadar()">
+                            <option value="all">全部阶段</option>
+                            <option value="立即补">立即补</option>
+                            <option value="下一批">下一批</option>
+                            <option value="已收录">已收录</option>
+                        </select>
+                        <button class="btn btn-secondary" onclick="resetRadarFilters()">
+                            <i data-lucide="rotate-ccw"></i>
+                            重置
+                        </button>
+                    </div>
+
+                    <div class="radar-layout">
+                        <aside class="radar-side">
+                            <h3>建设队列</h3>
+                            <div id="radar-lanes" class="radar-lanes"></div>
+                        </aside>
+
+                        <main class="radar-main">
+                            <div id="radar-spotlight" class="radar-spotlight"></div>
+                            <div id="radar-grid" class="radar-grid"></div>
+                        </main>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 2. 简历视图 -->
+            <section id="resume-view" class="page-view">
+                <div class="section-header">
+                    <h1 class="section-title">在线简历编辑器与多格式导出</h1>
+                    <p class="section-desc">简历已开启富文本编辑。双击或点击下方任意文字即可直接改写，支持一键生成 Word、Markdown、HTML 或打印 PDF。</p>
+                </div>
+                
+                <div class="resume-workspace-container">
+                    
+                    <!-- 左侧：简历预览与实时编辑区 -->
+                    <div class="resume-editor-main">
+                        <!-- 简历类型切换 -->
+                        <div class="resume-nav">
+                            <button class="tab-btn active" data-profile="unicorn">🦄 复合型独角兽背景</button>
+                            <button class="tab-btn" data-profile="ai_llm">🤖 AI & 大模型算法专家</button>
+                            <button class="tab-btn" data-profile="rs_uav">🚁 遥感与无人机测绘专家</button>
+                            <button class="tab-btn" data-profile="data_engineer">💾 空间大数据工程师</button>
+                        </div>
+                        
+                        <!-- 编辑状态提示 & 导出按钮组 -->
+                        <div class="sim-controls">
+                            <div style="display:flex; align-items:center; gap:12px;">
+                                <button class="btn btn-secondary" id="resume-edit-toggle-btn" onclick="toggleResumeEditMode()">
+                                    <i data-lucide="edit"></i> 进入编辑模式
+                                </button>
+                                <span id="resume-save-indicator" style="font-size:0.85rem; color:var(--text-muted); display:flex; align-items:center; gap:6px;">
+                                    <i data-lucide="lock" style="width:14px;"></i> 内容已锁定
+                                </span >
+                            </div>
+                            <div style="display:flex; gap:10px; flex-wrap: wrap;">
+                                <button class="btn btn-secondary" onclick="exportResumeJSON()">
+                                    <i data-lucide="download" style="color:#10b981;"></i> 备份配置 (.json)
+                                </button>
+                                <button class="btn btn-secondary" onclick="triggerJSONUpload()">
+                                    <i data-lucide="upload" style="color:#6366f1;"></i> 导入配置 (.json)
+                                </button>
+                                <input type="file" id="resume-json-file" style="display:none;" onchange="importResumeJSON(event)">
+                                <button class="btn btn-secondary" onclick="exportResumeWord()">
+                                    <i data-lucide="file-down" style="color:#2b579a;"></i> 导出 Word (.doc)
+                                </button>
+                                <button class="btn btn-secondary" onclick="exportResumeMarkdown()">
+                                    <i data-lucide="file-text" style="color:#e05b2b;"></i> 导出 Markdown (.md)
+                                </button>
+                                <button class="btn btn-secondary" onclick="exportResumeHTML()">
+                                    <i data-lucide="chrome" style="color:#4285f4;"></i> 导出网页 (.html)
+                                </button>
+                                <button class="btn btn-primary" onclick="printResume()">
+                                    <i data-lucide="printer"></i> 打印 / PDF
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- 简历纸张样式 -->
+                        <div class="resume-paper-wrapper">
+                            <div class="resume-paper" id="resume-paper-target">
+                                <!-- 由 app.js 动态渲染新版结构化数据 -->
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 右侧：全民简历风格高级控制台 (毛玻璃侧边栏) -->
+                    <aside class="resume-editor-sidebar glass-card">
+                        <div class="sidebar-sec-title">
+                            <i data-lucide="sliders"></i> 简历排版与设置
+                        </div>
+
+                        <!-- A. 简历质量评分面板 -->
+                        <div class="control-group sidebar-card">
+                            <label class="control-label"><i data-lucide="award" style="width:14px;height:14px;color:var(--primary)"></i> 简历质量评分</label>
+                            <div class="score-panel-container">
+                                <div class="score-circle-wrapper" style="--score-percent: 40%">
+                                    <div class="score-circle-inner">
+                                        <span id="resume-score-value">40%</span>
+                                    </div>
+                                </div>
+                                <div class="score-info-text">
+                                    <h4 id="resume-score-grade" style="font-weight: 700; font-size: 0.95rem; margin-bottom: 2px;">准备度：亟待优化</h4>
+                                    <p id="resume-score-desc" style="font-size: 0.75rem; color: var(--text-muted); line-height: 1.3;">简历内容单薄，请补充业绩数据。</p>
+                                </div>
+                            </div>
+                            <!-- 优化建议列表 -->
+                            <ul class="suggestion-list" id="resume-suggestions-list">
+                                <!-- 动态加载 -->
+                            </ul>
+                            <button class="btn btn-primary btn-sm" onclick="openATSReportModal()" style="margin-top: 10px; width: 100%; justify-content: center; font-size: 0.8rem; padding: 6px 12px; font-weight: 600;">
+                                <i data-lucide="bar-chart-2" style="width:12px;height:12px;color:#fff"></i> 查看详细 ATS 诊断报告
+                            </button>
+                        </div>
+
+                        <!-- B. ATS 关键词分析 -->
+                        <div class="control-group sidebar-card">
+                            <label class="control-label"><i data-lucide="target" style="width:14px;height:14px;color:var(--secondary)"></i> ATS 关键词扫描</label>
+                            <div class="ats-scan-desc" style="font-size: 0.78rem; color: var(--text-secondary); line-height: 1.4; margin-bottom: 6px;">根据当前岗位定位扫描简历关键词覆盖度：</div>
+                            <div class="ats-keywords-container" id="ats-keywords-badge-container">
+                                <!-- 动态加载红绿徽章 -->
+                            </div>
+                            <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 10px;">
+                                <button class="btn btn-secondary btn-sm" onclick="insertATSKeywords()" style="width: 100%; justify-content: center; font-size: 0.8rem; padding: 6px 12px;">
+                                    <i data-lucide="sparkles" style="width:12px;height:12px;color:var(--secondary)"></i> 智能补齐缺失词 (追加自我评价)
+                                </button>
+                                <button class="btn btn-primary btn-sm" onclick="optimizeResumeText()" style="width: 100%; justify-content: center; font-size: 0.8rem; padding: 6px 12px; background: linear-gradient(135deg, var(--primary), var(--secondary)); border: none; font-weight: 600;">
+                                    <i data-lucide="zap" style="width:12px;height:12px;color:#fff"></i> 一键智能修复优化 (STAR量化)
+                                </button>
+                            </div>
+                        </div>
+
+                        
+                        <!-- 1. 选择主题颜色 -->
+                        <div class="control-group">
+                            <label class="control-label"><i data-lucide="palette" style="width:14px;height:14px;color:var(--secondary)"></i> 选择主题颜色</label>
+                            <div class="theme-color-picker">
+                                <button class="color-circle active" data-color="#0d9488" style="background:#0d9488;" title="雅致蓝绿"></button>
+                                <button class="color-circle" data-color="#1e3a8a" style="background:#1e3a8a;" title="深沉海军蓝"></button>
+                                <button class="color-circle" data-color="#4f46e5" style="background:#4f46e5;" title="极光靛蓝"></button>
+                                <button class="color-circle" data-color="#0891b2" style="background:#0891b2;" title="明亮青绿"></button>
+                                <button class="color-circle" data-color="#16a34a" style="background:#16a34a;" title="活力翡翠绿"></button>
+                                <button class="color-circle" data-color="#ea580c" style="background:#ea580c;" title="热情焦橙"></button>
+                                <button class="color-circle" data-color="#b91c1c" style="background:#b91c1c;" title="朱红中国红"></button>
+                                <button class="color-circle" data-color="#9333ea" style="background:#9333ea;" title="神秘典雅紫"></button>
+                                <button class="color-circle" data-color="#374151" style="background:#374151;" title="极简经典灰"></button>
+                            </div>
+                        </div>
+                        
+                        <!-- 2. 照片与头像管理 -->
+                        <div class="control-group">
+                            <label class="control-label"><i data-lucide="image" style="width:14px;height:14px;color:var(--secondary)"></i> 证件照片管理</label>
+                            <div style="display:flex; flex-direction:column; gap:10px;">
+                                <div style="display:flex; align-items:center; gap:8px;">
+                                    <input type="checkbox" id="toggle-avatar-checkbox" checked onchange="toggleAvatarVisibility(this.checked)">
+                                    <span style="font-size:0.85rem; color:var(--text-secondary);">显示求职证件照</span>
+                                </div>
+                                <button class="btn btn-secondary" style="width:100%; justify-content:center; padding:8px 12px; font-size:0.85rem;" onclick="triggerAvatarUpload()">
+                                    <i data-lucide="upload" style="width:14px;height:14px;"></i> 上传照片文件
+                                </button>
+                                <input type="file" id="avatar-file-input" style="display:none;" accept="image/*" onchange="handleAvatarUpload(event)">
+                            </div>
+                        </div>
+                        
+                        <!-- 3. 版面间距调节 -->
+                        <div class="control-group">
+                            <label class="control-label" style="display:flex; justify-content:space-between; align-items:center;">
+                                <span><i data-lucide="maximize-2" style="width:14px;height:14px;color:var(--secondary)"></i> 一键调间距</span>
+                                <span id="spacing-val-display" style="font-size:0.75rem; color:var(--text-muted); font-weight:normal;">适中</span>
+                            </label>
+                            <div class="spacing-btn-group">
+                                <button class="btn btn-secondary spacing-btn" data-spacing="compact" onclick="adjustResumeSpacing('compact')">紧凑</button>
+                                <button class="btn btn-secondary spacing-btn active" data-spacing="normal" onclick="adjustResumeSpacing('normal')">适中</button>
+                                <button class="btn btn-secondary spacing-btn" data-spacing="loose" onclick="adjustResumeSpacing('loose')">宽松</button>
+                            </div>
+                        </div>
+                        
+                        <!-- 4. 模块管理 -->
+                        <div class="control-group">
+                            <label class="control-label"><i data-lucide="layout" style="width:14px;height:14px;color:var(--secondary)"></i> 模块显示开关</label>
+                            <div class="section-toggles-grid">
+                                <label class="toggle-item-lbl">
+                                    <input type="checkbox" id="toggle-sec-education" checked onchange="toggleSection('education', this.checked)"> 教育背景
+                                </label>
+                                <label class="toggle-item-lbl">
+                                    <input type="checkbox" id="toggle-sec-workExperience" checked onchange="toggleSection('workExperience', this.checked)"> 工作经历
+                                </label>
+                                <label class="toggle-item-lbl">
+                                    <input type="checkbox" id="toggle-sec-projects" checked onchange="toggleSection('projects', this.checked)"> 项目经验
+                                </label>
+                                <label class="toggle-item-lbl">
+                                    <input type="checkbox" id="toggle-sec-skills" checked onchange="toggleSection('skills', this.checked)"> 专业技能
+                                </label>
+                                <label class="toggle-item-lbl">
+                                    <input type="checkbox" id="toggle-sec-awards" checked onchange="toggleSection('awards', this.checked)"> 荣誉奖项
+                                </label>
+                                <label class="toggle-item-lbl">
+                                    <input type="checkbox" id="toggle-sec-selfEvaluation" checked onchange="toggleSection('selfEvaluation', this.checked)"> 自我评价
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <!-- 5. 快捷添加条目 -->
+                        <div class="control-group" style="margin-bottom:0;">
+                            <label class="control-label"><i data-lucide="plus" style="width:14px;height:14px;color:var(--secondary)"></i> 快捷添加条目</label>
+                            <div style="display:flex; flex-direction:column; gap:8px;">
+                                <button class="btn btn-secondary btn-block btn-sm" onclick="addResumeBlock('education')" style="justify-content:center;">+ 教育经历</button>
+                                <button class="btn btn-secondary btn-block btn-sm" onclick="addResumeBlock('workExperience')" style="justify-content:center;">+ 工作经历</button>
+                                <button class="btn btn-secondary btn-block btn-sm" onclick="addResumeBlock('projects')" style="justify-content:center;">+ 项目经验</button>
+                                <button class="btn btn-secondary btn-block btn-sm" onclick="addResumeBlock('skills')" style="justify-content:center;">+ 技能分类</button>
+                                <button class="btn btn-secondary btn-block btn-sm" onclick="addResumeBlock('awards')" style="justify-content:center;">+ 荣誉奖项</button>
+                            </div>
+                        </div>
+                    </aside>
+                </div>
+            </section>
+
+            <!-- 3. 知识库浏览器视图 -->
+            <section id="knowledge-view" class="page-view">
+                <div class="section-header">
+                    <h1 class="section-title">核心算法浏览器 2.0</h1>
+                    <p class="section-desc">包含机器学习、Transformer 深度学习、LLM、CV与SAM、遥感算法及空间数据工程，提供深度公式与参数调优解析。</p>
+                </div>
+                
+                <div class="knowledge-layout">
+                    <!-- 左侧分类菜单 -->
+                    <aside class="knowledge-menu" id="k-menu">
+                        <!-- 动态载入 -->
+                    </aside>
+                    
+                    <!-- 右侧知识内容区 -->
+                    <main class="knowledge-content" id="k-content">
+                        <!-- 动态载入 -->
+                    </main>
+                </div>
+            </section>
+
+            <!-- 4. 面试模拟器视图 -->
+            <section id="quiz-view" class="page-view">
+                <div class="section-header">
+                    <h1 class="section-title">大厂场景面试模拟器 2.0</h1>
+                    <p class="section-desc">模拟真实的大厂面试问题，您可以先在下方脑暴您的回答提纲，然后再查看标准的高分回答范式和避坑细节。</p>
+                </div>
+                
+                <div class="simulator-panel">
+                    <!-- 筛选控制器 -->
+                    <div class="sim-controls">
+                        <div style="display:flex;gap:12px;">
+                            <select id="quiz-category-filter" class="dropdown-select">
+                                <option value="all">📁 全部考察分类</option>
+                                <option value="ml">机器学习</option>
+                                <option value="dl_transformer">深度学习与Transformer</option>
+                                <option value="llm_rag">大模型、RAG与Agent</option>
+                                <option value="cv_sam">计算机视觉与SAM</option>
+                                <option value="rs_uav">遥感算法与无人机</option>
+                                <option value="data_eng">数据工程</option>
+                            </select>
+                            <select id="quiz-difficulty-filter" class="dropdown-select">
+                                <option value="all">⚡ 全部难度</option>
+                                <option value="easy">简单 (基础)</option>
+                                <option value="medium">中等 (应用)</option>
+                                <option value="hard">困难 (架构)</option>
+                            </select>
+                        </div>
+                        <div style="color:var(--text-muted);font-weight:600;" id="quiz-indicator">0 / 0</div>
+                    </div>
+                    
+                    <!-- 题目卡片 -->
+                    <div class="glass-card sim-question-card" id="quiz-question-container">
+                        <!-- JS 动态载入 -->
+                    </div>
+                    
+                    <!-- 用户思考输入区域 -->
+                    <textarea class="user-answer-box" id="quiz-user-answer" placeholder="请在脑中思考该题的回答，或在此处写下您的答案提纲（例如：1.先答物理意义... 2.再画出核心公式... 3.举出在遥感项目中的优化效果...）"></textarea>
+                    
+                    <!-- 操作按钮 -->
+                    <div class="sim-actions">
+                        <div style="display:flex;gap:12px;">
+                            <button class="btn btn-secondary" onclick="prevQuiz()" id="quiz-prev-btn"><i data-lucide="chevron-left"></i> 上一题</button>
+                            <button class="btn btn-secondary" onclick="nextQuiz()" id="quiz-next-btn">下一题 <i data-lucide="chevron-right"></i></button>
+                        </div>
+                        <div style="display:flex;gap:12px;flex-wrap:wrap;">
+                            <button class="btn btn-secondary" onclick="evaluateQuizAnswer()" style="border-color: var(--primary); color: var(--primary); font-weight: 600;">
+                                <i data-lucide="sparkles" style="color:var(--primary)"></i> ✨ 提交 AI 智能打分
+                            </button>
+                            <button class="btn btn-primary" onclick="revealQuizAnswer()">
+                                <i data-lucide="eye"></i> 查看参考标准回答
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- 解析面板 (默认隐藏) -->
+                    <div class="glass-card feedback-panel" id="quiz-feedback-panel">
+                        <!-- AI 智能打分面板 -->
+                        <div id="quiz-ai-score-panel" style="display:none; margin-bottom: 20px; padding: 18px; border-radius: 12px; background: var(--primary-glow); border: 1px solid var(--card-border);">
+                            <!-- 由 app.js 动态渲染 -->
+                        </div>
+
+                        <h2 style="font-family:'Outfit';font-size:1.25rem;margin-bottom:16px;color:var(--secondary);display:flex;align-items:center;gap:8px;">
+                            <i data-lucide="award"></i> 面试官答题参考模板
+                        </h2>
+                        
+                        <div class="feedback-section">
+                            <div class="feedback-title">🎯 面试官考查意图</div>
+                            <div class="feedback-content" id="q-intent">无</div>
+                        </div>
+                        
+                        <div class="feedback-section">
+                            <div class="feedback-title">🔑 必须答出的核心关键点</div>
+                            <div class="feedback-content" id="q-key-points">无</div>
+                        </div>
+                        
+                        <div class="feedback-section">
+                            <div class="feedback-title">📝 高分回答框架及话术</div>
+                            <div class="feedback-content" id="q-model-answer" style="line-height:1.7;color:var(--text-primary);">无</div>
+                        </div>
+                        
+                        <div class="feedback-section">
+                            <div class="feedback-title">⚠️ 避坑指南</div>
+                            <div class="feedback-content" id="q-traps" style="color:#fca5a5;">无</div>
+                        </div>
+                        
+                        <!-- 评测反馈保存 -->
+                        <div class="score-selector">
+                            <span style="font-size:0.9rem;color:var(--text-secondary);">为刚才的自我回答进行熟练度打分 (1-5)：</span>
+                            <div style="display:flex;gap:6px;">
+                                <button class="score-btn" data-score="1" onclick="rateQuizScore(1)">1</button>
+                                <button class="score-btn" data-score="2" onclick="rateQuizScore(2)">2</button>
+                                <button class="score-btn" data-score="3" onclick="rateQuizScore(3)">3</button>
+                                <button class="score-btn" data-score="4" onclick="rateQuizScore(4)">4</button>
+                                <button class="score-btn" data-score="5" onclick="rateQuizScore(5)">5</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 5. 记忆卡片视图 -->
+            <section id="flashcards-view" class="page-view">
+                <div class="section-header">
+                    <h1 class="section-title">高频考点主动背诵卡 2.0</h1>
+                    <p class="section-desc">利用主动召回 (Active Recall) 机制快速复习。背诵时支持在“精简记忆版”和“深度面试版”之间任意切换。</p>
+                </div>
+                
+                <div class="flashcard-panel">
+                    <div class="card-progress" id="card-indicator">0 / 0</div>
+                    
+                    <!-- 3D 翻转卡片结构 -->
+                    <div class="flashcard-container" onclick="toggleFlipCard()">
+                        <div class="flashcard" id="flashcard-card">
+                            <!-- 正面 -->
+                            <div class="card-face card-front">
+                                <div class="card-category" id="card-category-front">分类</div>
+                                <div class="card-question" id="card-term">加载中...</div>
+                                <div style="color:var(--text-muted);font-size:0.9rem;margin-top:14px;" id="card-desc">描述</div>
+                            </div>
+                            <!-- 反面 -->
+                            <div class="card-face card-back">
+                                <!-- 切换按钮 (阻止翻牌事件冒泡) -->
+                                <div class="resume-nav" style="margin-bottom: 12px; gap: 4px;" onclick="event.stopPropagation();">
+                                    <button class="tab-btn active" id="card-ver-simple-btn" style="padding: 4px 12px; font-size:0.75rem;" onclick="switchCardVersion('simple')">精简记忆版</button>
+                                    <button class="tab-btn" id="card-ver-detail-btn" style="padding: 4px 12px; font-size:0.75rem;" onclick="switchCardVersion('detail')">深度面试版</button>
+                                </div>
+                                <div class="card-category" id="card-category-back" style="margin-bottom:10px;">答案解析</div>
+                                <div class="card-answer" id="card-details" style="max-height: 180px; overflow-y: auto; width: 100%;">加载中...</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 控制按钮 -->
+                    <div class="card-controls">
+                        <button class="btn btn-secondary" onclick="prevCard(); event.stopPropagation();"><i data-lucide="chevron-left"></i> 上一张</button>
+                        <button class="btn btn-secondary" id="card-mastered-btn" onclick="markCardMastered(); event.stopPropagation();">
+                            <i data-lucide="circle"></i> 标记为已掌握
+                        </button>
+                        <button class="btn btn-primary" onclick="nextCard(); event.stopPropagation();">下一张 <i data-lucide="chevron-right"></i></button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 6. PPT生成器视图 -->
+            <section id="ppt-view" class="page-view">
+                <div class="section-header">
+                    <h1 class="section-title">面试汇报 PPT 生成器 2.0</h1>
+                    <p class="section-desc">基于您当前选择并已定制的简历画像数据，一键在线生成、微调并导出 100% 可编辑的微软 PowerPoint 答辩演示文稿。</p>
+                </div>
+                
+                <div class="ppt-generator-panel">
+                    <!-- 控制中心 -->
+                    <div class="sim-controls" style="margin-bottom:20px;">
+                        <!-- 主题选择 -->
+                        <div style="display:flex; align-items:center; gap:16px; flex-wrap:wrap;">
+                            <span style="font-size:0.9rem; font-weight:600; color:var(--text-secondary);">PPT 主题风格：</span>
+                            <div style="display:flex; gap:8px;">
+                                <button class="btn btn-secondary" id="ppt-theme-dark-btn" onclick="selectPPTTheme('dark')">💻 极客暗黑</button>
+                                <button class="btn btn-secondary" id="ppt-theme-teal-btn" onclick="selectPPTTheme('teal')">🌿 雅致蓝绿</button>
+                                <button class="btn btn-secondary active" id="ppt-theme-academic-btn" onclick="selectPPTTheme('academic')">🎓 极简灰白</button>
+                            </div>
+                        </div>
+                        
+                        <!-- 导出按钮 -->
+                        <button class="btn btn-primary" onclick="exportToPPT()">
+                            <i data-lucide="presentation"></i> 一键导出原生可编辑 PPT (.pptx)
+                        </button>
+                    </div>
+                    
+                    <!-- PPT 预览与实时微调区域 -->
+                    <div class="ppt-preview-section">
+                        <div style="font-size:0.85rem; color:var(--text-muted); margin-bottom:16px; display:flex; align-items:center; gap:6px;">
+                            <i data-lucide="info" style="width:14px;height:14px;"></i>
+                            提示：下方展示幻灯片的大纲预览（16:9 比例卡片），您可以直接双击或点击卡片上的标题及正文文字进行即时修改，修改内容将直接应用到下载的 PPT 文件中。
+                        </div>
+                        
+                        <!-- 幻灯片卡片网格 -->
+                        <div class="ppt-preview-grid" id="ppt-slides-preview-container">
+                            <!-- JS 动态渲染 -->
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <!-- ATS 诊断报告弹窗 (Modal) -->
+    <div id="ats-report-modal" class="modal" style="display:none;">
+        <div class="modal-content glass-card" style="max-width: 800px; width: 90%; border-radius: 16px; border: 1px solid var(--card-border);">
+            <div class="modal-header" style="border-bottom: 1px solid var(--card-border); padding-bottom: 14px;">
+                <h3 style="font-family: 'Outfit'; font-weight: 700; color: var(--text-primary); display: flex; align-items: center; gap: 8px;">
+                    <i data-lucide="bar-chart-2" style="color:var(--primary);"></i> ATS 智能诊断与岗位契合度报告
+                </h3>
+                <button class="modal-close-btn" onclick="closeATSReportModal()">&times;</button>
+            </div>
+            <div class="modal-body" id="ats-report-body" style="padding-top: 15px;">
+                <!-- 由 app.js 动态渲染 -->
+            </div>
+        </div>
+    </div>
+
+    <!-- AI 润色助手弹窗 (Modal) -->
+    <div id="ai-polish-modal" class="modal" style="display:none;">
+        <div class="modal-content glass-card">
+            <div class="modal-header">
+                <h3>✨ AI 智能经历润色助手</h3>
+                <button class="modal-close-btn" onclick="closeAIRefineModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="refine-original">
+                    <div class="refine-title">原句描述：</div>
+                    <blockquote id="refine-original-text"></blockquote>
+                </div>
+                
+                <div class="refine-suggestions-grid">
+                    <!-- 选项 1: STAR法则 -->
+                    <div class="refine-option-card" onclick="selectRefineOption(1)">
+                        <div class="refine-tag option-star">STAR 法则学术风</div>
+                        <div class="refine-desc" id="refine-option-1-text">加载中...</div>
+                        <div class="refine-action-row">
+                            <span class="refine-match-rate">推荐度 95%</span>
+                            <button class="btn btn-primary btn-sm" style="font-size:0.75rem; padding: 4px 8px;">采纳此版本</button>
+                        </div>
+                    </div>
+                    
+                    <!-- 选项 2: 量化业绩 -->
+                    <div class="refine-option-card" onclick="selectRefineOption(2)">
+                        <div class="refine-tag option-quantum">高量化业绩风</div>
+                        <div class="refine-desc" id="refine-option-2-text">加载中...</div>
+                        <div class="refine-action-row">
+                            <span class="refine-match-rate">推荐度 98%</span>
+                            <button class="btn btn-primary btn-sm" style="font-size:0.75rem; padding: 4px 8px;">采纳此版本</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 顺序加载数据及逻辑 -->
+    <script src="js/resume.js"></script>
+    <script src="js/knowledge.js"></script>
+    <script src="js/quiz.js"></script>
+    <script src="js/portfolio.js"></script>
+    <script src="js/radar.js"></script>
+    <script src="js/app.js"></script>
+
+    <!-- 移动端侧边栏响应适配 -->
+    <script>
+        if (window.innerWidth <= 992) {
+            document.getElementById('mobile-toggle-btn').style.display = 'block';
+        }
+        window.addEventListener('resize', () => {
+            if (window.innerWidth <= 992) {
+                document.getElementById('mobile-toggle-btn').style.display = 'block';
+            } else {
+                document.getElementById('mobile-toggle-btn').style.display = 'none';
+            }
+        });
+    </script>
+</body>
+</html>
