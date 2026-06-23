@@ -71,3 +71,31 @@
 - Prithvi EO 2.0：`https://huggingface.co/ibm-nasa-geospatial/Prithvi-EO-2.0-300M`
 - Clay Foundation Model：`https://github.com/Clay-foundation/model`
 - SAMGeo：`https://github.com/opengeos/segment-geospatial`
+
+## 2026-06-23：云原生地理空间工程栈补强
+
+本轮新增 10 个条目，补齐遥感算法工程师从离线脚本走向商用产品时必须掌握的数据底座：资产目录、云优化栅格、矢量数据湖、时空立方体、动态瓦片和低成本地图发布。
+
+## 新增条目
+
+- Cloud-native Geospatial Stack
+- STAC Catalog / STAC API
+- Cloud Optimized GeoTIFF (COG)
+- Zarr / Xarray Data Cube
+- GeoParquet Vector Lake
+- DuckDB Spatial Analytics
+- TiTiler Dynamic Raster Tiles
+- Overture Maps / GERS
+- PMTiles Static Tile Delivery
+- Spatiotemporal Feature Store
+
+## 主要参考源
+
+- STAC：`https://stacspec.org/en`
+- OGC Cloud Optimized GeoTIFF：`https://docs.ogc.org/is/21-026/21-026.html`
+- Zarr：`https://zarr.dev/`
+- GeoParquet：`https://geoparquet.org/`
+- DuckDB Spatial：`https://duckdb.org/docs/stable/core_extensions/spatial/overview`
+- TiTiler：`https://developmentseed.org/titiler/`
+- Overture Maps：`https://overturemaps.org/`
+- PMTiles：`https://pmtiles.io/`
