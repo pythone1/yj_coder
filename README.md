@@ -26,7 +26,7 @@ http://localhost:8000
 - `js/quiz.js`：模拟面试题库。
 - `js/app.js`：应用状态、导航、搜索、卡片、PPT 等交互逻辑。
 - `css/style.css`：全局样式和作品集页面样式。
-- 数据中心：浏览器本地持久化状态、全量 JSON 备份/恢复、用户配置和安全重置入口。
+- 数据中心：浏览器本地持久化状态、全量 JSON 备份/恢复、用户配置、安全重置和求职材料报告导出入口。
 - `scripts/update_resume_content.js`：结构化更新在线简历、JSON 备份和 Markdown 简历。
 - `scripts/update_radar_frontier.js`：增量补充前沿 AI/Agent 工程知识雷达条目。
 - `scripts/update_radar_geoai_frontier.js`：增量补充 Agent 协议、安全评测和 GeoAI/遥感基础模型条目。

@@ -753,6 +753,27 @@
                         </button>
                     </div>
 
+                    <div class="glass-card data-center-panel report-panel">
+                        <div class="data-center-panel-header">
+                            <div>
+                                <h2>求职材料报告</h2>
+                                <p>自动整合在线简历、作品集、知识雷达和用户配置，生成可投递前复盘的材料总览。</p>
+                            </div>
+                            <button class="btn btn-secondary" onclick="renderCareerReportPreview()">
+                                <i data-lucide="refresh-cw"></i> 重新生成
+                            </button>
+                        </div>
+                        <div id="career-report-preview" class="career-report-preview"></div>
+                        <div class="data-action-grid">
+                            <button class="btn btn-primary" onclick="exportCareerReportMarkdown()">
+                                <i data-lucide="file-text"></i> 导出 Markdown
+                            </button>
+                            <button class="btn btn-secondary" onclick="exportCareerReportHTML()">
+                                <i data-lucide="globe"></i> 导出 HTML
+                            </button>
+                        </div>
+                    </div>
+
                     <div class="glass-card data-center-panel danger-panel">
                         <div class="data-center-panel-header">
                             <div>

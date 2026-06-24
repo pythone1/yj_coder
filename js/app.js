@@ -123,6 +123,235 @@ function downloadJSON(filename, payload) {
     URL.revokeObjectURL(url);
 }
 
+function downloadTextFile(filename, text, mimeType) {
+    const blob = new Blob([text], { type: `${mimeType};charset=utf-8` });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+}
+
+function escapeHTML(value) {
+    return String(value ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
+
+function stripMarkdown(value) {
+    return String(value ?? '')
+        .replace(/\*\*/g, '')
+        .replace(/`/g, '')
+        .replace(/\s+/g, ' ')
+        .trim();
+}
+
+function getActiveResumeProfile() {
+    const data = getEditedResumeData();
+    return data.profiles?.[AppState.resumeProfile] || data.profiles?.unicorn || null;
+}
+
+function buildCareerReportModel() {
+    loadUserConfig();
+    const profile = getActiveResumeProfile();
+    const personal = profile?.personalInfo || {};
+    const sections = profile?.sections || {};
+    const portfolio = (window.portfolioCases || []).slice();
+    const mainPortfolio = portfolio
+        .filter((item) => item.priority === '主推' || item.priority === '涓绘帹')
+        .concat(portfolio.filter((item) => item.priority !== '主推' && item.priority !== '涓绘帹'))
+        .slice(0, 6);
+    const radar = (window.knowledgeRadar || [])
+        .slice()
+        .sort((a, b) => (b.relevance || 0) - (a.relevance || 0))
+        .slice(0, 10);
+    const workItems = sections.workExperience?.items || [];
+    const projectItems = sections.projects?.items || [];
+    const skillItems = sections.skills?.items || [];
+
+    return {
+        generatedAt: new Date().toISOString(),
+        config: AppState.userConfig || DEFAULT_USER_CONFIG,
+        personal,
+        workItems,
+        projectItems,
+        skillItems,
+        portfolio: mainPortfolio,
+        radar,
+        stats: {
+            resumeProfiles: getEditedResumeData()?.profiles ? Object.keys(getEditedResumeData().profiles).length : 0,
+            portfolioCases: portfolio.length,
+            radarTopics: window.knowledgeRadar ? window.knowledgeRadar.length : 0,
+            knowledgeItems: window.knowledgeData ? window.knowledgeData.reduce((sum, cat) => sum + cat.items.length, 0) : 0
+        }
+    };
+}
+
+function renderHighlights(items, limit = 3) {
+    return (items || [])
+        .slice(0, limit)
+        .map((item) => `- ${stripMarkdown(item)}`)
+        .join('\n');
+}
+
+function generateCareerReportMarkdown() {
+    const model = buildCareerReportModel();
+    const lines = [];
+    lines.push(`# 求职材料报告 - ${model.config.candidateName || model.personal.name || '候选人'}`);
+    lines.push('');
+    lines.push(`生成时间：${model.generatedAt.slice(0, 10)}`);
+    lines.push(`目标岗位：${model.config.targetRoles || model.personal.targetJob || '未配置'}`);
+    lines.push(`目标薪资：${model.config.targetSalary || model.personal.targetSalary || '未配置'}`);
+    if (model.personal.phone || model.personal.email) {
+        lines.push(`联系方式：${[model.personal.phone, model.personal.email].filter(Boolean).join(' / ')}`);
+    }
+    lines.push('');
+    lines.push('## 1. 候选人定位');
+    lines.push('');
+    lines.push(`- 当前简历画像：${AppState.resumeProfile}`);
+    lines.push(`- 作品集案例：${model.stats.portfolioCases} 个`);
+    lines.push(`- 知识雷达：${model.stats.radarTopics} 条前沿技术概念`);
+    lines.push(`- 知识库条目：${model.stats.knowledgeItems} 条`);
+    lines.push('');
+    lines.push('## 2. 核心经历摘要');
+    model.workItems.slice(0, 3).forEach((item) => {
+        lines.push('');
+        lines.push(`### ${stripMarkdown(item.company || item.name || '工作经历')}`);
+        if (item.period || item.role) lines.push(`${stripMarkdown(item.period || '')} ${stripMarkdown(item.role || '')}`.trim());
+        const highlights = renderHighlights(item.highlights, 4);
+        if (highlights) lines.push(highlights);
+    });
+    lines.push('');
+    lines.push('## 3. 主推项目');
+    model.projectItems.slice(0, 4).forEach((item) => {
+        lines.push('');
+        lines.push(`### ${stripMarkdown(item.name || '项目')}`);
+        if (item.period || item.role) lines.push(`${stripMarkdown(item.period || '')} ${stripMarkdown(item.role || '')}`.trim());
+        const highlights = renderHighlights(item.highlights, 4);
+        if (highlights) lines.push(highlights);
+    });
+    lines.push('');
+    lines.push('## 4. 作品集证据链');
+    model.portfolio.forEach((item) => {
+        lines.push('');
+        lines.push(`### ${stripMarkdown(item.title)}`);
+        lines.push(`- 角色：${stripMarkdown(item.role)}`);
+        lines.push(`- 摘要：${stripMarkdown(item.summary)}`);
+        lines.push(`- 技术栈：${(item.stack || []).map(stripMarkdown).join(' / ')}`);
+        lines.push(`- 指标：${(item.metrics || []).map(stripMarkdown).join(' / ')}`);
+        lines.push(`- 证据路径：${stripMarkdown(item.evidence)}`);
+    });
+    lines.push('');
+    lines.push('## 5. 前沿技术补强');
+    model.radar.forEach((item) => {
+        lines.push(`- ${stripMarkdown(item.name)}：${stripMarkdown(item.summary)}`);
+    });
+    lines.push('');
+    lines.push('## 6. 下一步建议');
+    lines.push('');
+    lines.push('- 给每个主推项目补一张“问题-方案-指标-证据-复盘”卡片。');
+    lines.push('- 将作品集证据路径整理为可点击或可打包的附件目录。');
+    lines.push('- 针对 AI算法工程师、遥感算法工程师分别导出岗位定制版简历。');
+    lines.push('- 把知识雷达中“立即补”的概念沉淀为深度知识卡和面试答法。');
+    lines.push('');
+    return lines.join('\n');
+}
+
+function generateCareerReportHTML() {
+    const markdown = generateCareerReportMarkdown();
+    const body = markdown
+        .split('\n')
+        .map((line) => {
+            if (line.startsWith('# ')) return `<h1>${escapeHTML(line.slice(2))}</h1>`;
+            if (line.startsWith('## ')) return `<h2>${escapeHTML(line.slice(3))}</h2>`;
+            if (line.startsWith('### ')) return `<h3>${escapeHTML(line.slice(4))}</h3>`;
+            if (line.startsWith('- ')) return `<li>${escapeHTML(line.slice(2))}</li>`;
+            if (!line.trim()) return '';
+            return `<p>${escapeHTML(line)}</p>`;
+        })
+        .join('\n')
+        .replace(/(<li>.*<\/li>\n?)+/g, (match) => `<ul>\n${match}</ul>\n`);
+
+    return `<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>求职材料报告</title>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; line-height: 1.7; color: #0f172a; max-width: 920px; margin: 0 auto; padding: 36px 22px; background: #f8fafc; }
+    h1, h2, h3 { line-height: 1.25; }
+    h1 { font-size: 30px; margin-bottom: 20px; }
+    h2 { margin-top: 30px; border-bottom: 1px solid #e2e8f0; padding-bottom: 8px; }
+    h3 { margin-top: 22px; color: #0369a1; }
+    p, li { color: #334155; }
+    ul { background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 14px 20px 14px 34px; }
+  </style>
+</head>
+<body>
+${body}
+</body>
+</html>`;
+}
+
+function renderCareerReportPreview() {
+    const preview = document.getElementById('career-report-preview');
+    if (!preview) return;
+
+    const model = buildCareerReportModel();
+    const topPortfolio = model.portfolio.slice(0, 3);
+    const topRadar = model.radar.slice(0, 5);
+
+    preview.innerHTML = `
+        <div class="report-preview-hero">
+            <div>
+                <span>Report Preview</span>
+                <strong>${escapeHTML(model.config.candidateName || model.personal.name || '候选人')}</strong>
+                <p>${escapeHTML(model.config.targetRoles || model.personal.targetJob || '未配置目标岗位')}</p>
+            </div>
+            <div class="report-preview-date">${escapeHTML(model.generatedAt.slice(0, 10))}</div>
+        </div>
+        <div class="report-mini-stats">
+            <div><span>作品集</span><strong>${model.stats.portfolioCases}</strong></div>
+            <div><span>知识雷达</span><strong>${model.stats.radarTopics}</strong></div>
+            <div><span>知识库</span><strong>${model.stats.knowledgeItems}</strong></div>
+        </div>
+        <div class="report-preview-columns">
+            <div>
+                <h3>主推证据</h3>
+                ${topPortfolio.map((item) => `<p><strong>${escapeHTML(item.title)}</strong><br>${escapeHTML(stripMarkdown(item.summary))}</p>`).join('')}
+            </div>
+            <div>
+                <h3>前沿补强</h3>
+                ${topRadar.map((item) => `<p><strong>${escapeHTML(item.name)}</strong><br>${escapeHTML(stripMarkdown(item.summary))}</p>`).join('')}
+            </div>
+        </div>
+    `;
+    if (window.lucide) lucide.createIcons();
+}
+
+window.renderCareerReportPreview = renderCareerReportPreview;
+
+window.exportCareerReportMarkdown = function() {
+    const model = buildCareerReportModel();
+    const filename = `求职材料报告_${model.config.candidateName || 'candidate'}_${new Date().toISOString().slice(0, 10)}.md`;
+    downloadTextFile(filename, generateCareerReportMarkdown(), 'text/markdown');
+    showNotification('求职材料报告 Markdown 已导出');
+};
+
+window.exportCareerReportHTML = function() {
+    const model = buildCareerReportModel();
+    const filename = `求职材料报告_${model.config.candidateName || 'candidate'}_${new Date().toISOString().slice(0, 10)}.html`;
+    downloadTextFile(filename, generateCareerReportHTML(), 'text/html');
+    showNotification('求职材料报告 HTML 已导出');
+};
+
 function renderDataCenter() {
     const health = document.getElementById('data-center-health');
     const list = document.getElementById('data-center-storage-list');
@@ -168,6 +397,8 @@ function renderDataCenter() {
     if (targetRoles) targetRoles.value = AppState.userConfig.targetRoles || '';
     if (targetSalary) targetSalary.value = AppState.userConfig.targetSalary || '';
     if (preferredExport) preferredExport.value = AppState.userConfig.preferredExport || 'pdf';
+
+    renderCareerReportPreview();
 
     if (window.lucide) lucide.createIcons();
 }
