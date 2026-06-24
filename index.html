@@ -310,6 +310,15 @@
                                     <i data-lucide="lock" style="width:14px;"></i> 内容已锁定
                                 </span >
                             </div>
+                            <div class="resume-history-controls">
+                                <button class="btn btn-secondary btn-icon" id="resume-undo-btn" onclick="undoResumeEdit()" disabled title="撤销上一步编辑">
+                                    <i data-lucide="rotate-ccw"></i>
+                                </button>
+                                <button class="btn btn-secondary btn-icon" id="resume-redo-btn" onclick="redoResumeEdit()" disabled title="恢复上一步编辑">
+                                    <i data-lucide="rotate-cw"></i>
+                                </button>
+                                <span id="resume-history-status">当前无历史操作</span>
+                            </div>
                             <div style="display:flex; gap:10px; flex-wrap: wrap;">
                                 <button class="btn btn-secondary" onclick="exportResumeJSON()">
                                     <i data-lucide="download" style="color:#10b981;"></i> 备份配置 (.json)

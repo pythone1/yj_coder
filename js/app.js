@@ -10,6 +10,11 @@ const AppState = {
     pptTheme: 'academic', // 'dark', 'teal', or 'academic'
     pptOutline: [],   // Array of PPT slide objects
     theme: 'light-teal', // 默认全局主题
+    resumeHistory: {
+        undo: [],
+        redo: [],
+        isRestoring: false
+    },
     stats: {
         masteredCards: [], // 记住的卡片ID列表
         reviewedCards: [], // 已复习的卡片ID列表
@@ -29,6 +34,7 @@ const WORKSPACE_STORAGE_KEYS = [
 ];
 
 const JOB_TARGET_STORAGE_KEY = 'interview_prep_job_target';
+const RESUME_HISTORY_LIMIT = 30;
 
 const JOB_MATCH_KEYWORDS = [
     { label: 'Python', aliases: ['python'] },
@@ -860,6 +866,20 @@ function setupEventListeners() {
             hideGlobalSearchPanel();
         }
     });
+
+    document.addEventListener('keydown', (e) => {
+        if (AppState.currentView !== 'resume' || !(e.ctrlKey || e.metaKey)) return;
+        const target = e.target;
+        const isFormField = target && ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName);
+        if (isFormField || target?.isContentEditable) return;
+        if (e.key.toLowerCase() === 'z' && !e.shiftKey) {
+            e.preventDefault();
+            undoResumeEdit();
+        } else if (e.key.toLowerCase() === 'y' || (e.key.toLowerCase() === 'z' && e.shiftKey)) {
+            e.preventDefault();
+            redoResumeEdit();
+        }
+    });
     
     // 监听颜色点击 (初始化事件)
     document.querySelectorAll('.theme-color-picker .color-circle').forEach(btn => {
@@ -1065,6 +1085,67 @@ function getEditedResumeData() {
     return data;
 }
 
+function getResumeStorageSnapshot() {
+    return localStorage.getItem('interview_prep_edited_resumes') || JSON.stringify(getEditedResumeData());
+}
+
+function pushResumeHistory(label = '编辑简历', snapshot = getResumeStorageSnapshot()) {
+    if (AppState.resumeHistory.isRestoring || !snapshot) return;
+    const undoStack = AppState.resumeHistory.undo;
+    if (undoStack.length && undoStack[undoStack.length - 1].snapshot === snapshot) return;
+    undoStack.push({
+        label,
+        snapshot,
+        at: new Date().toISOString()
+    });
+    if (undoStack.length > RESUME_HISTORY_LIMIT) undoStack.shift();
+    AppState.resumeHistory.redo = [];
+    renderResumeHistoryControls();
+}
+
+function renderResumeHistoryControls() {
+    const undoBtn = document.getElementById('resume-undo-btn');
+    const redoBtn = document.getElementById('resume-redo-btn');
+    const status = document.getElementById('resume-history-status');
+    if (undoBtn) undoBtn.disabled = AppState.resumeHistory.undo.length === 0;
+    if (redoBtn) redoBtn.disabled = AppState.resumeHistory.redo.length === 0;
+    if (status) {
+        const undoCount = AppState.resumeHistory.undo.length;
+        const redoCount = AppState.resumeHistory.redo.length;
+        status.textContent = undoCount || redoCount ? `可撤销 ${undoCount} 步 / 可恢复 ${redoCount} 步` : '当前无历史操作';
+    }
+}
+
+function restoreResumeHistoryEntry(entry, targetStack, label) {
+    if (!entry) return;
+    const current = getResumeStorageSnapshot();
+    targetStack.push({
+        label,
+        snapshot: current,
+        at: new Date().toISOString()
+    });
+    AppState.resumeHistory.isRestoring = true;
+    localStorage.setItem('interview_prep_edited_resumes', entry.snapshot);
+    markResumeSaved();
+    AppState.resumeHistory.isRestoring = false;
+    renderResume();
+    renderResumeHistoryControls();
+}
+
+window.undoResumeEdit = function() {
+    const entry = AppState.resumeHistory.undo.pop();
+    if (!entry) return;
+    restoreResumeHistoryEntry(entry, AppState.resumeHistory.redo, entry.label || '撤销');
+    showNotification(`已撤销：${entry.label || '上一步编辑'}`);
+};
+
+window.redoResumeEdit = function() {
+    const entry = AppState.resumeHistory.redo.pop();
+    if (!entry) return;
+    restoreResumeHistoryEntry(entry, AppState.resumeHistory.undo, entry.label || '恢复');
+    showNotification(`已恢复：${entry.label || '上一步编辑'}`);
+};
+
 // 事件委托：失焦时保存对应 DOM 节点的修改到 LocalStorage 结构中
 function markResumeSaved() {
     const timestamp = new Date().toISOString();
@@ -1136,6 +1217,7 @@ window.scrollResumeSection = function(sectionId) {
 
 function saveFieldFromDOM(el) {
     const type = el.dataset.type;
+    const beforeSnapshot = getResumeStorageSnapshot();
     const data = getEditedResumeData();
     const profile = data.profiles[AppState.resumeProfile];
     if (!profile) return;
@@ -1170,7 +1252,10 @@ function saveFieldFromDOM(el) {
         }
     }
     
-    localStorage.setItem('interview_prep_edited_resumes', JSON.stringify(data));
+    const nextSnapshot = JSON.stringify(data);
+    if (nextSnapshot === beforeSnapshot) return;
+    pushResumeHistory('编辑文字', beforeSnapshot);
+    localStorage.setItem('interview_prep_edited_resumes', nextSnapshot);
     markResumeSaved();
     renderResumeWorkspaceBar(profile);
     updateResumeScore(AppState.resumeProfile);
@@ -1466,6 +1551,7 @@ function renderResume() {
     
     // 重新评分及 ATS 扫描
     updateResumeScore(AppState.resumeProfile);
+    renderResumeHistoryControls();
     
     // 渲染公式
     triggerMathRender(paper);
@@ -1837,6 +1923,7 @@ window.optimizeResumeText = function() {
     const data = getEditedResumeData();
     const profile = data.profiles[AppState.resumeProfile];
     if (!profile) return;
+    pushResumeHistory('一键 ATS 优化');
     
     let optimizedCount = 0;
     let quantCount = 0;
@@ -1979,6 +2066,7 @@ window.optimizeResumeText = function() {
     }
 
     localStorage.setItem('interview_prep_edited_resumes', JSON.stringify(data));
+    markResumeSaved();
     renderResume();
     
     showNotification(`智能自适应优化完成！共优化文案 ${optimizedCount} 处，自动 STAR 业绩量化 ${quantCount} 处。`);
@@ -2012,8 +2100,10 @@ window.importResumeJSON = function(event) {
             const parsed = JSON.parse(e.target.result);
             if (parsed.profiles && parsed.profiles.unicorn && parsed.profiles.unicorn.sections) {
                 try {
+                    pushResumeHistory('导入简历配置');
                     localStorage.setItem('interview_prep_edited_resumes', JSON.stringify(parsed));
                     localStorage.setItem('resume_forced_sync_version', 'v3.0_ai_rs_resume');
+                    markResumeSaved();
                     showNotification('文件导入成功，正在刷新页面...');
                     setTimeout(() => {
                         location.reload();
@@ -2227,8 +2317,10 @@ window.selectRefineOption = function(optionNum) {
     const data = getEditedResumeData();
     const profile = data.profiles[AppState.resumeProfile];
     if (profile && profile.sections[sectionKey] && profile.sections[sectionKey].items[itemIdx]) {
+        pushResumeHistory('采纳 AI 润色');
         profile.sections[sectionKey].items[itemIdx].highlights[bulletIdx] = refinedText;
         localStorage.setItem('interview_prep_edited_resumes', JSON.stringify(data));
+        markResumeSaved();
         
         closeAIRefineModal();
         renderResume();
@@ -2283,8 +2375,10 @@ window.changeThemeColor = function(color) {
     const data = getEditedResumeData();
     const profile = data.profiles[AppState.resumeProfile];
     if (profile) {
+        pushResumeHistory('切换主题色');
         profile.themeColor = color;
         localStorage.setItem('interview_prep_edited_resumes', JSON.stringify(data));
+        markResumeSaved();
         renderResume();
         showNotification('已成功切换主题配色！');
     }
@@ -2295,8 +2389,10 @@ window.toggleAvatarVisibility = function(visible) {
     const data = getEditedResumeData();
     const profile = data.profiles[AppState.resumeProfile];
     if (profile) {
+        pushResumeHistory(visible ? '显示证件照' : '隐藏证件照');
         profile.personalInfo.showAvatar = visible;
         localStorage.setItem('interview_prep_edited_resumes', JSON.stringify(data));
+        markResumeSaved();
         renderResume();
     }
 };
@@ -2324,8 +2420,10 @@ window.handleAvatarUpload = function(event) {
         const data = getEditedResumeData();
         const profile = data.profiles[AppState.resumeProfile];
         if (profile) {
+            pushResumeHistory('上传证件照');
             profile.personalInfo.avatar = base64;
             localStorage.setItem('interview_prep_edited_resumes', JSON.stringify(data));
+            markResumeSaved();
             renderResume();
             showNotification('照片上传成功！');
         }
@@ -2338,8 +2436,10 @@ window.adjustResumeSpacing = function(level) {
     const data = getEditedResumeData();
     const profile = data.profiles[AppState.resumeProfile];
     if (profile) {
+        pushResumeHistory('调整版面间距');
         profile.spacing = level;
         localStorage.setItem('interview_prep_edited_resumes', JSON.stringify(data));
+        markResumeSaved();
         renderResume();
     }
 };
@@ -2349,8 +2449,10 @@ window.toggleSection = function(sectionKey, show) {
     const data = getEditedResumeData();
     const profile = data.profiles[AppState.resumeProfile];
     if (profile && profile.sections[sectionKey]) {
+        pushResumeHistory(show ? '显示简历板块' : '隐藏简历板块');
         profile.sections[sectionKey].show = show;
         localStorage.setItem('interview_prep_edited_resumes', JSON.stringify(data));
+        markResumeSaved();
         renderResume();
     }
 };
@@ -2395,8 +2497,10 @@ window.addResumeBlock = function(sectionKey) {
     };
     
     if (templates[sectionKey]) {
+        pushResumeHistory('新增简历条目');
         section.items.push(templates[sectionKey]);
         localStorage.setItem('interview_prep_edited_resumes', JSON.stringify(data));
+        markResumeSaved();
         renderResume();
         showNotification(`成功新增了一条 ${section.title} 条目！`);
     }
@@ -2412,8 +2516,10 @@ window.deleteResumeBlock = function(sectionKey, index) {
     if (!section || !section.items[index]) return;
     
     if (confirm(`您确定要删除此条 ${section.title} 记录吗？`)) {
+        pushResumeHistory('删除简历条目');
         section.items.splice(index, 1);
         localStorage.setItem('interview_prep_edited_resumes', JSON.stringify(data));
+        markResumeSaved();
         renderResume();
         showNotification('已成功删除该条目。');
     }
@@ -2432,11 +2538,13 @@ window.moveResumeBlock = function(sectionKey, index, direction) {
     if (targetIdx < 0 || targetIdx >= section.items.length) return;
     
     // 数组换位
+    pushResumeHistory('调整条目排序');
     const temp = section.items[index];
     section.items[index] = section.items[targetIdx];
     section.items[targetIdx] = temp;
     
     localStorage.setItem('interview_prep_edited_resumes', JSON.stringify(data));
+    markResumeSaved();
     renderResume();
     showNotification('排序调整已生效！');
 };
@@ -2448,8 +2556,10 @@ window.addBullet = function(sectionKey, index) {
     if (profile && profile.sections[sectionKey] && profile.sections[sectionKey].items[index]) {
         const item = profile.sections[sectionKey].items[index];
         if (item.highlights) {
+            pushResumeHistory('新增项目要点');
             item.highlights.push("新增要点工作业绩或项目细节描述...");
             localStorage.setItem('interview_prep_edited_resumes', JSON.stringify(data));
+            markResumeSaved();
             renderResume();
         }
     }
@@ -2462,8 +2572,10 @@ window.deleteBullet = function(sectionKey, index, bulletIndex) {
     if (profile && profile.sections[sectionKey] && profile.sections[sectionKey].items[index]) {
         const item = profile.sections[sectionKey].items[index];
         if (item.highlights && item.highlights[bulletIndex] !== undefined) {
+            pushResumeHistory('删除项目要点');
             item.highlights.splice(bulletIndex, 1);
             localStorage.setItem('interview_prep_edited_resumes', JSON.stringify(data));
+            markResumeSaved();
             renderResume();
         }
     }
