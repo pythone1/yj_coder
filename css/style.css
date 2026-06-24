@@ -1818,15 +1818,58 @@ body.sidebar-lock {
     gap: 20px;
 }
 
+.k-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 14px;
+    margin-bottom: 12px;
+}
+
 .k-card-title {
     font-family: 'Outfit', sans-serif;
     font-size: 1.3rem;
     font-weight: 700;
     color: var(--text-primary);
-    margin-bottom: 12px;
     display: flex;
     align-items: center;
     gap: 8px;
+    min-width: 0;
+    flex-wrap: wrap;
+}
+
+.knowledge-copy-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 6px;
+    flex-shrink: 0;
+}
+
+.knowledge-copy-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    border: 1px solid var(--card-border);
+    border-radius: 8px;
+    background: #ffffff;
+    color: var(--text-secondary);
+    padding: 6px 9px;
+    font-size: 0.76rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: var(--transition-smooth);
+}
+
+.knowledge-copy-btn:hover {
+    color: var(--primary);
+    border-color: var(--primary);
+    background: var(--primary-glow);
+}
+
+.knowledge-copy-btn svg {
+    width: 13px;
+    height: 13px;
 }
 
 .k-card-tag {
@@ -2398,6 +2441,19 @@ body.sidebar-lock {
         width: 100%;
         justify-content: center;
         min-height: 44px;
+    }
+
+    .k-card-header {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .knowledge-copy-actions {
+        justify-content: flex-start;
+    }
+
+    .knowledge-copy-btn {
+        min-height: 36px;
     }
 
     .resume-history-controls {

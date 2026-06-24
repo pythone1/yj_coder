@@ -3633,6 +3633,7 @@ function renderKnowledgeContent() {
         const card = document.createElement('div');
         card.className = 'glass-card';
         card.style.marginBottom = '20px';
+        const cardId = `${category.id}__${index}`;
         
         let detailsHTML = item.details.map(d => `<div class="k-text-block">${formatContent(d)}</div>`).join('');
         
@@ -3643,11 +3644,27 @@ function renderKnowledgeContent() {
         
         const analogyText = item.analogy ? formatContent(item.analogy).replace(/\n/g, '<br>') : '暂无直白大白话比喻讲解。';
         const scriptText = item.interview_script ? formatContent(item.interview_script).replace(/\n/g, '<br>') : '暂无面试通关话术。';
+        const codeCopyButton = item.code ? `
+            <button class="knowledge-copy-btn" type="button" onclick="copyKnowledgeContent('${cardId}', 'code')">
+                <i data-lucide="code-2"></i> 复制代码
+            </button>
+        ` : '';
 
         card.innerHTML = `
-            <div class="k-card-title">
-                ${item.term}
-                <span class="k-card-tag">${category.name}</span>
+            <div class="k-card-header">
+                <div class="k-card-title">
+                    ${item.term}
+                    <span class="k-card-tag">${category.name}</span>
+                </div>
+                <div class="knowledge-copy-actions">
+                    <button class="knowledge-copy-btn" type="button" onclick="copyKnowledgeContent('${cardId}', 'full')">
+                        <i data-lucide="copy"></i> 复制卡片
+                    </button>
+                    <button class="knowledge-copy-btn" type="button" onclick="copyKnowledgeContent('${cardId}', 'interview')">
+                        <i data-lucide="message-square-quote"></i> 复制话术
+                    </button>
+                    ${codeCopyButton}
+                </div>
             </div>
             <div class="k-subtitle" style="color:var(--text-secondary);font-weight:400;margin-bottom:16px;font-style:italic;">
                 ${item.desc}
@@ -3688,7 +3705,70 @@ function renderKnowledgeContent() {
     
     // 渲染公式
     triggerMathRender(contentContainer);
+    if (window.lucide) lucide.createIcons();
 }
+
+function getKnowledgeItemByCardId(cardId) {
+    const [categoryId, rawIndex] = String(cardId || '').split('__');
+    const category = knowledgeData.find(cat => cat.id === categoryId);
+    if (!category) return null;
+    const item = category.items[Number(rawIndex)];
+    return item ? { category, item } : null;
+}
+
+function buildKnowledgeCopyText(category, item, mode) {
+    if (mode === 'interview') {
+        return `${item.term}\n\n${stripMarkdown(item.interview_script || '暂无面试通关话术。')}`;
+    }
+    if (mode === 'code') {
+        return item.code || '';
+    }
+    return [
+        `# ${item.term}`,
+        '',
+        `分类：${category.name}`,
+        `简介：${stripMarkdown(item.desc || '')}`,
+        '',
+        '## 核心要点',
+        ...(item.details || []).map(detail => `- ${stripMarkdown(detail)}`),
+        '',
+        item.analogy ? `## 大白话\n${stripMarkdown(item.analogy)}` : '',
+        item.interview_script ? `## 面试表达\n${stripMarkdown(item.interview_script)}` : '',
+        item.code ? `## 代码片段\n${item.code}` : ''
+    ].filter(Boolean).join('\n');
+}
+
+function writeClipboardText(text) {
+    if (navigator.clipboard && window.isSecureContext) {
+        return navigator.clipboard.writeText(text);
+    }
+    const textarea = document.createElement('textarea');
+    textarea.value = text;
+    textarea.setAttribute('readonly', '');
+    textarea.style.position = 'fixed';
+    textarea.style.left = '-9999px';
+    document.body.appendChild(textarea);
+    textarea.select();
+    const ok = document.execCommand('copy');
+    document.body.removeChild(textarea);
+    return ok ? Promise.resolve() : Promise.reject(new Error('copy failed'));
+}
+
+window.copyKnowledgeContent = function(cardId, mode) {
+    const found = getKnowledgeItemByCardId(cardId);
+    if (!found) return;
+    const text = buildKnowledgeCopyText(found.category, found.item, mode);
+    if (!text.trim()) {
+        showNotification('当前卡片没有可复制内容');
+        return;
+    }
+    writeClipboardText(text)
+        .then(() => {
+            const label = mode === 'interview' ? '面试话术' : mode === 'code' ? '代码片段' : '知识卡片';
+            showNotification(`已复制${label}`);
+        })
+        .catch(() => alert('复制失败，请手动选中文本复制。'));
+};
 
 window.switchCardTab = function(btn, tabName) {
     const cardEl = btn.closest('.glass-card');
