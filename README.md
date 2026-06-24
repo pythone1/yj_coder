@@ -39,6 +39,7 @@ http://localhost:8000
 - `scripts/update_radar_mlops_spatiotemporal.js`：增量补充状态空间模型、时空图学习、MLOps、Lakehouse 和向量数据库生产化条目。
 - `docs/resume_evidence_notes.md`：简历项目内容的本地文档依据与待补指标清单。
 - `docs/knowledge_radar_update_notes.md`：知识雷达新增概念、来源和后续待收录方向。
+- `docs/ui_experience_audit.md`：UI 体验审查、移动端适配记录和后续验收建议。
 - `docs/deployment_notes.md`：本地运行、静态托管和后续服务化部署说明。
 
 ## 内容边界

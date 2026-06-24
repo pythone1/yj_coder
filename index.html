@@ -20,7 +20,8 @@
     <div class="app-container">
         
         <!-- 左侧导航侧边栏 -->
-        <aside class="sidebar">
+        <div class="sidebar-backdrop" onclick="closeMobileSidebar()"></div>
+        <aside class="sidebar" aria-label="主导航">
             <div class="sidebar-brand">
                 <div class="sidebar-logo-icon">Ω</div>
                 <div class="sidebar-brand-text">面试备战中心 2.0</div>
@@ -96,7 +97,7 @@
             <header class="top-header">
                 <div style="display: flex; align-items: center; gap: 16px;">
                     <!-- 移动端侧边栏开关 -->
-                    <button onclick="toggleMobileSidebar()" class="btn btn-secondary" style="padding: 8px 12px; display: none;" id="mobile-toggle-btn">
+                    <button onclick="toggleMobileSidebar()" class="btn btn-secondary mobile-toggle-btn" id="mobile-toggle-btn" aria-label="打开导航菜单">
                         <i data-lucide="menu" style="width: 20px; height: 20px;"></i>
                     </button>
                     <!-- 全局搜索框 -->
@@ -895,18 +896,5 @@
     <script src="js/radar.js"></script>
     <script src="js/app.js"></script>
 
-    <!-- 移动端侧边栏响应适配 -->
-    <script>
-        if (window.innerWidth <= 992) {
-            document.getElementById('mobile-toggle-btn').style.display = 'block';
-        }
-        window.addEventListener('resize', () => {
-            if (window.innerWidth <= 992) {
-                document.getElementById('mobile-toggle-btn').style.display = 'block';
-            } else {
-                document.getElementById('mobile-toggle-btn').style.display = 'none';
-            }
-        });
-    </script>
 </body>
 </html>

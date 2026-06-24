@@ -807,8 +807,7 @@ function switchView(viewName) {
     }
     
     // 移动端菜单自动收起
-    const sidebar = document.querySelector('.sidebar');
-    if (sidebar) sidebar.classList.remove('open');
+    if (window.closeMobileSidebar) closeMobileSidebar();
 }
 
 // 绑定各种交互事件
@@ -4150,7 +4149,17 @@ window.prevCard = function() {
 
 window.toggleMobileSidebar = function() {
     const sidebar = document.querySelector('.sidebar');
-    if (sidebar) {
-        sidebar.classList.toggle('open');
-    }
+    const backdrop = document.querySelector('.sidebar-backdrop');
+    if (!sidebar) return;
+    const isOpen = sidebar.classList.toggle('open');
+    if (backdrop) backdrop.classList.toggle('active', isOpen);
+    document.body.classList.toggle('sidebar-lock', isOpen);
+};
+
+window.closeMobileSidebar = function() {
+    const sidebar = document.querySelector('.sidebar');
+    const backdrop = document.querySelector('.sidebar-backdrop');
+    if (sidebar) sidebar.classList.remove('open');
+    if (backdrop) backdrop.classList.remove('active');
+    document.body.classList.remove('sidebar-lock');
 };

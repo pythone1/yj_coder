@@ -50,6 +50,10 @@ body {
     min-height: 100vh;
 }
 
+body.sidebar-lock {
+    overflow: hidden;
+}
+
 /* Custom Scrollbar */
 ::-webkit-scrollbar {
     width: 6px;
@@ -83,6 +87,22 @@ body {
     height: 100vh;
     z-index: 100;
     transition: var(--transition-smooth);
+}
+
+.sidebar-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 95;
+    background: rgba(15, 23, 42, 0.36);
+    backdrop-filter: blur(2px);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+}
+
+.sidebar-backdrop.active {
+    opacity: 1;
+    pointer-events: auto;
 }
 
 .sidebar-brand {
@@ -187,6 +207,11 @@ body {
     position: sticky;
     top: 0;
     z-index: 90;
+}
+
+.mobile-toggle-btn {
+    display: none;
+    padding: 8px 12px;
 }
 
 .search-box {
@@ -2068,6 +2093,8 @@ body {
 @media (max-width: 992px) {
     .sidebar {
         transform: translateX(-100%);
+        z-index: 120;
+        max-width: min(var(--sidebar-width), 84vw);
     }
     
     .sidebar.open {
@@ -2080,6 +2107,14 @@ body {
     
     .top-header {
         padding: 0 20px;
+    }
+
+    .mobile-toggle-btn {
+        display: inline-flex;
+        min-width: 44px;
+        min-height: 44px;
+        align-items: center;
+        justify-content: center;
     }
 
     .search-box {
@@ -2145,6 +2180,21 @@ body {
     .resume-section-jump {
         justify-content: flex-start;
     }
+
+    .resume-workspace-container {
+        grid-template-columns: 1fr;
+    }
+
+    .resume-editor-sidebar {
+        position: static;
+        max-height: none;
+        order: -1;
+    }
+
+    .resume-paper-wrapper {
+        overflow-x: auto;
+        padding-bottom: 12px;
+    }
 }
 
 @media (max-width: 576px) {
@@ -2155,18 +2205,54 @@ body {
 
     .top-header {
         gap: 12px;
+        padding: 0 12px;
+        height: 64px;
     }
 
     .header-user {
         display: none;
     }
 
+    .search-box {
+        width: min(100%, calc(100vw - 76px));
+    }
+
+    .search-box input {
+        min-height: 44px;
+        border-radius: 12px;
+        font-size: 0.85rem;
+        text-overflow: ellipsis;
+    }
+
     .global-search-panel {
-        max-height: calc(100vh - 96px);
+        left: 10px;
+        right: 10px;
+        top: 74px;
+        max-height: calc(100vh - 92px);
+        border-radius: 8px;
     }
     
     .resume-paper {
+        min-width: 680px;
         padding: 20px;
+    }
+
+    .page-view {
+        padding: 22px 14px;
+    }
+
+    .section-title {
+        font-size: 1.55rem;
+    }
+
+    .section-desc {
+        font-size: 0.9rem;
+    }
+
+    .data-center-panel,
+    .glass-card {
+        padding: 18px;
+        border-radius: 8px;
     }
 
     .data-center-panel-header,
@@ -2178,8 +2264,17 @@ body {
     .data-health-grid,
     .data-action-grid,
     .config-form-grid,
+    .job-target-grid,
     .report-mini-stats {
         grid-template-columns: 1fr;
+    }
+
+    .data-action-grid .btn,
+    .resume-actions .btn,
+    .sim-controls .btn {
+        width: 100%;
+        justify-content: center;
+        min-height: 44px;
     }
 
     .report-preview-hero {
