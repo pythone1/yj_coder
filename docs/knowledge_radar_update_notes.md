@@ -255,3 +255,30 @@
 - Milvus Hybrid Search：`https://milvus.io/docs/hybrid_search_with_milvus.md`
 - Weaviate Named Vectors：`https://docs.weaviate.io/weaviate/config-refs/schema/multi-vector`
 - LangGraph：`https://langchain-ai.github.io/langgraph/`
+
+## 2026-06-24：深度知识卡沉淀：GeoAI、视觉文档 RAG 与推理服务
+
+本轮不只新增雷达词条，而是把已核验的前沿方向沉淀进 `js/knowledge.js` 的“前沿 AI 工程”深度卡，方便直接用于面试表达、项目迁移和作品集报告。
+
+## 新增深度卡
+
+- Prithvi-EO-2.0：多时相地球观测基础模型
+- Clay Foundation Model：开源 Earth Embedding 底座
+- ColPali / ColQwen：视觉文档检索与多模态 RAG
+- SGLang / RadixAttention：结构化生成与 KV Cache 复用
+
+## 主要参考源
+
+- Prithvi-EO-2.0 Hugging Face：`https://huggingface.co/ibm-nasa-geospatial/Prithvi-EO-2.0-300M-TL`
+- Prithvi-EO-2.0 论文：`https://arxiv.org/abs/2412.02732`
+- Clay Foundation Model：`https://github.com/Clay-foundation/model`
+- ColPali 论文：`https://arxiv.org/abs/2407.01449`
+- ColPali/ColQwen 模型卡：`https://huggingface.co/vidore/colqwen2-v0.1`
+- SGLang GitHub：`https://github.com/sgl-project/sglang`
+- SGLang 论文：`https://arxiv.org/abs/2312.07104`
+
+## 求职迁移方向
+
+- 遥感算法工程师：把 Prithvi-EO-2.0 和 Clay 作为 GeoAI backbone/embedding 方向，和 UNet、DeepLabv3、SAMGeo、传统指数法形成对比。
+- AI 应用工程：把 ColPali/ColQwen 用于投标文件、报告、PPT 和图表证据库的多模态 RAG。
+- 商用系统工程：用 SGLang/RadixAttention 解释长上下文、结构化生成、KV cache 复用和推理成本治理。

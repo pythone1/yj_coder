@@ -819,6 +819,75 @@ x_concat = torch.cat([encoder_feature, decoder_upsampled], dim=1)`,
                 interview_script: "1. 说明遥感基础模型的预训练数据和任务特性。\n2. 讲迁移流程：预训练权重、任务头、少样本微调、地理区域验证。\n3. 强调遥感工程细节：CRS、分辨率、时序、云影和跨区域泛化。"
             },
             {
+                term: "Prithvi-EO-2.0：多时相地球观测基础模型",
+                desc: "IBM、NASA 与 Juelich 推出的第二代 EO foundation model，重点补强多时相、时空位置和多光谱遥感任务。",
+                details: [
+                    "**模型结构**：Prithvi-EO-2.0 仍以 ViT + MAE 为核心，但把 2D patch/position embedding 升级为 3D patch/position embedding，使模型能直接处理按时间排列的影像序列。TL 版本还把经纬度、年份和年内日序编码进模型，帮助它学习地理位置和季节性。",
+                    "**数据与任务**：官方模型卡说明其使用 NASA HLS V2 产品预训练，包含 Blue、Green、Red、NIR、SWIR1、SWIR2 六个波段，并提供 5M、100M、300M、600M 等规模。微调任务覆盖作物分割、滑坡分割、碳通量回归等，和遥感算法工程师岗位高度相关。",
+                    "**落地价值**：它不是简单替代 UNet/DeepLabv3，而是作为 backbone 提供更强的遥感表征。实际项目可先用传统模型建立 baseline，再用 Prithvi-EO-2.0 做少样本微调、跨区域泛化和多时相变化分析对比。"
+                ],
+                code: `# TerraTorch 中加载 Prithvi-EO-2.0 backbone 的典型方式
+from terratorch.registry import BACKBONE_REGISTRY
+
+backbone = BACKBONE_REGISTRY.build(
+    "ibm-nasa-geospatial/Prithvi-EO-2.0-300M-TL"
+)
+
+# 后续接 segmentation / regression head 做下游微调`,
+                analogy: "如果普通遥感模型像只看一张照片判断地物，Prithvi-EO-2.0 更像同时看多期影像、季节和地理位置的判读员，能把“这里是什么”和“它随时间怎么变”一起理解。",
+                interview_script: "1. 先讲结构升级：3D patch embedding 处理多时相影像，TL 版本加入时间和位置编码。\n2. 说明它的遥感特异性：HLS 多光谱、时间序列、地理位置、跨分辨率任务，而不是 ImageNet 迁移。\n3. 落到项目：池塘、水体、农田、变化检测可用它做 backbone，对比 UNet/DeepLabv3/SAM 后处理。"
+            },
+            {
+                term: "Clay Foundation Model：开源 Earth Embedding 底座",
+                desc: "面向地球观测的开源 AI 模型和接口，可作为遥感下游任务的通用 embedding/backbone。",
+                details: [
+                    "**定位**：Clay 官方仓库将其定义为面向 Earth 的开源 AI 模型和接口，源码与模型权重采用 Apache-2.0 许可。它适合被包装成遥感项目里的统一特征提取层，而不是只做单一分类器。",
+                    "**工程使用**：Clay 提供 pip 安装和 Python 包接口，核心模块包括 `ClayDataModule` 与 `ClayMAEModule`，训练和验证通过 PyTorch Lightning 风格配置运行。对作品集而言，它能体现你会把学术模型接成可复现实验管线。",
+                    "**简历表达**：可以把 Clay 放在“关注并能迁移的 GeoAI 基础模型”里：用其 embedding 做水体/池塘/滩涂场景的特征抽取，再与传统指数、UNet、SAMGeo 后处理结果进行对照。"
+                ],
+                code: `# Clay 官方仓库的典型安装和导入方式
+# pip install git+https://github.com/Clay-foundation/model.git
+
+from claymodel.datamodule import ClayDataModule
+from claymodel.module import ClayMAEModule
+
+# 通过配置文件组织数据、backbone 和训练过程`,
+                analogy: "Clay 像给地球观测数据做了一套通用底片。你不必每个任务都从零训练眼睛，而是先拿到更懂 Sentinel、DEM、地物纹理的 embedding，再接自己的分类、分割或检索头。",
+                interview_script: "1. 说明 Clay 是开源地球观测 foundation model，适合做遥感 embedding/backbone。\n2. 强调工程化：pip 安装、配置驱动训练、可复现实验，而不是只会说模型名。\n3. 结合求职项目：用 Clay 与传统遥感指数、UNet、SAMGeo 对比，证明自己能跟进 GeoAI 前沿。"
+            },
+            {
+                term: "ColPali / ColQwen：视觉文档检索与多模态 RAG",
+                desc: "把 PDF 页面直接作为图像嵌入，绕开脆弱的 OCR/版面解析链路，适合投标文件、报告和图表知识库。",
+                details: [
+                    "**核心机制**：ColPali 系列用 VLM 视觉 patch 输出构造多向量表示，再沿用 ColBERT 式 late interaction 计算查询和页面之间的 MaxSim 相似度。它能同时利用文字、版式、表格、图表和页面视觉结构。",
+                    "**为什么重要**：传统 RAG 常依赖 OCR + layout parser + chunking，遇到扫描件、复杂表格、图文混排时容易丢信息。ColPali/ColQwen 直接检索页面图像，适合投标书、项目报告、遥感制图说明、PPT 截图和检测报告。",
+                    "**工程权衡**：多向量视觉检索通常比纯文本 embedding 更重，需要 GPU、向量压缩、rerank 和缓存策略。生产系统可用文本 BM25 做粗筛，再用 ColPali 对关键页面做视觉重排。"
+                ],
+                code: `# ColQwen 检索的核心调用形态
+image_embeddings = model(**processor.process_images(page_images).to(device))
+query_embeddings = model(**processor.process_queries(queries).to(device))
+scores = processor.score_multi_vector(query_embeddings, image_embeddings)`,
+                analogy: "普通文档 RAG 像先把报告抄成纯文字再搜索；ColPali 像直接看整页报告，能注意到表格位置、图例、标题层级和截图内容。",
+                interview_script: "1. 先说它解决 OCR/版面解析脆弱的问题，直接做页面级视觉检索。\n2. 讲 late interaction：页面和查询都是多向量，最后用 MaxSim 汇总相关性。\n3. 结合项目：投标文件、遥感报告、PPT、图表证据库适合用视觉文档 RAG，不只做纯文本检索。"
+            },
+            {
+                term: "SGLang / RadixAttention：结构化生成与 KV Cache 复用",
+                desc: "面向多轮、多分支、结构化输出和 Agent/RAG 管线的高吞吐 LLM 推理框架。",
+                details: [
+                    "**系统定位**：SGLang 把前端的结构化语言模型程序和后端高吞吐 runtime 结合起来，支持生成、选择、并行控制流、结构化输出和服务化推理。",
+                    "**RadixAttention**：复杂 Agent、RAG、few-shot 和多轮对话会反复共享长前缀。RadixAttention 用类似 radix tree 的方式复用 KV cache，减少重复 prefill 计算；压缩 FSM 则用于加速 JSON/约束输出这类结构化解码。",
+                    "**求职系统落地**：JD 分析、简历改写、作品集报告、RAG 问答会共享候选人资料和项目证据。若后续接后端服务，可用 prefix cache / RadixAttention 思路降低重复上下文成本，并用结构化解码保证输出 JSON 可解析。"
+                ],
+                code: `# 工程思路：共享长上下文前缀，结构化输出单独约束
+shared_context = candidate_profile + portfolio_evidence
+tasks = ["JD匹配", "简历改写", "面试问答"]
+
+# 推理服务层应复用 shared_context 的 KV cache，
+# 并对每个任务的 JSON schema 做约束解码。`,
+                analogy: "如果每次生成都重新读一遍整份简历和作品集，就像每个问题都重新背书。RadixAttention 像把共同前缀做成缓存书签，后面不同任务直接从书签处继续。",
+                interview_script: "1. 说明 SGLang 不只是模型，而是结构化生成程序 + 高吞吐 runtime。\n2. 讲 RadixAttention 的价值：多请求共享前缀时复用 KV cache，减少重复 prefill。\n3. 结合系统设计：RAG、Agent、JD 分析和报告生成要考虑结构化输出、缓存、吞吐和成本。"
+            },
+            {
                 term: "Prompt Injection、工具沙箱与 Agent 权限边界",
                 desc: "Agent 能调用工具后，安全问题从文本幻觉升级为真实操作风险。",
                 details: [
