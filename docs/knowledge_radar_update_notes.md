@@ -221,3 +221,37 @@
 - EPA SWMM：`https://www.epa.gov/water-research/storm-water-management-model-swmm`
 - Evidently：`https://docs.evidentlyai.com/`
 - Great Expectations：`https://docs.greatexpectations.io/`
+
+## 2026-06-24：状态空间模型、时空图学习、MLOps 与向量数据库生产化补强
+
+本轮新增 12 个条目，重点从“会做模型 demo”推进到“能做商用 AI 系统”：覆盖长序列建模、时空图学习、数据/模型版本治理、特征管理、Lakehouse 数据底座、向量数据库混合检索，以及可持久化 Agent 工作流。
+
+## 新增条目
+
+- Mamba / Selective State Space Models
+- Mamba-2 / State Space Duality
+- PatchTST / Time-series Transformer
+- Spatiotemporal Graph Neural Networks
+- DVC / Dataset Versioning
+- MLflow Model Registry
+- Feast / Feature Store
+- Lakehouse for AI / Geospatial Data
+- Qdrant / Payload Filtering + HNSW
+- Milvus / Hybrid Sparse-Dense Search
+- Weaviate / Named Vectors
+- LangGraph / Durable Agent Workflows
+
+## 主要参考源
+
+- Mamba：`https://github.com/state-spaces/mamba`
+- PatchTST：`https://github.com/yuqinie98/PatchTST`
+- PyTorch Geometric Temporal：`https://pytorch-geometric-temporal.readthedocs.io/`
+- DVC：`https://dvc.org/doc`
+- MLflow Model Registry：`https://mlflow.org/docs/latest/ml/model-registry/`
+- Feast：`https://docs.feast.dev/`
+- Apache Iceberg：`https://iceberg.apache.org/`
+- Delta Lake：`https://docs.delta.io/latest/index.html`
+- Qdrant：`https://qdrant.tech/documentation/`
+- Milvus Hybrid Search：`https://milvus.io/docs/hybrid_search_with_milvus.md`
+- Weaviate Named Vectors：`https://docs.weaviate.io/weaviate/config-refs/schema/multi-vector`
+- LangGraph：`https://langchain-ai.github.io/langgraph/`

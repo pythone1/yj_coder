@@ -34,6 +34,7 @@ http://localhost:8000
 - `scripts/update_radar_inference_frontier.js`：增量补充 LLM 推理系统、KV cache、结构化生成和成本治理条目。
 - `scripts/update_radar_rag_governance.js`：增量补充 RAG 评测、视觉文档检索、主动学习和 AI 治理条目。
 - `scripts/update_radar_timeseries_control.js`：增量补充时序基础模型、表格基础模型、水系统控制和安全优化条目。
+- `scripts/update_radar_mlops_spatiotemporal.js`：增量补充状态空间模型、时空图学习、MLOps、Lakehouse 和向量数据库生产化条目。
 - `docs/resume_evidence_notes.md`：简历项目内容的本地文档依据与待补指标清单。
 - `docs/knowledge_radar_update_notes.md`：知识雷达新增概念、来源和后续待收录方向。
 
