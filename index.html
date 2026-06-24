@@ -762,6 +762,40 @@
                         </button>
                     </div>
 
+                    <div class="glass-card data-center-panel job-target-panel">
+                        <div class="data-center-panel-header">
+                            <div>
+                                <h2>岗位匹配与定制</h2>
+                                <p>粘贴目标岗位 JD，生成关键词覆盖、作品集补强和简历定制建议。</p>
+                            </div>
+                        </div>
+                        <div class="job-target-grid">
+                            <label>
+                                <span>岗位名称</span>
+                                <input id="job-target-title" type="text" placeholder="AI算法工程师 / 遥感算法工程师">
+                            </label>
+                            <label class="job-target-jd">
+                                <span>岗位 JD</span>
+                                <textarea id="job-target-jd" placeholder="粘贴招聘岗位描述、任职要求和加分项..."></textarea>
+                            </label>
+                        </div>
+                        <div class="data-action-grid">
+                            <button class="btn btn-primary" onclick="analyzeJobTarget()">
+                                <i data-lucide="scan-search"></i> 生成匹配分析
+                            </button>
+                            <button class="btn btn-secondary" onclick="saveJobTargetDraft()">
+                                <i data-lucide="save"></i> 保存草稿
+                            </button>
+                            <button class="btn btn-secondary" onclick="exportJobTargetMarkdown()">
+                                <i data-lucide="file-text"></i> 导出分析
+                            </button>
+                            <button class="btn btn-secondary" onclick="clearJobTargetDraft()">
+                                <i data-lucide="x-circle"></i> 清空
+                            </button>
+                        </div>
+                        <div id="job-match-preview" class="job-match-preview"></div>
+                    </div>
+
                     <div class="glass-card data-center-panel report-panel">
                         <div class="data-center-panel-header">
                             <div>

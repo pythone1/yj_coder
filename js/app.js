@@ -24,7 +24,36 @@ const WORKSPACE_STORAGE_KEYS = [
     { key: 'interview_prep_edited_resumes', label: '在线简历编辑数据' },
     { key: 'interview_prep_theme', label: '全局主题' },
     { key: 'interview_prep_user_config', label: '用户配置' },
+    { key: 'interview_prep_job_target', label: '岗位匹配草稿' },
     { key: 'resume_forced_sync_version', label: '简历数据版本' }
+];
+
+const JOB_TARGET_STORAGE_KEY = 'interview_prep_job_target';
+
+const JOB_MATCH_KEYWORDS = [
+    { label: 'Python', aliases: ['python'] },
+    { label: 'SQL', aliases: ['sql'] },
+    { label: 'PyTorch', aliases: ['pytorch'] },
+    { label: 'TensorFlow', aliases: ['tensorflow', 'tenserflow'] },
+    { label: 'scikit-learn', aliases: ['scikit-learn', 'sklearn'] },
+    { label: 'pandas / GeoPandas', aliases: ['pandas', 'geopandas'] },
+    { label: 'GDAL', aliases: ['gdal'] },
+    { label: 'ArcGIS / QGIS', aliases: ['arcgis', 'qgis'] },
+    { label: '遥感影像处理', aliases: ['遥感', '卫星影像', '影像处理', 'remote sensing'] },
+    { label: 'GIS 空间分析', aliases: ['gis', '空间分析', '空间数据'] },
+    { label: '语义分割', aliases: ['语义分割', 'semantic segmentation'] },
+    { label: '目标检测', aliases: ['目标检测', 'object detection'] },
+    { label: 'SAM / SAM 2', aliases: ['sam', 'segment anything'] },
+    { label: 'YOLO', aliases: ['yolo'] },
+    { label: 'U-Net / DeepLabv3', aliases: ['u-net', 'unet', 'deeplabv3', 'deeplab'] },
+    { label: 'Mask R-CNN', aliases: ['mask r-cnn', 'maskrcnn', 'r-cnn', 'rcnn'] },
+    { label: 'LSTM / 时序预测', aliases: ['lstm', '时序预测', '时间序列'] },
+    { label: 'LightGBM / Random Forest', aliases: ['lightgbm', 'random forest', 'randomforest', '随机森林'] },
+    { label: 'RAG / 知识库', aliases: ['rag', '知识库', '检索增强'] },
+    { label: 'Agent / Vibe Coding', aliases: ['agent', 'claude code', 'codex', 'antigravity', 'vibe coding'] },
+    { label: 'MLOps / 模型部署', aliases: ['mlops', '模型部署', '模型上线', 'docker', 'fastapi'] },
+    { label: '无人机 / 正射建模', aliases: ['无人机', '大疆', 'pix4d', '正射', '三维建模'] },
+    { label: '水环境 / 水质算法', aliases: ['水质', '水环境', '黑臭', 'fui', 'dbwi', 'qa'] }
 ];
 
 const DEFAULT_USER_CONFIG = {
@@ -202,6 +231,8 @@ function renderHighlights(items, limit = 3) {
 
 function generateCareerReportMarkdown() {
     const model = buildCareerReportModel();
+    const jobTarget = getStoredJobTarget();
+    const jobAnalysis = jobTarget.jdText ? (jobTarget.analysis || createJobTargetAnalysis(jobTarget.jobTitle, jobTarget.jdText)) : null;
     const lines = [];
     lines.push(`# 求职材料报告 - ${model.config.candidateName || model.personal.name || '候选人'}`);
     lines.push('');
@@ -218,6 +249,17 @@ function generateCareerReportMarkdown() {
     lines.push(`- 作品集案例：${model.stats.portfolioCases} 个`);
     lines.push(`- 知识雷达：${model.stats.radarTopics} 条前沿技术概念`);
     lines.push(`- 知识库条目：${model.stats.knowledgeItems} 条`);
+    if (jobAnalysis) {
+        lines.push('');
+        lines.push('## 1.1 岗位匹配分析');
+        lines.push('');
+        lines.push(`- 目标岗位：${stripMarkdown(jobAnalysis.jobTitle || jobTarget.jobTitle || '未命名岗位')}`);
+        lines.push(`- 匹配度：${jobAnalysis.score}%`);
+        lines.push(`- 结论：${stripMarkdown(jobAnalysis.summary)}`);
+        if (jobAnalysis.resumeHits?.length) lines.push(`- 简历已覆盖：${jobAnalysis.resumeHits.join(' / ')}`);
+        if (jobAnalysis.evidenceOnly?.length) lines.push(`- 作品集可补强：${jobAnalysis.evidenceOnly.join(' / ')}`);
+        if (jobAnalysis.missing?.length) lines.push(`- 待补缺口：${jobAnalysis.missing.join(' / ')}`);
+    }
     lines.push('');
     lines.push('## 2. 核心经历摘要');
     model.workItems.slice(0, 3).forEach((item) => {
@@ -352,6 +394,208 @@ window.exportCareerReportHTML = function() {
     showNotification('求职材料报告 HTML 已导出');
 };
 
+function getStoredJobTarget() {
+    const saved = localStorage.getItem(JOB_TARGET_STORAGE_KEY);
+    if (!saved) return { jobTitle: '', jdText: '', analysis: null, updatedAt: null };
+    try {
+        return { jobTitle: '', jdText: '', analysis: null, updatedAt: null, ...JSON.parse(saved) };
+    } catch (err) {
+        console.error('Failed to load job target', err);
+        return { jobTitle: '', jdText: '', analysis: null, updatedAt: null };
+    }
+}
+
+function saveJobTarget(target) {
+    const payload = {
+        jobTitle: target.jobTitle || '',
+        jdText: target.jdText || '',
+        analysis: target.analysis || null,
+        updatedAt: new Date().toISOString()
+    };
+    localStorage.setItem(JOB_TARGET_STORAGE_KEY, JSON.stringify(payload));
+    return payload;
+}
+
+function normalizeMatchText(value) {
+    return stripMarkdown(value).toLowerCase();
+}
+
+function textHasAlias(text, aliases) {
+    return aliases.some((alias) => text.includes(alias.toLowerCase()));
+}
+
+function buildResumeMatchText(profile) {
+    if (!profile) return '';
+    const clone = JSON.parse(JSON.stringify(profile));
+    if (clone.personalInfo?.avatar) clone.personalInfo.avatar = '';
+    return normalizeMatchText(JSON.stringify(clone));
+}
+
+function buildPortfolioMatchText() {
+    return normalizeMatchText(JSON.stringify(window.portfolioCases || []));
+}
+
+function createJobTargetAnalysis(jobTitle, jdText) {
+    const profile = getActiveResumeProfile();
+    const jdTextNormalized = normalizeMatchText(`${jobTitle || ''}\n${jdText || ''}`);
+    const resumeText = buildResumeMatchText(profile);
+    const portfolioText = buildPortfolioMatchText();
+    const jdKeywords = JOB_MATCH_KEYWORDS.filter((item) => textHasAlias(jdTextNormalized, item.aliases));
+    const resumeHits = jdKeywords.filter((item) => textHasAlias(resumeText, item.aliases));
+    const portfolioHits = jdKeywords.filter((item) => textHasAlias(portfolioText, item.aliases));
+    const missing = jdKeywords.filter((item) => !resumeHits.includes(item) && !portfolioHits.includes(item));
+    const jdCoverage = jdKeywords.length ? resumeHits.length / jdKeywords.length : 0;
+    const evidenceCoverage = jdKeywords.length ? Math.min(1, (resumeHits.length + portfolioHits.length * 0.5) / jdKeywords.length) : 0;
+    const score = jdKeywords.length ? Math.round(jdCoverage * 70 + evidenceCoverage * 30) : 0;
+    const strongest = resumeHits.slice(0, 8).map((item) => item.label);
+    const evidenceOnly = portfolioHits.filter((item) => !resumeHits.includes(item)).slice(0, 6).map((item) => item.label);
+    const missingLabels = missing.slice(0, 8).map((item) => item.label);
+
+    return {
+        jobTitle: jobTitle || AppState.userConfig?.targetRoles || '',
+        jdKeywords: jdKeywords.map((item) => item.label),
+        resumeHits: strongest,
+        evidenceOnly,
+        missing: missingLabels,
+        score,
+        summary: score >= 85
+            ? '岗位关键词与当前简历高度一致，可直接做岗位化措辞微调。'
+            : score >= 65
+                ? '岗位方向匹配，但仍建议把作品集证据补进简历核心项目。'
+                : '岗位要求与当前简历存在明显缺口，应先补关键词和项目证据。',
+        recommendations: [
+            strongest.length ? `把 ${strongest.slice(0, 4).join('、')} 放到简历前两屏。` : '先补充岗位 JD 中明确要求的核心技术关键词。',
+            evidenceOnly.length ? `将作品集中的 ${evidenceOnly.slice(0, 3).join('、')} 转写到项目经历。` : '检查主推项目是否都有“任务-技术-指标-结果”。',
+            missingLabels.length ? `缺口项：${missingLabels.slice(0, 4).join('、')}，不要硬编，优先补学习卡或项目证据。` : '当前未发现明显关键词缺口，重点压缩弱相关内容。'
+        ]
+    };
+}
+
+function renderJobTargetPanel() {
+    const titleInput = document.getElementById('job-target-title');
+    const jdInput = document.getElementById('job-target-jd');
+    const preview = document.getElementById('job-match-preview');
+    if (!titleInput || !jdInput || !preview) return;
+
+    const target = getStoredJobTarget();
+    titleInput.value = target.jobTitle || '';
+    jdInput.value = target.jdText || '';
+
+    const analysis = target.analysis;
+    if (!analysis) {
+        preview.innerHTML = `
+            <div class="job-match-empty">
+                <i data-lucide="scan-search"></i>
+                <strong>等待岗位 JD</strong>
+                <span>粘贴岗位描述后生成匹配率、已覆盖关键词、作品集证据和缺口建议。</span>
+            </div>
+        `;
+        if (window.lucide) lucide.createIcons();
+        return;
+    }
+
+    preview.innerHTML = `
+        <div class="job-match-score">
+            <span>岗位匹配度</span>
+            <strong>${analysis.score}%</strong>
+            <p>${escapeHTML(analysis.summary)}</p>
+        </div>
+        <div class="job-match-columns">
+            <div>
+                <h3>简历已覆盖</h3>
+                ${renderJobMatchTags(analysis.resumeHits, 'ok')}
+            </div>
+            <div>
+                <h3>作品集可补强</h3>
+                ${renderJobMatchTags(analysis.evidenceOnly, 'info')}
+            </div>
+            <div>
+                <h3>待补缺口</h3>
+                ${renderJobMatchTags(analysis.missing, 'warn')}
+            </div>
+        </div>
+        <div class="job-match-actions-list">
+            ${analysis.recommendations.map((item) => `<p>${escapeHTML(item)}</p>`).join('')}
+        </div>
+    `;
+    if (window.lucide) lucide.createIcons();
+}
+
+function renderJobMatchTags(items, tone) {
+    if (!items || !items.length) return '<p class="job-match-muted">暂无</p>';
+    return `<div class="job-match-tags ${tone}">${items.map((item) => `<span>${escapeHTML(item)}</span>`).join('')}</div>`;
+}
+
+function generateJobTargetMarkdown() {
+    const target = getStoredJobTarget();
+    const analysis = target.analysis || createJobTargetAnalysis(target.jobTitle, target.jdText);
+    const lines = [];
+    lines.push(`# 岗位匹配分析 - ${analysis.jobTitle || '未命名岗位'}`);
+    lines.push('');
+    lines.push(`生成时间：${new Date().toISOString().slice(0, 10)}`);
+    lines.push(`当前简历画像：${AppState.resumeProfile}`);
+    lines.push(`匹配度：${analysis.score}%`);
+    lines.push('');
+    lines.push('## 结论');
+    lines.push('');
+    lines.push(analysis.summary);
+    lines.push('');
+    lines.push('## 已覆盖关键词');
+    lines.push('');
+    (analysis.resumeHits || []).forEach((item) => lines.push(`- ${item}`));
+    lines.push('');
+    lines.push('## 作品集可补强');
+    lines.push('');
+    (analysis.evidenceOnly || []).forEach((item) => lines.push(`- ${item}`));
+    lines.push('');
+    lines.push('## 待补缺口');
+    lines.push('');
+    (analysis.missing || []).forEach((item) => lines.push(`- ${item}`));
+    lines.push('');
+    lines.push('## 简历定制建议');
+    lines.push('');
+    (analysis.recommendations || []).forEach((item) => lines.push(`- ${item}`));
+    return lines.join('\n');
+}
+
+window.saveJobTargetDraft = function() {
+    const jobTitle = document.getElementById('job-target-title')?.value.trim() || '';
+    const jdText = document.getElementById('job-target-jd')?.value.trim() || '';
+    saveJobTarget({ jobTitle, jdText, analysis: null });
+    renderDataCenter();
+    showNotification('岗位草稿已保存');
+};
+
+window.analyzeJobTarget = function() {
+    const jobTitle = document.getElementById('job-target-title')?.value.trim() || '';
+    const jdText = document.getElementById('job-target-jd')?.value.trim() || '';
+    if (!jdText) {
+        alert('请先粘贴岗位 JD。');
+        return;
+    }
+    const analysis = createJobTargetAnalysis(jobTitle, jdText);
+    saveJobTarget({ jobTitle, jdText, analysis });
+    renderDataCenter();
+    showNotification('岗位匹配分析已生成');
+};
+
+window.exportJobTargetMarkdown = function() {
+    const target = getStoredJobTarget();
+    if (!target.jdText) {
+        alert('请先粘贴岗位 JD 并生成分析。');
+        return;
+    }
+    const filename = `岗位匹配分析_${target.jobTitle || 'target'}_${new Date().toISOString().slice(0, 10)}.md`;
+    downloadTextFile(filename, generateJobTargetMarkdown(), 'text/markdown');
+    showNotification('岗位匹配分析 Markdown 已导出');
+};
+
+window.clearJobTargetDraft = function() {
+    localStorage.removeItem(JOB_TARGET_STORAGE_KEY);
+    renderDataCenter();
+    showNotification('岗位匹配草稿已清空');
+};
+
 function renderDataCenter() {
     const health = document.getElementById('data-center-health');
     const list = document.getElementById('data-center-storage-list');
@@ -399,6 +643,7 @@ function renderDataCenter() {
     if (preferredExport) preferredExport.value = AppState.userConfig.preferredExport || 'pdf';
 
     renderCareerReportPreview();
+    renderJobTargetPanel();
 
     if (window.lucide) lucide.createIcons();
 }
