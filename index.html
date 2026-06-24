@@ -75,6 +75,12 @@
                         <span>面试汇报PPT生成器</span>
                     </a>
                 </li>
+                <li>
+                    <a class="menu-item" data-view="data-center">
+                        <i data-lucide="database"></i>
+                        <span>数据中心</span>
+                    </a>
+                </li>
             </ul>
             
             <div class="sidebar-footer">
@@ -665,6 +671,98 @@
                         <div class="ppt-preview-grid" id="ppt-slides-preview-container">
                             <!-- JS 动态渲染 -->
                         </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 9. 数据中心视图 -->
+            <section id="data-center-view" class="page-view">
+                <div class="section-header">
+                    <h1 class="section-title">数据中心</h1>
+                    <p class="section-desc">统一管理本地持久化数据、全量备份、恢复导入、用户配置和安全重置。</p>
+                </div>
+
+                <div class="data-center-layout">
+                    <div class="glass-card data-center-panel">
+                        <div class="data-center-panel-header">
+                            <div>
+                                <h2>本地数据状态</h2>
+                                <p>当前版本仍是纯前端静态应用，数据默认保存在浏览器 LocalStorage。</p>
+                            </div>
+                            <button class="btn btn-secondary" onclick="renderDataCenter()">
+                                <i data-lucide="refresh-cw"></i> 刷新
+                            </button>
+                        </div>
+                        <div id="data-center-health" class="data-health-grid"></div>
+                        <div id="data-center-storage-list" class="storage-list"></div>
+                    </div>
+
+                    <div class="glass-card data-center-panel">
+                        <div class="data-center-panel-header">
+                            <div>
+                                <h2>全量备份与恢复</h2>
+                                <p>备份包含简历编辑内容、学习进度、主题和用户配置。</p>
+                            </div>
+                        </div>
+                        <div class="data-action-grid">
+                            <button class="btn btn-primary" onclick="exportWorkspaceBackup()">
+                                <i data-lucide="archive"></i> 导出全量备份
+                            </button>
+                            <button class="btn btn-secondary" onclick="triggerWorkspaceBackupImport()">
+                                <i data-lucide="upload-cloud"></i> 恢复备份
+                            </button>
+                            <input type="file" id="workspace-backup-file" accept="application/json,.json" style="display:none;" onchange="importWorkspaceBackup(event)">
+                        </div>
+                        <div class="data-warning-box">
+                            恢复备份会覆盖当前浏览器中的本地编辑数据。建议恢复前先导出一份当前备份。
+                        </div>
+                    </div>
+
+                    <div class="glass-card data-center-panel">
+                        <div class="data-center-panel-header">
+                            <div>
+                                <h2>用户配置</h2>
+                                <p>用于后续自动生成简历、作品集报告和岗位匹配建议。</p>
+                            </div>
+                        </div>
+                        <div class="config-form-grid">
+                            <label>
+                                <span>候选人</span>
+                                <input id="config-candidate-name" type="text" placeholder="杨佳">
+                            </label>
+                            <label>
+                                <span>目标岗位</span>
+                                <input id="config-target-roles" type="text" placeholder="AI算法工程师 / 遥感算法工程师">
+                            </label>
+                            <label>
+                                <span>目标薪资</span>
+                                <input id="config-target-salary" type="text" placeholder="15K">
+                            </label>
+                            <label>
+                                <span>默认导出格式</span>
+                                <select id="config-preferred-export" class="dropdown-select">
+                                    <option value="pdf">PDF/打印</option>
+                                    <option value="doc">Word</option>
+                                    <option value="md">Markdown</option>
+                                    <option value="html">HTML</option>
+                                </select>
+                            </label>
+                        </div>
+                        <button class="btn btn-primary" onclick="saveUserConfigFromForm()">
+                            <i data-lucide="save"></i> 保存配置
+                        </button>
+                    </div>
+
+                    <div class="glass-card data-center-panel danger-panel">
+                        <div class="data-center-panel-header">
+                            <div>
+                                <h2>危险操作</h2>
+                                <p>只清理浏览器本地数据，不会删除项目文件。</p>
+                            </div>
+                        </div>
+                        <button class="btn btn-secondary danger-btn" onclick="resetWorkspaceLocalData()">
+                            <i data-lucide="trash-2"></i> 清空本地编辑数据
+                        </button>
                     </div>
                 </div>
             </section>

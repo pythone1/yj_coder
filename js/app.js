@@ -17,6 +17,24 @@ const AppState = {
     }
 };
 
+AppState.userConfig = null;
+
+const WORKSPACE_STORAGE_KEYS = [
+    { key: 'interview_prep_stats', label: '学习进度' },
+    { key: 'interview_prep_edited_resumes', label: '在线简历编辑数据' },
+    { key: 'interview_prep_theme', label: '全局主题' },
+    { key: 'interview_prep_user_config', label: '用户配置' },
+    { key: 'resume_forced_sync_version', label: '简历数据版本' }
+];
+
+const DEFAULT_USER_CONFIG = {
+    candidateName: '杨佳',
+    targetRoles: 'AI算法工程师 / 遥感算法工程师',
+    targetSalary: '15K',
+    preferredExport: 'pdf',
+    updatedAt: null
+};
+
 window.setGlobalTheme = function(themeName) {
     document.body.className = document.body.className.replace(/\btheme-[^\s]+\b/g, '');
     document.body.classList.add(`theme-${themeName}`);
@@ -31,6 +49,7 @@ window.setGlobalTheme = function(themeName) {
 // 页面初始化
 document.addEventListener("DOMContentLoaded", () => {
     loadProgress();
+    loadUserConfig();
     initApp();
     setupEventListeners();
 });
@@ -56,6 +75,184 @@ function saveProgress() {
     updateDashboardStats();
 }
 
+function loadUserConfig() {
+    const saved = localStorage.getItem('interview_prep_user_config');
+    if (!saved) {
+        AppState.userConfig = { ...DEFAULT_USER_CONFIG };
+        localStorage.setItem('interview_prep_user_config', JSON.stringify(AppState.userConfig));
+        return;
+    }
+
+    try {
+        AppState.userConfig = { ...DEFAULT_USER_CONFIG, ...JSON.parse(saved) };
+    } catch (err) {
+        console.error('Failed to load user config', err);
+        AppState.userConfig = { ...DEFAULT_USER_CONFIG };
+    }
+}
+
+function getStorageSnapshot() {
+    return WORKSPACE_STORAGE_KEYS.map((item) => {
+        const value = localStorage.getItem(item.key);
+        const bytes = value ? new Blob([value]).size : 0;
+        return { ...item, exists: value !== null, bytes, value };
+    });
+}
+
+function formatBytes(bytes) {
+    if (!bytes) return '0 B';
+    const units = ['B', 'KB', 'MB'];
+    let size = bytes;
+    let idx = 0;
+    while (size >= 1024 && idx < units.length - 1) {
+        size /= 1024;
+        idx += 1;
+    }
+    return `${size.toFixed(idx === 0 ? 0 : 1)} ${units[idx]}`;
+}
+
+function downloadJSON(filename, payload) {
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+}
+
+function renderDataCenter() {
+    const health = document.getElementById('data-center-health');
+    const list = document.getElementById('data-center-storage-list');
+    if (!health || !list) return;
+
+    loadUserConfig();
+    const snapshot = getStorageSnapshot();
+    const totalBytes = snapshot.reduce((sum, item) => sum + item.bytes, 0);
+    const activeKeys = snapshot.filter((item) => item.exists).length;
+    const editedResume = getEditedResumeData();
+    const resumeProfiles = editedResume?.profiles ? Object.keys(editedResume.profiles).length : 0;
+    const radarTopics = window.knowledgeRadar ? window.knowledgeRadar.length : 0;
+
+    health.innerHTML = [
+        { label: '本地数据项', value: `${activeKeys} / ${snapshot.length}` },
+        { label: '本地占用', value: formatBytes(totalBytes) },
+        { label: '简历画像', value: `${resumeProfiles} 个` },
+        { label: '知识雷达', value: `${radarTopics} 条` }
+    ].map((item) => `
+        <div class="data-health-card">
+            <span>${item.label}</span>
+            <strong>${item.value}</strong>
+        </div>
+    `).join('');
+
+    list.innerHTML = snapshot.map((item) => `
+        <div class="storage-row">
+            <div>
+                <strong>${item.label}</strong>
+                <span>${item.key}</span>
+            </div>
+            <div class="storage-row-status ${item.exists ? 'ok' : 'empty'}">
+                ${item.exists ? formatBytes(item.bytes) : '未生成'}
+            </div>
+        </div>
+    `).join('');
+
+    const candidateName = document.getElementById('config-candidate-name');
+    const targetRoles = document.getElementById('config-target-roles');
+    const targetSalary = document.getElementById('config-target-salary');
+    const preferredExport = document.getElementById('config-preferred-export');
+    if (candidateName) candidateName.value = AppState.userConfig.candidateName || '';
+    if (targetRoles) targetRoles.value = AppState.userConfig.targetRoles || '';
+    if (targetSalary) targetSalary.value = AppState.userConfig.targetSalary || '';
+    if (preferredExport) preferredExport.value = AppState.userConfig.preferredExport || 'pdf';
+
+    if (window.lucide) lucide.createIcons();
+}
+
+window.renderDataCenter = renderDataCenter;
+
+window.saveUserConfigFromForm = function() {
+    AppState.userConfig = {
+        candidateName: document.getElementById('config-candidate-name')?.value.trim() || DEFAULT_USER_CONFIG.candidateName,
+        targetRoles: document.getElementById('config-target-roles')?.value.trim() || DEFAULT_USER_CONFIG.targetRoles,
+        targetSalary: document.getElementById('config-target-salary')?.value.trim() || DEFAULT_USER_CONFIG.targetSalary,
+        preferredExport: document.getElementById('config-preferred-export')?.value || DEFAULT_USER_CONFIG.preferredExport,
+        updatedAt: new Date().toISOString()
+    };
+    localStorage.setItem('interview_prep_user_config', JSON.stringify(AppState.userConfig));
+    renderDataCenter();
+    showNotification('用户配置已保存');
+};
+
+window.exportWorkspaceBackup = function() {
+    const localData = {};
+    getStorageSnapshot().forEach((item) => {
+        if (item.exists) localData[item.key] = item.value;
+    });
+
+    const payload = {
+        schema: 'yj_coder_workspace_backup',
+        version: 1,
+        exportedAt: new Date().toISOString(),
+        activeView: AppState.currentView,
+        activeResumeProfile: AppState.resumeProfile,
+        summary: {
+            radarTopics: window.knowledgeRadar ? window.knowledgeRadar.length : 0,
+            knowledgeCategories: window.knowledgeData ? window.knowledgeData.length : 0,
+            portfolioCases: window.portfolioCases ? window.portfolioCases.length : 0
+        },
+        localStorage: localData
+    };
+
+    downloadJSON(`求职备战中心_全量备份_${new Date().toISOString().slice(0, 10)}.json`, payload);
+    showNotification('全量备份已导出');
+};
+
+window.triggerWorkspaceBackupImport = function() {
+    const input = document.getElementById('workspace-backup-file');
+    if (input) input.click();
+};
+
+window.importWorkspaceBackup = function(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        try {
+            const parsed = JSON.parse(e.target.result);
+            if (parsed.schema !== 'yj_coder_workspace_backup' || !parsed.localStorage) {
+                alert('备份文件格式不正确，未执行恢复。');
+                return;
+            }
+            if (!confirm('恢复会覆盖当前浏览器本地数据，确定继续？')) return;
+            WORKSPACE_STORAGE_KEYS.forEach((item) => {
+                if (Object.prototype.hasOwnProperty.call(parsed.localStorage, item.key)) {
+                    localStorage.setItem(item.key, parsed.localStorage[item.key]);
+                }
+            });
+            showNotification('备份恢复成功，正在刷新页面');
+            setTimeout(() => location.reload(), 600);
+        } catch (err) {
+            console.error(err);
+            alert('备份文件解析失败，请检查 JSON 格式。');
+        } finally {
+            event.target.value = '';
+        }
+    };
+    reader.readAsText(file);
+};
+
+window.resetWorkspaceLocalData = function() {
+    if (!confirm('确定清空本浏览器中的简历编辑、学习进度和配置数据？项目文件不会被删除。')) return;
+    WORKSPACE_STORAGE_KEYS.forEach((item) => localStorage.removeItem(item.key));
+    showNotification('本地编辑数据已清空，正在刷新页面');
+    setTimeout(() => location.reload(), 600);
+};
+
 // 初始化应用
 function initApp() {
     // 渲染仪表盘数据
@@ -71,6 +268,8 @@ function initApp() {
     if (window.renderKnowledgeRadar) {
         renderKnowledgeRadar();
     }
+
+    renderDataCenter();
     
     // 初始化知识库目录
     renderKnowledgeMenu();
@@ -121,6 +320,8 @@ function switchView(viewName) {
             renderPortfolio();
         } else if (viewName === 'radar' && window.renderKnowledgeRadar) {
             renderKnowledgeRadar();
+        } else if (viewName === 'data-center') {
+            renderDataCenter();
         } else if (viewName === 'flashcards') {
             initFlashcards();
         } else if (viewName === 'ppt') {
