@@ -523,6 +523,7 @@ function initApp() {
 
 // 侧边栏及核心页面无刷新导航 (SPA Router)
 function switchView(viewName) {
+    hideGlobalSearchPanel();
     // 隐藏所有视图
     document.querySelectorAll('.page-view').forEach(view => {
         view.classList.remove('active');
@@ -597,7 +598,24 @@ function setupEventListeners() {
             const query = e.target.value.trim().toLowerCase();
             performGlobalSearch(query);
         });
+        searchInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                searchInput.value = '';
+                hideGlobalSearchPanel();
+            }
+            if (e.key === 'Enter') {
+                const firstResult = document.querySelector('.global-search-result');
+                if (firstResult) firstResult.click();
+            }
+        });
     }
+
+    document.addEventListener('click', (e) => {
+        const searchBox = document.querySelector('.search-box');
+        if (searchBox && !searchBox.contains(e.target)) {
+            hideGlobalSearchPanel();
+        }
+    });
     
     // 监听颜色点击 (初始化事件)
     document.querySelectorAll('.theme-color-picker .color-circle').forEach(btn => {
@@ -3270,6 +3288,229 @@ function performGlobalSearch(query) {
 
 function escapeRegExp(string) {
     return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+function getGlobalSearchPanel() {
+    let panel = document.getElementById('global-search-panel');
+    if (panel) return panel;
+
+    const searchBox = document.querySelector('.search-box');
+    if (!searchBox) return null;
+    panel = document.createElement('div');
+    panel.id = 'global-search-panel';
+    panel.className = 'global-search-panel';
+    searchBox.appendChild(panel);
+    return panel;
+}
+
+function getSearchableText(parts) {
+    return parts
+        .flatMap((part) => Array.isArray(part) ? part : [part])
+        .filter(Boolean)
+        .join(' ')
+        .toLowerCase();
+}
+
+function collectGlobalSearchResults(query) {
+    const results = [];
+    const knowledgeSource = typeof knowledgeData !== 'undefined' ? knowledgeData : (window.knowledgeData || []);
+    const radarSource = typeof knowledgeRadar !== 'undefined' ? knowledgeRadar : (window.knowledgeRadar || []);
+    const portfolioSource = typeof portfolioCases !== 'undefined' ? portfolioCases : (window.portfolioCases || []);
+    const quizSource = typeof quizData !== 'undefined' ? quizData : (window.quizData || []);
+
+    knowledgeSource.forEach((cat) => {
+        cat.items.forEach((item) => {
+            const text = getSearchableText([item.term, item.desc, item.details, item.code]);
+            if (text.includes(query)) {
+                results.push({
+                    type: '知识库',
+                    icon: 'book-open',
+                    title: item.term,
+                    desc: item.desc,
+                    meta: cat.name,
+                    view: 'knowledge',
+                    action: () => {
+                        AppState.currentKnowledgeCategory = cat.id;
+                        switchView('knowledge');
+                        renderKnowledgeMenu();
+                        renderKnowledgeSearchResults(query);
+                    }
+                });
+            }
+        });
+    });
+
+    radarSource.forEach((item) => {
+        const text = getSearchableText([item.name, item.domain, item.summary, item.why, item.actions, item.interview]);
+        if (text.includes(query)) {
+            results.push({
+                type: '知识雷达',
+                icon: 'radar',
+                title: item.name,
+                desc: item.summary,
+                meta: `${item.domain} · 相关度 ${item.relevance || '-'}`,
+                view: 'radar',
+                action: () => switchView('radar')
+            });
+        }
+    });
+
+    portfolioSource.forEach((item) => {
+        const text = getSearchableText([item.title, item.role, item.summary, item.stack, item.metrics, item.evidence, item.interview]);
+        if (text.includes(query)) {
+            results.push({
+                type: '作品集',
+                icon: 'briefcase-business',
+                title: item.title,
+                desc: item.summary,
+                meta: item.role,
+                view: 'portfolio',
+                action: () => switchView('portfolio')
+            });
+        }
+    });
+
+    quizSource.forEach((item) => {
+        const text = getSearchableText([item.question, item.category, item.difficulty, item.keyPoints, item.referenceAnswer]);
+        if (text.includes(query)) {
+            results.push({
+                type: '面试题',
+                icon: 'help-circle',
+                title: item.question,
+                desc: item.referenceAnswer || (item.keyPoints || []).join(' / '),
+                meta: `${item.category || '通用'} · ${item.difficulty || '未分级'}`,
+                view: 'quiz',
+                action: () => switchView('quiz')
+            });
+        }
+    });
+
+    return results.slice(0, 24);
+}
+
+function renderGlobalSearchPanel(query, results) {
+    const panel = getGlobalSearchPanel();
+    if (!panel) return;
+
+    if (!query) {
+        hideGlobalSearchPanel();
+        return;
+    }
+
+    if (results.length === 0) {
+        panel.innerHTML = `
+            <div class="global-search-empty">
+                <i data-lucide="search-x"></i>
+                <span>没有找到相关内容</span>
+            </div>
+        `;
+        panel.classList.add('active');
+        if (window.lucide) lucide.createIcons();
+        return;
+    }
+
+    panel.innerHTML = `
+        <div class="global-search-summary">
+            <span>${escapeHTML(query)}</span>
+            <strong>${results.length} 个结果</strong>
+        </div>
+        <div class="global-search-results">
+            ${results.map((item, index) => `
+                <button class="global-search-result" type="button" data-search-index="${index}">
+                    <i data-lucide="${item.icon}"></i>
+                    <span>
+                        <strong>${highlightSearchText(item.title, query)}</strong>
+                        <small>${highlightSearchText(item.desc || '', query)}</small>
+                        <em>${escapeHTML(item.type)} · ${escapeHTML(item.meta || '')}</em>
+                    </span>
+                </button>
+            `).join('')}
+        </div>
+    `;
+
+    panel.querySelectorAll('[data-search-index]').forEach((btn) => {
+        btn.addEventListener('click', () => {
+            const result = results[Number(btn.dataset.searchIndex)];
+            hideGlobalSearchPanel();
+            result?.action?.();
+        });
+    });
+    panel.classList.add('active');
+    if (window.lucide) lucide.createIcons();
+}
+
+function hideGlobalSearchPanel() {
+    const panel = document.getElementById('global-search-panel');
+    if (panel) {
+        panel.classList.remove('active');
+        panel.innerHTML = '';
+    }
+}
+
+function highlightSearchText(text, query) {
+    const raw = String(text || '');
+    if (!query) return escapeHTML(raw);
+    const regex = new RegExp(`(${escapeRegExp(query)})`, 'gi');
+    return escapeHTML(raw).replace(regex, '<mark>$1</mark>');
+}
+
+function renderKnowledgeSearchResults(query) {
+    const contentContainer = document.getElementById('k-content');
+    if (!contentContainer) return;
+    contentContainer.innerHTML = '';
+
+    let matchCount = 0;
+    const knowledgeSource = typeof knowledgeData !== 'undefined' ? knowledgeData : (window.knowledgeData || []);
+    knowledgeSource.forEach((cat) => {
+        cat.items.forEach((item) => {
+            const textToSearch = getSearchableText([item.term, item.desc, item.details, item.code]);
+            if (!textToSearch.includes(query)) return;
+
+            matchCount += 1;
+            const card = document.createElement('div');
+            card.className = 'glass-card';
+            card.style.marginBottom = '20px';
+            const detailsHTML = item.details.map((detail) => `<div class="k-text-block">${highlightSearchText(detail, query)}</div>`).join('');
+            const codeHTML = item.code ? `<pre class="code-block"><code>${highlightSearchText(item.code, query)}</code></pre>` : '';
+            card.innerHTML = `
+                <div class="k-card-title">
+                    ${highlightSearchText(item.term, query)}
+                    <span class="k-card-tag">${escapeHTML(cat.name)}</span>
+                </div>
+                <div class="k-subtitle" style="color:var(--text-secondary);font-weight:400;margin-bottom:16px;font-style:italic;">
+                    ${highlightSearchText(item.desc, query)}
+                </div>
+                <div class="k-details-body">${detailsHTML}</div>
+                ${codeHTML}
+            `;
+            contentContainer.appendChild(card);
+        });
+    });
+
+    if (matchCount === 0) {
+        contentContainer.innerHTML = `
+            <div class="global-search-empty inline-empty">
+                <i data-lucide="search-x"></i>
+                <span>知识库中没有找到“${escapeHTML(query)}”</span>
+            </div>
+        `;
+        if (window.lucide) lucide.createIcons();
+    }
+}
+
+function performGlobalSearch(query) {
+    const normalized = query.trim().toLowerCase();
+    if (!normalized) {
+        hideGlobalSearchPanel();
+        renderKnowledgeContent();
+        return;
+    }
+
+    const results = collectGlobalSearchResults(normalized);
+    renderGlobalSearchPanel(normalized, results);
+    if (AppState.currentView === 'knowledge') {
+        renderKnowledgeSearchResults(normalized);
+    }
 }
 
 /* ==========================================================================
