@@ -15,6 +15,10 @@ const AppState = {
         redo: [],
         isRestoring: false
     },
+    globalSearch: {
+        results: [],
+        activeIndex: -1
+    },
     stats: {
         masteredCards: [], // 记住的卡片ID列表
         reviewedCards: [], // 已复习的卡片ID列表
@@ -855,12 +859,24 @@ function setupEventListeners() {
         });
         searchInput.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') {
+                e.preventDefault();
                 searchInput.value = '';
                 hideGlobalSearchPanel();
+                return;
+            }
+            if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                moveGlobalSearchSelection(1);
+                return;
+            }
+            if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                moveGlobalSearchSelection(-1);
+                return;
             }
             if (e.key === 'Enter') {
-                const firstResult = document.querySelector('.global-search-result');
-                if (firstResult) firstResult.click();
+                e.preventDefault();
+                activateGlobalSearchSelection();
             }
         });
     }
@@ -4011,6 +4027,45 @@ function collectGlobalSearchResults(query) {
     return results.slice(0, 24);
 }
 
+function setGlobalSearchActiveIndex(index) {
+    const results = AppState.globalSearch.results || [];
+    if (!results.length) {
+        AppState.globalSearch.activeIndex = -1;
+        return false;
+    }
+
+    const normalizedIndex = ((index % results.length) + results.length) % results.length;
+    AppState.globalSearch.activeIndex = normalizedIndex;
+
+    document.querySelectorAll('.global-search-result').forEach((btn) => {
+        const isActive = Number(btn.dataset.searchIndex) === normalizedIndex;
+        btn.classList.toggle('is-active', isActive);
+        btn.setAttribute('aria-selected', String(isActive));
+        btn.setAttribute('tabindex', isActive ? '0' : '-1');
+        if (isActive) btn.scrollIntoView({ block: 'nearest' });
+    });
+
+    return true;
+}
+
+function moveGlobalSearchSelection(delta) {
+    const results = AppState.globalSearch.results || [];
+    if (!results.length) return false;
+    const currentIndex = AppState.globalSearch.activeIndex >= 0 ? AppState.globalSearch.activeIndex : 0;
+    return setGlobalSearchActiveIndex(currentIndex + delta);
+}
+
+function activateGlobalSearchSelection() {
+    const results = AppState.globalSearch.results || [];
+    if (!results.length) return false;
+    const activeIndex = AppState.globalSearch.activeIndex >= 0 ? AppState.globalSearch.activeIndex : 0;
+    const result = results[activeIndex];
+    if (!result) return false;
+    hideGlobalSearchPanel();
+    result.action?.();
+    return true;
+}
+
 function renderGlobalSearchPanel(query, results) {
     const panel = getGlobalSearchPanel();
     if (!panel) return;
@@ -4021,6 +4076,8 @@ function renderGlobalSearchPanel(query, results) {
     }
 
     if (results.length === 0) {
+        AppState.globalSearch.results = [];
+        AppState.globalSearch.activeIndex = -1;
         panel.innerHTML = `
             <div class="global-search-empty">
                 <i data-lucide="search-x"></i>
@@ -4032,14 +4089,17 @@ function renderGlobalSearchPanel(query, results) {
         return;
     }
 
+    AppState.globalSearch.results = results;
+    AppState.globalSearch.activeIndex = 0;
+
     panel.innerHTML = `
         <div class="global-search-summary">
             <span>${escapeHTML(query)}</span>
             <strong>${results.length} 个结果</strong>
         </div>
-        <div class="global-search-results">
+        <div class="global-search-results" role="listbox">
             ${results.map((item, index) => `
-                <button class="global-search-result" type="button" data-search-index="${index}">
+                <button class="global-search-result${index === 0 ? ' is-active' : ''}" type="button" data-search-index="${index}" role="option" aria-selected="${index === 0}" tabindex="${index === 0 ? '0' : '-1'}">
                     <i data-lucide="${item.icon}"></i>
                     <span>
                         <strong>${highlightSearchText(item.title, query)}</strong>
@@ -4053,9 +4113,8 @@ function renderGlobalSearchPanel(query, results) {
 
     panel.querySelectorAll('[data-search-index]').forEach((btn) => {
         btn.addEventListener('click', () => {
-            const result = results[Number(btn.dataset.searchIndex)];
-            hideGlobalSearchPanel();
-            result?.action?.();
+            setGlobalSearchActiveIndex(Number(btn.dataset.searchIndex));
+            activateGlobalSearchSelection();
         });
     });
     panel.classList.add('active');
@@ -4068,6 +4127,8 @@ function hideGlobalSearchPanel() {
         panel.classList.remove('active');
         panel.innerHTML = '';
     }
+    AppState.globalSearch.results = [];
+    AppState.globalSearch.activeIndex = -1;
 }
 
 function highlightSearchText(text, query) {

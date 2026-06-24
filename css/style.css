@@ -302,9 +302,14 @@ body.sidebar-lock {
 }
 
 .global-search-result:hover,
-.global-search-result:focus {
+.global-search-result:focus,
+.global-search-result.is-active {
     background: rgba(2, 132, 199, 0.08);
     outline: none;
+}
+
+.global-search-result.is-active {
+    box-shadow: inset 3px 0 0 var(--primary);
 }
 
 .global-search-result svg {
