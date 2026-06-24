@@ -30,11 +30,14 @@ const WORKSPACE_STORAGE_KEYS = [
     { key: 'interview_prep_theme', label: '全局主题' },
     { key: 'interview_prep_user_config', label: '用户配置' },
     { key: 'interview_prep_job_target', label: '岗位匹配草稿' },
+    { key: 'interview_prep_resume_versions', label: '简历版本历史' },
     { key: 'resume_forced_sync_version', label: '简历数据版本' }
 ];
 
 const JOB_TARGET_STORAGE_KEY = 'interview_prep_job_target';
 const RESUME_HISTORY_LIMIT = 30;
+const RESUME_VERSION_STORAGE_KEY = 'interview_prep_resume_versions';
+const RESUME_VERSION_LIMIT = 8;
 
 const JOB_MATCH_KEYWORDS = [
     { label: 'Python', aliases: ['python'] },
@@ -613,12 +616,14 @@ function renderDataCenter() {
     const activeKeys = snapshot.filter((item) => item.exists).length;
     const editedResume = getEditedResumeData();
     const resumeProfiles = editedResume?.profiles ? Object.keys(editedResume.profiles).length : 0;
+    const resumeVersions = getResumeVersions().length;
     const radarTopics = window.knowledgeRadar ? window.knowledgeRadar.length : 0;
 
     health.innerHTML = [
         { label: '本地数据项', value: `${activeKeys} / ${snapshot.length}` },
         { label: '本地占用', value: formatBytes(totalBytes) },
         { label: '简历画像', value: `${resumeProfiles} 个` },
+        { label: '保存版本', value: `${resumeVersions} 个` },
         { label: '知识雷达', value: `${radarTopics} 条` }
     ].map((item) => `
         <div class="data-health-card">
@@ -1146,6 +1151,114 @@ window.redoResumeEdit = function() {
     showNotification(`已恢复：${entry.label || '上一步编辑'}`);
 };
 
+function getResumeVersions() {
+    const saved = localStorage.getItem(RESUME_VERSION_STORAGE_KEY);
+    if (!saved) return [];
+    try {
+        const parsed = JSON.parse(saved);
+        return Array.isArray(parsed) ? parsed : [];
+    } catch (err) {
+        console.error('Failed to load resume versions', err);
+        return [];
+    }
+}
+
+function saveResumeVersions(versions) {
+    localStorage.setItem(RESUME_VERSION_STORAGE_KEY, JSON.stringify(versions.slice(0, RESUME_VERSION_LIMIT)));
+}
+
+function formatResumeVersionTime(value) {
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return '未知时间';
+    const mm = String(date.getMonth() + 1).padStart(2, '0');
+    const dd = String(date.getDate()).padStart(2, '0');
+    const hh = String(date.getHours()).padStart(2, '0');
+    const mi = String(date.getMinutes()).padStart(2, '0');
+    return `${mm}-${dd} ${hh}:${mi}`;
+}
+
+function renderResumeVersions() {
+    const list = document.getElementById('resume-version-list');
+    if (!list) return;
+    const versions = getResumeVersions();
+    if (!versions.length) {
+        list.innerHTML = `
+            <div class="resume-version-empty">
+                <i data-lucide="history"></i>
+                <span>暂无保存版本</span>
+            </div>
+        `;
+        if (window.lucide) lucide.createIcons();
+        return;
+    }
+
+    list.innerHTML = versions.map((item) => `
+        <div class="resume-version-row">
+            <div>
+                <strong>${escapeHTML(item.title || '未命名版本')}</strong>
+                <span>${escapeHTML(formatResumeVersionTime(item.createdAt))} · ${escapeHTML(item.profile || AppState.resumeProfile)}</span>
+            </div>
+            <div class="resume-version-actions">
+                <button type="button" onclick="restoreResumeVersion('${item.id}')" title="恢复版本">
+                    <i data-lucide="refresh-cw"></i>
+                </button>
+                <button type="button" onclick="deleteResumeVersion('${item.id}')" title="删除版本">
+                    <i data-lucide="trash-2"></i>
+                </button>
+            </div>
+        </div>
+    `).join('');
+    if (window.lucide) lucide.createIcons();
+}
+
+window.saveResumeVersionSnapshot = function() {
+    const data = getEditedResumeData();
+    const profile = data.profiles?.[AppState.resumeProfile];
+    const titleBase = profile?.personalInfo?.targetJob || AppState.resumeProfile;
+    const versions = getResumeVersions();
+    const snapshot = getResumeStorageSnapshot();
+    if (versions.length && versions[0].snapshot === snapshot) {
+        showNotification('当前内容与最近保存版本一致，无需重复保存。');
+        return;
+    }
+    versions.unshift({
+        id: `rv_${Date.now()}`,
+        title: `${titleBase} 版本`,
+        profile: AppState.resumeProfile,
+        createdAt: new Date().toISOString(),
+        snapshot
+    });
+    saveResumeVersions(versions);
+    renderResumeVersions();
+    renderDataCenter();
+    showNotification('已保存当前简历版本。');
+};
+
+window.restoreResumeVersion = function(versionId) {
+    const version = getResumeVersions().find((item) => item.id === versionId);
+    if (!version) return;
+    if (!confirm(`确定恢复版本：${version.title || '未命名版本'}？当前简历会先进入撤销栈。`)) return;
+    pushResumeHistory('恢复持久化版本');
+    AppState.resumeHistory.isRestoring = true;
+    localStorage.setItem('interview_prep_edited_resumes', version.snapshot);
+    markResumeSaved();
+    AppState.resumeHistory.isRestoring = false;
+    renderResume();
+    renderDataCenter();
+    showNotification('已恢复保存版本。');
+};
+
+window.deleteResumeVersion = function(versionId) {
+    const versions = getResumeVersions();
+    const target = versions.find((item) => item.id === versionId);
+    if (!target) return;
+    if (!confirm(`确定删除版本：${target.title || '未命名版本'}？`)) return;
+    saveResumeVersions(versions.filter((item) => item.id !== versionId));
+    renderResumeVersions();
+    renderDataCenter();
+    showNotification('已删除保存版本。');
+};
+
 // 事件委托：失焦时保存对应 DOM 节点的修改到 LocalStorage 结构中
 function markResumeSaved() {
     const timestamp = new Date().toISOString();
@@ -1552,6 +1665,7 @@ function renderResume() {
     // 重新评分及 ATS 扫描
     updateResumeScore(AppState.resumeProfile);
     renderResumeHistoryControls();
+    renderResumeVersions();
     
     // 渲染公式
     triggerMathRender(paper);

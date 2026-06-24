@@ -19,7 +19,7 @@ http://localhost:8000
 ## 当前模块
 
 - `index.html`：主页面和视图容器。
-- `js/resume.js`：在线简历编辑与导出，简历页支持编辑状态栏、评分状态、区块快速跳转和会话内撤销/恢复。
+- `js/resume.js`：在线简历编辑与导出，简历页支持编辑状态栏、评分状态、区块快速跳转、会话内撤销/恢复和持久化版本历史。
 - `js/portfolio.js`：求职项目作品集数据与渲染。
 - `js/radar.js`：前沿 AI 工程知识雷达，跟踪新概念、求职相关度、建设动作和来源链接。
 - `js/knowledge.js`：AI、遥感、数据工程、前沿 AI 工程知识库。
@@ -27,7 +27,7 @@ http://localhost:8000
 - `js/app.js`：应用状态、导航、搜索、卡片、PPT 等交互逻辑。
 - `css/style.css`：全局样式和作品集页面样式。
 - 全局搜索：统一检索知识库、知识雷达、作品集和面试题，支持结果面板、回车进入和 Esc 关闭。
-- 数据中心：浏览器本地持久化状态、全量 JSON 备份/恢复、用户配置、安全重置、岗位 JD 匹配分析和求职材料报告导出入口。
+- 数据中心：浏览器本地持久化状态、全量 JSON 备份/恢复、用户配置、安全重置、简历版本历史、岗位 JD 匹配分析和求职材料报告导出入口。
 - `scripts/update_resume_content.js`：结构化更新在线简历、JSON 备份和 Markdown 简历。
 - `scripts/update_radar_frontier.js`：增量补充前沿 AI/Agent 工程知识雷达条目。
 - `scripts/update_radar_geoai_frontier.js`：增量补充 Agent 协议、安全评测和 GeoAI/遥感基础模型条目。
