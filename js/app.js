@@ -822,6 +822,74 @@ function getEditedResumeData() {
 }
 
 // 事件委托：失焦时保存对应 DOM 节点的修改到 LocalStorage 结构中
+function markResumeSaved() {
+    const timestamp = new Date().toISOString();
+    localStorage.setItem('resume_last_saved_at', timestamp);
+    return timestamp;
+}
+
+function formatResumeSavedAt(value) {
+    if (!value) return '未保存';
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return '未保存';
+    const hh = String(date.getHours()).padStart(2, '0');
+    const mm = String(date.getMinutes()).padStart(2, '0');
+    return `已保存 ${hh}:${mm}`;
+}
+
+function getVisibleResumeSections(profile) {
+    const sectionOrder = ['education', 'workExperience', 'projects', 'skills', 'awards', 'selfEvaluation'];
+    return sectionOrder
+        .map((key) => {
+            const section = profile.sections?.[key];
+            if (!section || section.show === false) return null;
+            return {
+                key,
+                id: `sec-${key}`,
+                title: stripMarkdown(section.title || key),
+                count: Array.isArray(section.items) ? section.items.length : (section.text ? 1 : 0)
+            };
+        })
+        .filter(Boolean);
+}
+
+function renderResumeWorkspaceBar(profile) {
+    if (!profile) return;
+    const profileStatus = document.getElementById('resume-profile-status');
+    const scoreStatus = document.getElementById('resume-score-status');
+    const saveStatus = document.getElementById('resume-save-status');
+    const jump = document.getElementById('resume-section-jump');
+    const details = getResumeScoreDetails(AppState.resumeProfile);
+
+    if (profileStatus) {
+        profileStatus.textContent = profile.personalInfo?.targetJob || AppState.resumeProfile;
+    }
+    if (scoreStatus && details) {
+        scoreStatus.textContent = `${details.total}%`;
+        scoreStatus.className = details.total >= 85 ? 'status-good' : details.total >= 70 ? 'status-mid' : 'status-low';
+    }
+    if (saveStatus) {
+        saveStatus.textContent = formatResumeSavedAt(localStorage.getItem('resume_last_saved_at'));
+    }
+    if (jump) {
+        const sections = getVisibleResumeSections(profile);
+        jump.innerHTML = sections.map((section) => `
+            <button type="button" onclick="scrollResumeSection('${section.id}')">
+                <span>${escapeHTML(section.title)}</span>
+                <em>${section.count}</em>
+            </button>
+        `).join('');
+    }
+}
+
+window.scrollResumeSection = function(sectionId) {
+    const target = document.getElementById(sectionId);
+    if (!target) return;
+    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    target.classList.add('section-focus-pulse');
+    setTimeout(() => target.classList.remove('section-focus-pulse'), 900);
+};
+
 function saveFieldFromDOM(el) {
     const type = el.dataset.type;
     const data = getEditedResumeData();
@@ -859,7 +927,10 @@ function saveFieldFromDOM(el) {
     }
     
     localStorage.setItem('interview_prep_edited_resumes', JSON.stringify(data));
+    markResumeSaved();
+    renderResumeWorkspaceBar(profile);
     updateResumeScore(AppState.resumeProfile);
+    renderResumeWorkspaceBar(profile);
 }
 
 // 渲染简历到纸张 DOM
@@ -1938,6 +2009,8 @@ function toggleResumeEditMode() {
         btn.innerHTML = `<i data-lucide="edit"></i> 进入编辑模式`;
         indicator.innerHTML = `<i data-lucide="lock" style="width:14px;"></i> 内容已锁定`;
         indicator.style.color = 'var(--text-muted)';
+        markResumeSaved();
+        renderResumeWorkspaceBar(getActiveResumeProfile());
         
         showNotification('已保存简历修改，锁定内容！');
     } else {
