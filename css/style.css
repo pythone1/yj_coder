@@ -1072,6 +1072,57 @@ body.sidebar-lock {
     font-size: 1.35rem;
 }
 
+.operation-status-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+    gap: 10px;
+}
+
+.operation-status-card {
+    border: 1px solid var(--card-border);
+    border-left-width: 3px;
+    border-radius: 8px;
+    padding: 12px 13px;
+    background: #ffffff;
+    min-width: 0;
+}
+
+.operation-status-card.ok {
+    border-left-color: var(--success);
+}
+
+.operation-status-card.info {
+    border-left-color: var(--primary);
+}
+
+.operation-status-card.warn {
+    border-left-color: #d97706;
+}
+
+.operation-status-card.empty {
+    border-left-color: var(--text-muted);
+}
+
+.operation-status-card span,
+.operation-status-card small {
+    display: block;
+    color: var(--text-muted);
+    font-size: 0.75rem;
+}
+
+.operation-status-card strong {
+    display: block;
+    color: var(--text-primary);
+    font-family: 'Outfit', sans-serif;
+    font-size: 1rem;
+    margin: 6px 0 4px;
+    word-break: break-word;
+}
+
+.operation-status-card small {
+    line-height: 1.4;
+}
+
 .storage-list {
     display: flex;
     flex-direction: column;
@@ -3170,6 +3221,14 @@ body, aside, main, header, .glass-card, input, select, textarea, button, .menu-i
     background: rgba(255, 255, 255, 0.02) !important;
     border-color: rgba(255, 255, 255, 0.08) !important;
 }
+.theme-dark-sea .operation-status-card,
+.theme-dark-sea .storage-row,
+.theme-dark-sea .career-report-preview {
+    background: #1e293b !important;
+    border-top-color: #334155;
+    border-right-color: #334155;
+    border-bottom-color: #334155;
+}
 .theme-dark-sea .score-circle-inner {
     background: #1e293b !important;
 }
@@ -3177,6 +3236,15 @@ body, aside, main, header, .glass-card, input, select, textarea, button, .menu-i
 /* 象牙学术下的细微优化 */
 .theme-minimal-slate .score-circle-inner {
     background: #ffffff !important;
+}
+
+.theme-minimal-slate .operation-status-card,
+.theme-minimal-slate .storage-row,
+.theme-minimal-slate .career-report-preview {
+    background: #ffffff !important;
+    border-top-color: #e4e4e7;
+    border-right-color: #e4e4e7;
+    border-bottom-color: #e4e4e7;
 }
 
 /* 2.0 商业化 Modal 多主题适配 */

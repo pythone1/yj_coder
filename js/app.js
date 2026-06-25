@@ -34,11 +34,14 @@ const WORKSPACE_STORAGE_KEYS = [
     { key: 'interview_prep_theme', label: '全局主题' },
     { key: 'interview_prep_user_config', label: '用户配置' },
     { key: 'interview_prep_job_target', label: '岗位匹配草稿' },
+    { key: 'interview_prep_operation_status', label: '操作状态记录' },
     { key: 'interview_prep_resume_versions', label: '简历版本历史' },
+    { key: 'resume_last_saved_at', label: '简历最近保存时间' },
     { key: 'resume_forced_sync_version', label: '简历数据版本' }
 ];
 
 const JOB_TARGET_STORAGE_KEY = 'interview_prep_job_target';
+const WORKSPACE_OPERATION_STATUS_KEY = 'interview_prep_operation_status';
 const RESUME_HISTORY_LIMIT = 30;
 const RESUME_VERSION_STORAGE_KEY = 'interview_prep_resume_versions';
 const RESUME_VERSION_LIMIT = 8;
@@ -151,6 +154,59 @@ function formatBytes(bytes) {
         idx += 1;
     }
     return `${size.toFixed(idx === 0 ? 0 : 1)} ${units[idx]}`;
+}
+
+function getOperationStatus() {
+    const fallback = {
+        lastBackupAt: null,
+        lastImportAt: null,
+        lastJobAnalysisAt: null,
+        lastJobTitle: '',
+        lastJobScore: null,
+        lastCareerReportAt: null,
+        lastCareerReportType: ''
+    };
+    const saved = localStorage.getItem(WORKSPACE_OPERATION_STATUS_KEY);
+    if (!saved) return fallback;
+    try {
+        return { ...fallback, ...JSON.parse(saved) };
+    } catch (err) {
+        console.error('Failed to load operation status', err);
+        return fallback;
+    }
+}
+
+function updateOperationStatus(patch) {
+    const nextStatus = { ...getOperationStatus(), ...patch };
+    localStorage.setItem(WORKSPACE_OPERATION_STATUS_KEY, JSON.stringify(nextStatus));
+    return nextStatus;
+}
+
+function formatLocalDateTime(value) {
+    if (!value) return '暂无记录';
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return '暂无记录';
+    return date.toLocaleString('zh-CN', {
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit'
+    });
+}
+
+function formatRelativeTime(value) {
+    if (!value) return '未执行';
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return '未执行';
+    const diffMs = Date.now() - date.getTime();
+    if (diffMs < 60 * 1000) return '刚刚';
+    const diffMinutes = Math.floor(diffMs / (60 * 1000));
+    if (diffMinutes < 60) return `${diffMinutes} 分钟前`;
+    const diffHours = Math.floor(diffMinutes / 60);
+    if (diffHours < 24) return `${diffHours} 小时前`;
+    const diffDays = Math.floor(diffHours / 24);
+    if (diffDays < 30) return `${diffDays} 天前`;
+    return formatLocalDateTime(value);
 }
 
 function downloadJSON(filename, payload) {
@@ -397,6 +453,11 @@ window.exportCareerReportMarkdown = function() {
     const model = buildCareerReportModel();
     const filename = `求职材料报告_${model.config.candidateName || 'candidate'}_${new Date().toISOString().slice(0, 10)}.md`;
     downloadTextFile(filename, generateCareerReportMarkdown(), 'text/markdown');
+    updateOperationStatus({
+        lastCareerReportAt: new Date().toISOString(),
+        lastCareerReportType: 'Markdown'
+    });
+    renderDataCenter();
     showNotification('求职材料报告 Markdown 已导出');
 };
 
@@ -404,6 +465,11 @@ window.exportCareerReportHTML = function() {
     const model = buildCareerReportModel();
     const filename = `求职材料报告_${model.config.candidateName || 'candidate'}_${new Date().toISOString().slice(0, 10)}.html`;
     downloadTextFile(filename, generateCareerReportHTML(), 'text/html');
+    updateOperationStatus({
+        lastCareerReportAt: new Date().toISOString(),
+        lastCareerReportType: 'HTML'
+    });
+    renderDataCenter();
     showNotification('求职材料报告 HTML 已导出');
 };
 
@@ -588,6 +654,11 @@ window.analyzeJobTarget = function() {
     }
     const analysis = createJobTargetAnalysis(jobTitle, jdText);
     saveJobTarget({ jobTitle, jdText, analysis });
+    updateOperationStatus({
+        lastJobAnalysisAt: new Date().toISOString(),
+        lastJobTitle: analysis.jobTitle || jobTitle,
+        lastJobScore: analysis.score
+    });
     renderDataCenter();
     showNotification('岗位匹配分析已生成');
 };
@@ -608,6 +679,60 @@ window.clearJobTargetDraft = function() {
     renderDataCenter();
     showNotification('岗位匹配草稿已清空');
 };
+
+function renderOperationStatusPanel() {
+    const panel = document.getElementById('data-center-operation-status');
+    if (!panel) return;
+
+    const status = getOperationStatus();
+    const target = getStoredJobTarget();
+    const resumeSavedAt = localStorage.getItem('resume_last_saved_at');
+    const jobAnalysisAt = target.analysis ? (status.lastJobAnalysisAt || target.updatedAt) : null;
+    const cards = [
+        {
+            label: '最近全量备份',
+            value: formatRelativeTime(status.lastBackupAt),
+            detail: status.lastBackupAt ? formatLocalDateTime(status.lastBackupAt) : '重大修改前建议先备份',
+            tone: status.lastBackupAt ? 'ok' : 'warn'
+        },
+        {
+            label: '最近备份恢复',
+            value: formatRelativeTime(status.lastImportAt),
+            detail: status.lastImportAt ? formatLocalDateTime(status.lastImportAt) : '暂无恢复记录',
+            tone: status.lastImportAt ? 'info' : 'empty'
+        },
+        {
+            label: '最近岗位分析',
+            value: formatRelativeTime(jobAnalysisAt),
+            detail: jobAnalysisAt
+                ? `${status.lastJobTitle || target.jobTitle || '未命名岗位'} · ${status.lastJobScore ?? target.analysis?.score ?? '-'}%`
+                : '粘贴 JD 后生成匹配度',
+            tone: jobAnalysisAt ? 'ok' : 'warn'
+        },
+        {
+            label: '最近简历保存',
+            value: formatRelativeTime(resumeSavedAt),
+            detail: resumeSavedAt ? formatLocalDateTime(resumeSavedAt) : '编辑后会自动保存',
+            tone: resumeSavedAt ? 'ok' : 'empty'
+        },
+        {
+            label: '最近材料报告',
+            value: formatRelativeTime(status.lastCareerReportAt),
+            detail: status.lastCareerReportAt
+                ? `${status.lastCareerReportType || '报告'} · ${formatLocalDateTime(status.lastCareerReportAt)}`
+                : '可导出 Markdown 或 HTML',
+            tone: status.lastCareerReportAt ? 'info' : 'empty'
+        }
+    ];
+
+    panel.innerHTML = cards.map((item) => `
+        <div class="operation-status-card ${item.tone}">
+            <span>${escapeHTML(item.label)}</span>
+            <strong>${escapeHTML(item.value)}</strong>
+            <small>${escapeHTML(item.detail)}</small>
+        </div>
+    `).join('');
+}
 
 function renderDataCenter() {
     const health = document.getElementById('data-center-health');
@@ -659,6 +784,7 @@ function renderDataCenter() {
 
     renderCareerReportPreview();
     renderJobTargetPanel();
+    renderOperationStatusPanel();
 
     if (window.lucide) lucide.createIcons();
 }
@@ -679,6 +805,7 @@ window.saveUserConfigFromForm = function() {
 };
 
 window.exportWorkspaceBackup = function() {
+    updateOperationStatus({ lastBackupAt: new Date().toISOString() });
     const localData = {};
     getStorageSnapshot().forEach((item) => {
         if (item.exists) localData[item.key] = item.value;
@@ -699,6 +826,7 @@ window.exportWorkspaceBackup = function() {
     };
 
     downloadJSON(`求职备战中心_全量备份_${new Date().toISOString().slice(0, 10)}.json`, payload);
+    renderDataCenter();
     showNotification('全量备份已导出');
 };
 
@@ -725,6 +853,7 @@ window.importWorkspaceBackup = function(event) {
                     localStorage.setItem(item.key, parsed.localStorage[item.key]);
                 }
             });
+            updateOperationStatus({ lastImportAt: new Date().toISOString() });
             showNotification('备份恢复成功，正在刷新页面');
             setTimeout(() => location.reload(), 600);
         } catch (err) {
