@@ -17,7 +17,8 @@ const AppState = {
     },
     globalSearch: {
         results: [],
-        activeIndex: -1
+        activeIndex: -1,
+        currentQuery: ''
     },
     resumeVersionDiffId: null,
     pendingWorkspaceBackup: null,
@@ -37,6 +38,7 @@ const WORKSPACE_STORAGE_KEYS = [
     { key: 'interview_prep_user_config', label: '用户配置' },
     { key: 'interview_prep_job_target', label: '岗位匹配草稿' },
     { key: 'interview_prep_operation_status', label: '操作状态记录' },
+    { key: 'interview_prep_global_search_history', label: '全局搜索历史' },
     { key: 'interview_prep_resume_versions', label: '简历版本历史' },
     { key: 'resume_last_saved_at', label: '简历最近保存时间' },
     { key: 'resume_forced_sync_version', label: '简历数据版本' }
@@ -44,6 +46,7 @@ const WORKSPACE_STORAGE_KEYS = [
 
 const JOB_TARGET_STORAGE_KEY = 'interview_prep_job_target';
 const WORKSPACE_OPERATION_STATUS_KEY = 'interview_prep_operation_status';
+const GLOBAL_SEARCH_HISTORY_KEY = 'interview_prep_global_search_history';
 const RESUME_HISTORY_LIMIT = 30;
 const RESUME_VERSION_STORAGE_KEY = 'interview_prep_resume_versions';
 const RESUME_VERSION_LIMIT = 8;
@@ -1103,6 +1106,9 @@ function setupEventListeners() {
         searchInput.addEventListener('input', (e) => {
             const query = e.target.value.trim().toLowerCase();
             performGlobalSearch(query);
+        });
+        searchInput.addEventListener('focus', (e) => {
+            if (!e.target.value.trim()) renderGlobalSearchSuggestions();
         });
         searchInput.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') {
@@ -4444,6 +4450,122 @@ function collectGlobalSearchResults(query) {
     return results.slice(0, 24);
 }
 
+function getGlobalSearchHistory() {
+    const saved = localStorage.getItem(GLOBAL_SEARCH_HISTORY_KEY);
+    if (!saved) return [];
+    try {
+        const parsed = JSON.parse(saved);
+        return Array.isArray(parsed) ? parsed.filter(Boolean).slice(0, 8) : [];
+    } catch (err) {
+        console.error('Failed to load global search history', err);
+        return [];
+    }
+}
+
+function saveGlobalSearchHistory(items) {
+    localStorage.setItem(GLOBAL_SEARCH_HISTORY_KEY, JSON.stringify(items.slice(0, 8)));
+}
+
+function recordGlobalSearchQuery(query) {
+    const normalized = String(query || '').trim().toLowerCase();
+    if (normalized.length < 2) return;
+    const nextHistory = [
+        normalized,
+        ...getGlobalSearchHistory().filter((item) => item !== normalized)
+    ].slice(0, 8);
+    saveGlobalSearchHistory(nextHistory);
+}
+
+function getGlobalSearchShortcuts() {
+    return [
+        { title: 'SAM', desc: 'Segment Anything、水体/建筑/池塘提取', meta: '遥感分割', query: 'sam', icon: 'scissors' },
+        { title: 'RAG', desc: '知识库问答、向量检索、企业知识库', meta: 'AI 工程', query: 'rag', icon: 'database-zap' },
+        { title: 'YOLO', desc: '目标检测、生态识别、工业质检', meta: '计算机视觉', query: 'yolo', icon: 'scan-search' },
+        { title: 'Prithvi', desc: '遥感基础模型、多时相影像 backbone', meta: 'GeoAI', query: 'prithvi', icon: 'satellite' },
+        { title: 'Agent', desc: 'AgentOps、工具调用、MCP、可观测性', meta: '前沿 AI', query: 'agent', icon: 'bot' },
+        { title: 'QGIS', desc: 'GIS 工具、插件、遥感制图流程', meta: '空间数据', query: 'qgis', icon: 'map' }
+    ];
+}
+
+function runGlobalSearchPreset(query) {
+    const normalized = String(query || '').trim().toLowerCase();
+    if (!normalized) return;
+    const searchInput = document.getElementById('global-search');
+    if (searchInput) {
+        searchInput.value = normalized;
+        searchInput.focus();
+    }
+    recordGlobalSearchQuery(normalized);
+    performGlobalSearch(normalized);
+}
+
+window.clearGlobalSearchHistory = function() {
+    localStorage.removeItem(GLOBAL_SEARCH_HISTORY_KEY);
+    renderGlobalSearchSuggestions();
+    showNotification('搜索历史已清空。');
+};
+
+function renderGlobalSearchSuggestions() {
+    const panel = getGlobalSearchPanel();
+    if (!panel) return;
+
+    const history = getGlobalSearchHistory().map((query) => ({
+        type: '最近搜索',
+        icon: 'clock-3',
+        title: query,
+        desc: '重新检索这个关键词',
+        meta: 'History',
+        action: () => runGlobalSearchPreset(query)
+    }));
+    const shortcuts = getGlobalSearchShortcuts().map((item) => ({
+        type: '常用入口',
+        icon: item.icon,
+        title: item.title,
+        desc: item.desc,
+        meta: item.meta,
+        action: () => runGlobalSearchPreset(item.query)
+    }));
+    const results = [...history, ...shortcuts];
+    AppState.globalSearch.results = results;
+    AppState.globalSearch.activeIndex = results.length ? 0 : -1;
+    AppState.globalSearch.currentQuery = '';
+
+    panel.innerHTML = `
+        <div class="global-search-summary">
+            <span>快速检索</span>
+            <strong>${history.length ? `${history.length} 条历史` : '常用入口'}</strong>
+        </div>
+        ${history.length ? `
+            <div class="global-search-group-title">
+                <span>最近搜索</span>
+                <button type="button" onclick="clearGlobalSearchHistory()">清空</button>
+            </div>
+        ` : ''}
+        <div class="global-search-results" role="listbox">
+            ${results.map((item, index) => `
+                ${index === history.length && shortcuts.length ? '<div class="global-search-group-title inline"><span>常用入口</span></div>' : ''}
+                <button class="global-search-result${index === 0 ? ' is-active' : ''}" type="button" data-search-index="${index}" role="option" aria-selected="${index === 0}" tabindex="${index === 0 ? '0' : '-1'}">
+                    <i data-lucide="${item.icon}"></i>
+                    <span>
+                        <strong>${escapeHTML(item.title)}</strong>
+                        <small>${escapeHTML(item.desc || '')}</small>
+                        <em>${escapeHTML(item.type)} · ${escapeHTML(item.meta || '')}</em>
+                    </span>
+                </button>
+            `).join('')}
+        </div>
+    `;
+
+    panel.querySelectorAll('[data-search-index]').forEach((btn) => {
+        btn.addEventListener('click', () => {
+            setGlobalSearchActiveIndex(Number(btn.dataset.searchIndex));
+            activateGlobalSearchSelection();
+        });
+    });
+    panel.classList.add('active');
+    if (window.lucide) lucide.createIcons();
+}
+
 function setGlobalSearchActiveIndex(index) {
     const results = AppState.globalSearch.results || [];
     if (!results.length) {
@@ -4478,6 +4600,9 @@ function activateGlobalSearchSelection() {
     const activeIndex = AppState.globalSearch.activeIndex >= 0 ? AppState.globalSearch.activeIndex : 0;
     const result = results[activeIndex];
     if (!result) return false;
+    if (AppState.globalSearch.currentQuery) {
+        recordGlobalSearchQuery(AppState.globalSearch.currentQuery);
+    }
     hideGlobalSearchPanel();
     result.action?.();
     return true;
@@ -4495,6 +4620,7 @@ function renderGlobalSearchPanel(query, results) {
     if (results.length === 0) {
         AppState.globalSearch.results = [];
         AppState.globalSearch.activeIndex = -1;
+        AppState.globalSearch.currentQuery = query;
         panel.innerHTML = `
             <div class="global-search-empty">
                 <i data-lucide="search-x"></i>
@@ -4508,6 +4634,7 @@ function renderGlobalSearchPanel(query, results) {
 
     AppState.globalSearch.results = results;
     AppState.globalSearch.activeIndex = 0;
+    AppState.globalSearch.currentQuery = query;
 
     panel.innerHTML = `
         <div class="global-search-summary">
@@ -4546,6 +4673,7 @@ function hideGlobalSearchPanel() {
     }
     AppState.globalSearch.results = [];
     AppState.globalSearch.activeIndex = -1;
+    AppState.globalSearch.currentQuery = '';
 }
 
 function highlightSearchText(text, query) {
@@ -4602,7 +4730,7 @@ function renderKnowledgeSearchResults(query) {
 function performGlobalSearch(query) {
     const normalized = query.trim().toLowerCase();
     if (!normalized) {
-        hideGlobalSearchPanel();
+        renderGlobalSearchSuggestions();
         renderKnowledgeContent();
         return;
     }

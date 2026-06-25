@@ -280,6 +280,34 @@ body.sidebar-lock {
     color: var(--primary);
 }
 
+.global-search-group-title {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 10px 14px 6px;
+    color: var(--text-muted);
+    font-size: 0.74rem;
+    font-weight: 700;
+}
+
+.global-search-group-title.inline {
+    padding: 8px 8px 4px;
+}
+
+.global-search-group-title button {
+    border: none;
+    background: transparent;
+    color: var(--primary);
+    cursor: pointer;
+    font: inherit;
+    padding: 0;
+}
+
+.global-search-group-title button:hover {
+    text-decoration: underline;
+}
+
 .global-search-results {
     display: flex;
     flex-direction: column;
