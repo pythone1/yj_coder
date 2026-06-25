@@ -19,6 +19,7 @@ const AppState = {
         results: [],
         activeIndex: -1
     },
+    resumeVersionDiffId: null,
     stats: {
         masteredCards: [], // 记住的卡片ID列表
         reviewedCards: [], // 已复习的卡片ID列表
@@ -1322,28 +1323,187 @@ function formatResumeVersionTime(value) {
     return `${mm}-${dd} ${hh}:${mi}`;
 }
 
-function renderResumeVersions() {
-    const list = document.getElementById('resume-version-list');
-    if (!list) return;
-    const versions = getResumeVersions();
-    if (!versions.length) {
-        list.innerHTML = `
-            <div class="resume-version-empty">
-                <i data-lucide="history"></i>
-                <span>暂无保存版本</span>
+function parseResumeSnapshot(snapshot) {
+    try {
+        const parsed = JSON.parse(snapshot || '{}');
+        return parsed && typeof parsed === 'object' ? parsed : null;
+    } catch (err) {
+        console.error('Failed to parse resume snapshot', err);
+        return null;
+    }
+}
+
+function normalizeResumeCompareValue(value) {
+    if (value === null || value === undefined) return '';
+    if (typeof value === 'string') return stripMarkdown(value).replace(/\s+/g, ' ').trim();
+    if (Array.isArray(value)) return value.map(normalizeResumeCompareValue).filter(Boolean).join(' | ');
+    if (typeof value === 'object') {
+        const clone = { ...value };
+        delete clone.avatar;
+        delete clone.showAvatar;
+        return Object.keys(clone)
+            .sort()
+            .map((key) => `${key}:${normalizeResumeCompareValue(clone[key])}`)
+            .filter((item) => item !== `${item.split(':')[0]}:`)
+            .join(' | ');
+    }
+    return String(value);
+}
+
+function getResumeCompareFields(profile) {
+    if (!profile) return [];
+    const personal = profile.personalInfo || {};
+    const sections = profile.sections || {};
+    const sectionLabels = {
+        education: '教育背景',
+        workExperience: '工作经历',
+        projects: '项目经历',
+        skills: '核心技能',
+        awards: '荣誉证书',
+        selfEvaluation: '自我评价'
+    };
+    const fields = [
+        {
+            key: 'personal',
+            label: '个人信息',
+            value: normalizeResumeCompareValue({
+                name: personal.name,
+                targetJob: personal.targetJob,
+                targetSalary: personal.targetSalary,
+                phone: personal.phone,
+                email: personal.email,
+                experience: personal.experience
+            })
+        }
+    ];
+
+    Object.keys(sectionLabels).forEach((key) => {
+        const section = sections[key];
+        fields.push({
+            key,
+            label: section?.title || sectionLabels[key],
+            value: normalizeResumeCompareValue(section || {})
+        });
+    });
+    return fields;
+}
+
+function getResumeProfileForVersion(data, version) {
+    if (!data?.profiles) return null;
+    return data.profiles[version?.profile] || data.profiles[AppState.resumeProfile] || data.profiles.unicorn || null;
+}
+
+function getResumeCompareExcerpt(value) {
+    const text = normalizeResumeCompareValue(value);
+    if (!text) return '空';
+    return text.length > 96 ? `${text.slice(0, 96)}...` : text;
+}
+
+function buildResumeVersionDiff(version) {
+    const currentData = parseResumeSnapshot(getResumeStorageSnapshot());
+    const versionData = parseResumeSnapshot(version?.snapshot);
+    const currentProfile = getResumeProfileForVersion(currentData, version);
+    const versionProfile = getResumeProfileForVersion(versionData, version);
+    const currentFields = getResumeCompareFields(currentProfile);
+    const versionFields = getResumeCompareFields(versionProfile);
+    const versionMap = new Map(versionFields.map((item) => [item.key, item]));
+    const changed = [];
+    const unchanged = [];
+
+    currentFields.forEach((current) => {
+        const previous = versionMap.get(current.key) || { label: current.label, value: '' };
+        if (current.value === previous.value) {
+            unchanged.push(current.label);
+        } else {
+            changed.push({
+                label: current.label,
+                current: getResumeCompareExcerpt(current.value),
+                previous: getResumeCompareExcerpt(previous.value)
+            });
+        }
+    });
+
+    return {
+        changed,
+        unchanged,
+        total: currentFields.length
+    };
+}
+
+function renderResumeVersionDiffPanel(version = null) {
+    const panel = document.getElementById('resume-version-diff');
+    if (!panel) return;
+    if (!version) {
+        panel.innerHTML = `
+            <div class="resume-version-diff-empty">
+                <i data-lucide="git-compare-arrows"></i>
+                <span>选择一个版本查看差异</span>
             </div>
         `;
         if (window.lucide) lucide.createIcons();
         return;
     }
 
+    const diff = buildResumeVersionDiff(version);
+    if (!diff.changed.length) {
+        panel.innerHTML = `
+            <div class="resume-version-diff-summary ok">
+                <strong>当前内容与该版本一致</strong>
+                <span>${escapeHTML(formatResumeVersionTime(version.createdAt))} · ${escapeHTML(version.title || '未命名版本')}</span>
+            </div>
+        `;
+        return;
+    }
+
+    panel.innerHTML = `
+        <div class="resume-version-diff-summary">
+            <strong>${diff.changed.length} / ${diff.total} 个模块不同</strong>
+            <span>${escapeHTML(formatResumeVersionTime(version.createdAt))} · ${escapeHTML(version.title || '未命名版本')}</span>
+        </div>
+        <div class="resume-version-diff-list">
+            ${diff.changed.map((item) => `
+                <div class="resume-version-diff-item">
+                    <strong>${escapeHTML(item.label)}</strong>
+                    <p><span>当前</span>${escapeHTML(item.current)}</p>
+                    <p><span>版本</span>${escapeHTML(item.previous)}</p>
+                </div>
+            `).join('')}
+        </div>
+    `;
+}
+
+function renderResumeVersions() {
+    const list = document.getElementById('resume-version-list');
+    if (!list) return;
+    const versions = getResumeVersions();
+    if (!versions.length) {
+        AppState.resumeVersionDiffId = null;
+        list.innerHTML = `
+            <div class="resume-version-empty">
+                <i data-lucide="history"></i>
+                <span>暂无保存版本</span>
+            </div>
+        `;
+        renderResumeVersionDiffPanel();
+        if (window.lucide) lucide.createIcons();
+        return;
+    }
+
+    if (AppState.resumeVersionDiffId && !versions.some((item) => item.id === AppState.resumeVersionDiffId)) {
+        AppState.resumeVersionDiffId = null;
+    }
+    const activeVersion = versions.find((item) => item.id === AppState.resumeVersionDiffId) || null;
+
     list.innerHTML = versions.map((item) => `
-        <div class="resume-version-row">
+        <div class="resume-version-row${item.id === AppState.resumeVersionDiffId ? ' active' : ''}">
             <div>
                 <strong>${escapeHTML(item.title || '未命名版本')}</strong>
                 <span>${escapeHTML(formatResumeVersionTime(item.createdAt))} · ${escapeHTML(item.profile || AppState.resumeProfile)}</span>
             </div>
             <div class="resume-version-actions">
+                <button type="button" onclick="compareResumeVersion('${item.id}')" title="对比当前版本">
+                    <i data-lucide="git-compare-arrows"></i>
+                </button>
                 <button type="button" onclick="restoreResumeVersion('${item.id}')" title="恢复版本">
                     <i data-lucide="refresh-cw"></i>
                 </button>
@@ -1353,8 +1513,16 @@ function renderResumeVersions() {
             </div>
         </div>
     `).join('');
+    renderResumeVersionDiffPanel(activeVersion);
     if (window.lucide) lucide.createIcons();
 }
+
+window.compareResumeVersion = function(versionId) {
+    const version = getResumeVersions().find((item) => item.id === versionId);
+    if (!version) return;
+    AppState.resumeVersionDiffId = versionId;
+    renderResumeVersions();
+};
 
 window.saveResumeVersionSnapshot = function() {
     const data = getEditedResumeData();
@@ -1374,6 +1542,7 @@ window.saveResumeVersionSnapshot = function() {
         snapshot
     });
     saveResumeVersions(versions);
+    AppState.resumeVersionDiffId = versions[0].id;
     renderResumeVersions();
     renderDataCenter();
     showNotification('已保存当前简历版本。');
@@ -1388,6 +1557,7 @@ window.restoreResumeVersion = function(versionId) {
     localStorage.setItem('interview_prep_edited_resumes', version.snapshot);
     markResumeSaved();
     AppState.resumeHistory.isRestoring = false;
+    AppState.resumeVersionDiffId = version.id;
     renderResume();
     renderDataCenter();
     showNotification('已恢复保存版本。');
@@ -1399,6 +1569,7 @@ window.deleteResumeVersion = function(versionId) {
     if (!target) return;
     if (!confirm(`确定删除版本：${target.title || '未命名版本'}？`)) return;
     saveResumeVersions(versions.filter((item) => item.id !== versionId));
+    if (AppState.resumeVersionDiffId === versionId) AppState.resumeVersionDiffId = null;
     renderResumeVersions();
     renderDataCenter();
     showNotification('已删除保存版本。');
