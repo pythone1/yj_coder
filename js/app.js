@@ -20,6 +20,7 @@ const AppState = {
         activeIndex: -1
     },
     resumeVersionDiffId: null,
+    pendingWorkspaceBackup: null,
     stats: {
         masteredCards: [], // 记住的卡片ID列表
         reviewedCards: [], // 已复习的卡片ID列表
@@ -836,9 +837,113 @@ window.triggerWorkspaceBackupImport = function() {
     if (input) input.click();
 };
 
+function buildWorkspaceBackupPreview(parsed) {
+    const incoming = parsed?.localStorage || {};
+    const rows = WORKSPACE_STORAGE_KEYS.map((item) => {
+        const incomingExists = Object.prototype.hasOwnProperty.call(incoming, item.key);
+        const currentValue = localStorage.getItem(item.key);
+        const currentExists = currentValue !== null;
+        const incomingValue = incomingExists ? incoming[item.key] : null;
+        const incomingBytes = incomingExists ? new Blob([incomingValue || '']).size : 0;
+        let tone = 'empty';
+        let status = '未包含';
+        if (incomingExists && currentExists && incomingValue === currentValue) {
+            tone = 'same';
+            status = '一致';
+        } else if (incomingExists && currentExists) {
+            tone = 'overwrite';
+            status = '将覆盖';
+        } else if (incomingExists) {
+            tone = 'new';
+            status = '将新增';
+        }
+        return {
+            ...item,
+            incomingExists,
+            currentExists,
+            incomingBytes,
+            tone,
+            status
+        };
+    });
+    const knownKeys = new Set(WORKSPACE_STORAGE_KEYS.map((item) => item.key));
+    const unknownKeys = Object.keys(incoming).filter((key) => !knownKeys.has(key));
+    return {
+        exportedAt: parsed.exportedAt || '',
+        version: parsed.version || '-',
+        activeResumeProfile: parsed.activeResumeProfile || '-',
+        rows,
+        unknownKeys,
+        counts: {
+            incoming: rows.filter((item) => item.incomingExists).length,
+            overwrite: rows.filter((item) => item.tone === 'overwrite').length,
+            same: rows.filter((item) => item.tone === 'same').length,
+            added: rows.filter((item) => item.tone === 'new').length,
+            missing: rows.filter((item) => !item.incomingExists).length
+        },
+        bytes: rows.reduce((sum, item) => sum + item.incomingBytes, 0)
+    };
+}
+
+function renderWorkspaceBackupPreview(parsed = null) {
+    const panel = document.getElementById('workspace-backup-preview');
+    if (!panel) return;
+    if (!parsed) {
+        panel.innerHTML = '';
+        return;
+    }
+
+    const preview = buildWorkspaceBackupPreview(parsed);
+    panel.innerHTML = `
+        <div class="backup-preview-header">
+            <div>
+                <span>待恢复备份</span>
+                <strong>${escapeHTML(formatLocalDateTime(preview.exportedAt))}</strong>
+                <small>版本 ${escapeHTML(preview.version)} · 画像 ${escapeHTML(preview.activeResumeProfile)} · ${escapeHTML(formatBytes(preview.bytes))}</small>
+            </div>
+            <div class="backup-preview-actions">
+                <button class="btn btn-primary btn-sm" type="button" onclick="confirmWorkspaceBackupImport()">
+                    <i data-lucide="shield-check"></i> 确认恢复
+                </button>
+                <button class="btn btn-secondary btn-sm" type="button" onclick="clearWorkspaceBackupPreview()">
+                    <i data-lucide="x"></i> 取消
+                </button>
+            </div>
+        </div>
+        <div class="backup-preview-summary">
+            <span>包含 ${preview.counts.incoming} 项</span>
+            <span>${preview.counts.overwrite} 项覆盖</span>
+            <span>${preview.counts.added} 项新增</span>
+            <span>${preview.counts.same} 项一致</span>
+        </div>
+        ${preview.unknownKeys.length ? `<div class="backup-preview-warning">发现 ${preview.unknownKeys.length} 个未知字段，将不会恢复：${preview.unknownKeys.map(escapeHTML).join(' / ')}</div>` : ''}
+        <div class="backup-preview-rows">
+            ${preview.rows.map((item) => `
+                <div class="backup-preview-row ${item.tone}">
+                    <div>
+                        <strong>${escapeHTML(item.label)}</strong>
+                        <span>${escapeHTML(item.key)}</span>
+                    </div>
+                    <em>${escapeHTML(item.status)}${item.incomingExists ? ` · ${escapeHTML(formatBytes(item.incomingBytes))}` : ''}</em>
+                </div>
+            `).join('')}
+        </div>
+    `;
+    if (window.lucide) lucide.createIcons();
+}
+
+window.clearWorkspaceBackupPreview = function() {
+    AppState.pendingWorkspaceBackup = null;
+    renderWorkspaceBackupPreview();
+    const input = document.getElementById('workspace-backup-file');
+    if (input) input.value = '';
+};
+
 window.importWorkspaceBackup = function(event) {
     const file = event.target.files[0];
     if (!file) return;
+    AppState.pendingWorkspaceBackup = null;
+    renderWorkspaceBackupPreview();
 
     const reader = new FileReader();
     reader.onload = (e) => {
@@ -848,15 +953,9 @@ window.importWorkspaceBackup = function(event) {
                 alert('备份文件格式不正确，未执行恢复。');
                 return;
             }
-            if (!confirm('恢复会覆盖当前浏览器本地数据，确定继续？')) return;
-            WORKSPACE_STORAGE_KEYS.forEach((item) => {
-                if (Object.prototype.hasOwnProperty.call(parsed.localStorage, item.key)) {
-                    localStorage.setItem(item.key, parsed.localStorage[item.key]);
-                }
-            });
-            updateOperationStatus({ lastImportAt: new Date().toISOString() });
-            showNotification('备份恢复成功，正在刷新页面');
-            setTimeout(() => location.reload(), 600);
+            AppState.pendingWorkspaceBackup = parsed;
+            renderWorkspaceBackupPreview(parsed);
+            showNotification('备份已解析，请确认预览后再恢复。');
         } catch (err) {
             console.error(err);
             alert('备份文件解析失败，请检查 JSON 格式。');
@@ -865,6 +964,24 @@ window.importWorkspaceBackup = function(event) {
         }
     };
     reader.readAsText(file);
+};
+
+window.confirmWorkspaceBackupImport = function() {
+    const parsed = AppState.pendingWorkspaceBackup;
+    if (!parsed?.localStorage) {
+        alert('没有可恢复的备份预览，请先选择备份文件。');
+        return;
+    }
+    const preview = buildWorkspaceBackupPreview(parsed);
+    if (!confirm(`确认恢复该备份？将覆盖 ${preview.counts.overwrite} 项、新增 ${preview.counts.added} 项，本操作会刷新页面。`)) return;
+    WORKSPACE_STORAGE_KEYS.forEach((item) => {
+        if (Object.prototype.hasOwnProperty.call(parsed.localStorage, item.key)) {
+            localStorage.setItem(item.key, parsed.localStorage[item.key]);
+        }
+    });
+    updateOperationStatus({ lastImportAt: new Date().toISOString() });
+    showNotification('备份恢复成功，正在刷新页面');
+    setTimeout(() => location.reload(), 600);
 };
 
 window.resetWorkspaceLocalData = function() {
