@@ -2627,15 +2627,8 @@ window.optimizeResumeText = function() {
 
 window.exportResumeJSON = function() {
     const data = getEditedResumeData();
-    const blob = new Blob([JSON.stringify(data, null, 4)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `备战中心简历配置备份_${AppState.resumeProfile}_${new Date().toISOString().slice(0,10)}.json`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+    const context = getResumeExportContext();
+    downloadResumeFile(`${context.filenameBase}_配置备份.json`, JSON.stringify(data, null, 4), 'application/json');
     showNotification('简历配置文件已成功下载备份！');
 };
 
@@ -3140,218 +3133,306 @@ window.deleteBullet = function(sectionKey, index, bulletIndex) {
 
 // 获取剥离了所有控制边框、删除按钮等辅助元素的纯净简历 DOM 片段
 function getCleanResumeHTML() {
-    const paperClone = document.getElementById('resume-paper-target').cloneNode(true);
-    
-    // 移除所有的交互和辅助按钮组件
-    paperClone.querySelectorAll('.block-actions-overlay').forEach(el => el.remove());
-    paperClone.querySelectorAll('.bullet-delete-btn').forEach(el => el.remove());
-    paperClone.querySelectorAll('.add-bullet-btn').forEach(el => el.remove());
-    paperClone.querySelectorAll('svg').forEach(el => el.remove());
-    paperClone.querySelectorAll('i').forEach(el => el.remove());
-    
-    // 移除可编辑属性
-    paperClone.removeAttribute('contenteditable');
+    const sourcePaper = document.getElementById('resume-paper-target');
+    if (!sourcePaper) return '';
+
+    const paperClone = sourcePaper.cloneNode(true);
+    paperClone.removeAttribute('id');
+    paperClone.classList.remove('editing-active', 'section-focus-pulse');
+    paperClone.style.outline = 'none';
+
+    paperClone.querySelectorAll([
+        '.block-actions-overlay',
+        '.bullet-delete-btn',
+        '.add-bullet-btn',
+        '.ai-polish-btn',
+        '.avatar-hover-upload',
+        'svg',
+        'i'
+    ].join(',')).forEach(el => el.remove());
+
     paperClone.querySelectorAll('[contenteditable]').forEach(el => {
         el.removeAttribute('contenteditable');
         el.style.outline = 'none';
         el.style.border = 'none';
         el.style.background = 'transparent';
     });
-    
-    return paperClone.innerHTML;
+
+    paperClone.querySelectorAll('[onclick]').forEach(el => el.removeAttribute('onclick'));
+    paperClone.querySelectorAll('[title]').forEach(el => el.removeAttribute('title'));
+
+    return paperClone.outerHTML;
 }
 
-// 1. 导出 Word (.doc 格式) - 动态嵌入用户选择的主题配色
-window.exportResumeWord = function() {
-    const cleanContent = getCleanResumeHTML();
-    const profile = getEditedResumeData().profiles[AppState.resumeProfile];
-    const themeColor = profile.themeColor || '#0d9488';
-    
-    const wordHTML = `
-        <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">
-        <head>
-            <meta charset="utf-8">
-            <title>个人简历 - ${AppState.resumeProfile}</title>
+function getResumeExportContext() {
+    const profile = getEditedResumeData().profiles[AppState.resumeProfile] || {};
+    const info = profile.personalInfo || {};
+    const safeName = (info.name || '个人简历').replace(/[\\/:*?"<>|]/g, '').trim() || '个人简历';
+    const profileName = (AppState.resumeProfile || 'resume').replace(/[\\/:*?"<>|]/g, '');
+    return {
+        title: `${safeName} - 个人简历`,
+        filenameBase: `${safeName}_${profileName}_${new Date().toISOString().slice(0, 10)}`,
+        themeColor: profile.themeColor || '#0d9488'
+    };
+}
+
+function getResumeExportStyles(themeColor, mode = 'screen') {
+    const wordMode = mode === 'word';
+    const printMode = mode === 'print';
+    return `
+        @page {
+            size: A4;
+            margin: ${wordMode ? '14mm 14mm 16mm 14mm' : printMode ? '0' : '10mm'};
+        }
+        * {
+            box-sizing: border-box;
+        }
+        body {
+            margin: 0;
+            background: ${wordMode ? '#ffffff' : '#e2e8f0'};
+            color: #1f2937;
+            font-family: "Microsoft YaHei", "PingFang SC", "SimSun", Arial, sans-serif;
+            line-height: 1.6;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+        .resume-export-shell {
+            width: 100%;
+            min-height: 100vh;
+            padding: ${wordMode || printMode ? '0' : '24px'};
+        }
+        .resume-paper {
+            width: ${wordMode ? '100%' : '210mm'};
+            min-height: ${wordMode ? 'auto' : '297mm'};
+            max-width: 100%;
+            margin: 0 auto;
+            background: #ffffff;
+            color: #334155;
+            border: ${wordMode || printMode ? 'none' : '1px solid #e2e8f0'};
+            border-radius: ${wordMode || printMode ? '0' : '8px'};
+            padding: ${wordMode ? '0' : '20mm 18mm'};
+            box-shadow: ${wordMode || printMode ? 'none' : '0 10px 30px rgba(15, 23, 42, 0.08)'};
+            --resume-accent: ${themeColor};
+            --text-primary: #0f172a;
+            --text-secondary: #475569;
+            --text-muted: #64748b;
+            --card-border: #e2e8f0;
+        }
+        .resume-basic-info-block {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 24px;
+            border-bottom: 2px solid ${themeColor};
+            padding-bottom: 18px;
+            margin-bottom: 20px;
+        }
+        .info-fields-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 8px 16px;
+            flex: 1;
+            align-content: center;
+        }
+        .info-field {
+            display: flex;
+            align-items: flex-start;
+            min-width: 0;
+            font-size: ${wordMode ? '10.5pt' : '0.9rem'};
+        }
+        .field-label {
+            width: 78px;
+            flex: 0 0 78px;
+            color: #475569;
+            font-weight: 700;
+        }
+        .field-value {
+            flex: 1;
+            min-width: 0;
+            color: #0f172a;
+            word-break: break-word;
+        }
+        .info-avatar-box {
+            width: 100px;
+            height: 133px;
+            border: 1px solid #e2e8f0;
+            border-radius: 4px;
+            overflow: hidden;
+            flex: 0 0 100px;
+        }
+        .info-avatar-box img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+        .resume-section {
+            margin-bottom: 22px;
+            page-break-inside: avoid;
+        }
+        .resume-section-header-wrap {
+            border-bottom: 2px solid ${themeColor};
+            display: flex;
+            align-items: flex-end;
+            margin-bottom: 14px;
+        }
+        .resume-section-title {
+            margin: 0;
+            padding: 6px 24px 6px 12px;
+            display: inline-flex;
+            align-items: center;
+            color: #ffffff !important;
+            background: ${themeColor};
+            font-family: "Microsoft YaHei", "SimHei", Arial, sans-serif;
+            font-size: ${wordMode ? '13pt' : '1.1rem'};
+            font-weight: 700;
+            border: none !important;
+            ${wordMode ? '' : 'clip-path: polygon(0 0, 88% 0, 100% 100%, 0 100%);'}
+        }
+        .resume-block-item {
+            position: relative;
+            margin-bottom: 10px;
+            padding: 4px 8px;
+            page-break-inside: avoid;
+        }
+        .resume-project-header {
+            display: flex;
+            justify-content: space-between;
+            gap: 16px;
+            color: #0f172a;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+        .resume-project-header span:last-child {
+            flex-shrink: 0;
+            color: #64748b;
+            font-weight: 500;
+            text-align: right;
+        }
+        .resume-project-role {
+            margin-bottom: 8px;
+            color: ${themeColor};
+            font-size: ${wordMode ? '10pt' : '0.88rem'};
+            font-weight: 700;
+        }
+        .resume-bullets {
+            margin: 0;
+            padding-left: 20px;
+            list-style-type: square;
+        }
+        .resume-bullets li {
+            margin-bottom: 6px;
+            color: #374151;
+            page-break-inside: avoid;
+        }
+        strong {
+            color: #0f172a;
+            font-weight: 700;
+        }
+        [style*="var(--resume-accent"] {
+            color: ${themeColor} !important;
+        }
+        @media print {
+            body {
+                background: #ffffff !important;
+            }
+            .resume-export-shell {
+                min-height: auto;
+                padding: 0;
+            }
+            .resume-paper {
+                width: 210mm;
+                min-height: 297mm;
+                border: none;
+                border-radius: 0;
+                box-shadow: none;
+                padding: 20mm 18mm;
+            }
+        }
+        @media (max-width: 720px) {
+            .resume-export-shell {
+                padding: 12px;
+            }
+            .resume-paper {
+                width: 100%;
+                padding: 18px;
+            }
+            .resume-basic-info-block {
+                flex-direction: column;
+            }
+            .info-fields-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    `;
+}
+
+function createResumeExportDocument(content, context, mode = 'screen') {
+    const wordNamespaces = mode === 'word'
+        ? ' xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40"'
+        : '';
+    const wordHead = mode === 'word'
+        ? `
+            <meta name="ProgId" content="Word.Document">
+            <meta name="Generator" content="Resume Exporter">
             <!--[if gte mso 9]>
             <xml>
                 <w:WordDocument>
                     <w:View>Print</w:View>
                     <w:Zoom>100</w:Zoom>
+                    <w:DoNotOptimizeForBrowser/>
                 </w:WordDocument>
             </xml>
             <![endif]-->
-            <style>
-                body { font-family: 'SimSun', 'Microsoft YaHei', sans-serif; line-height: 1.6; color: #333333; margin: 40px; }
-                .resume-basic-info-block { border-bottom: 2px solid ${themeColor}; padding-bottom: 12px; margin-bottom: 20px; }
-                .info-fields-grid { width: 100%; }
-                .info-field { font-size: 10.5pt; margin-bottom: 6px; }
-                .field-label { font-weight: bold; color: #555555; }
-                .field-value { color: #111827; }
-                .resume-section { margin-top: 25px; margin-bottom: 15px; }
-                .resume-section-header-wrap { border-bottom: 2px solid ${themeColor}; margin-bottom: 12px; }
-                .resume-section-title { font-size: 13pt; font-weight: bold; color: #ffffff !important; background: ${themeColor}; padding: 6px 12px; display: inline-block; }
-                .resume-project-item { margin-bottom: 20px; }
-                .resume-project-header { font-weight: bold; color: #1f2937; margin-bottom: 4px; }
-                .resume-project-header span { font-size: 11pt; }
-                .resume-project-role { font-size: 10pt; color: ${themeColor}; font-weight: bold; margin-bottom: 6px; }
-                .resume-bullets { margin-left: 20px; padding-left: 0; }
-                .resume-bullets li { margin-bottom: 5px; list-style-type: disc; font-size: 10.5pt; color: #374151; }
-                strong { color: #111827; }
-            </style>
-        </head>
-        <body>
-            ${cleanContent}
-        </body>
-        </html>
-    `;
-    
-    const blob = new Blob([wordHTML], { type: 'application/vnd.ms-word;charset=utf-8' });
+        `
+        : '<meta name="viewport" content="width=device-width, initial-scale=1.0">';
+
+    return `<!DOCTYPE html>
+<html lang="zh-CN"${wordNamespaces}>
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>${context.title}</title>
+    ${wordHead}
+    <style>${getResumeExportStyles(context.themeColor, mode)}</style>
+</head>
+<body>
+    <main class="resume-export-shell">
+        ${content}
+    </main>
+</body>
+</html>`;
+}
+
+function downloadResumeFile(filename, content, mimeType, addBom = true) {
+    const parts = addBom ? ['\ufeff', content] : [content];
+    const blob = new Blob(parts, { type: `${mimeType};charset=utf-8` });
     const url = URL.createObjectURL(blob);
-    
     const a = document.createElement('a');
     a.href = url;
-    a.download = `简历_${AppState.resumeProfile}_${new Date().toISOString().slice(0,10)}.doc`;
+    a.download = filename;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
-    
-    showNotification('MS Word 格式文档已生成并开始下载！');
+}
+
+// 1. 导出 Word：使用 UTF-8 BOM + Office HTML，避免中文被 Word 按 ANSI 打开。
+window.exportResumeWord = function() {
+    const cleanContent = getCleanResumeHTML();
+    const context = getResumeExportContext();
+    const wordHTML = createResumeExportDocument(cleanContent, context, 'word');
+    downloadResumeFile(`${context.filenameBase}.doc`, wordHTML, 'application/msword');
+    showNotification('Word 简历已按 UTF-8 编码生成。');
 };
 
-// 2. 导出 HTML 网页 - 保留斜切 ribbon 视觉和当前主题色
+// 2. 导出 HTML：和预览纸张共用同一套导出样式。
 window.exportResumeHTML = function() {
     const cleanContent = getCleanResumeHTML();
-    const profile = getEditedResumeData().profiles[AppState.resumeProfile];
-    const themeColor = profile.themeColor || '#0d9488';
-    
-    const fullHTML = `
-        <!DOCTYPE html>
-        <html lang="zh-CN">
-        <head>
-            <meta charset="UTF-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>个人简历 - ${AppState.resumeProfile}</title>
-            <style>
-                body {
-                    background-color: #f3f4f6;
-                    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-                    color: #1f2937;
-                    line-height: 1.6;
-                    padding: 40px 20px;
-                    margin: 0;
-                }
-                .resume-container {
-                    max-width: 800px;
-                    margin: 0 auto;
-                    background: #ffffff;
-                    padding: 40px;
-                    border-radius: 8px;
-                    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-                }
-                .resume-basic-info-block {
-                    display: flex;
-                    justify-content: space-between;
-                    gap: 24px;
-                    border-bottom: 2px solid ${themeColor};
-                    padding-bottom: 20px;
-                    margin-bottom: 20px;
-                }
-                .info-fields-grid {
-                    display: grid;
-                    grid-template-columns: repeat(2, 1fr);
-                    gap: 8px 16px;
-                    flex: 1;
-                }
-                .info-field {
-                    display: flex;
-                    font-size: 0.9rem;
-                }
-                .field-label {
-                    color: #4b5563;
-                    font-weight: 600;
-                    width: 75px;
-                }
-                .field-value {
-                    color: #111827;
-                }
-                .info-avatar-box {
-                    width: 100px;
-                    height: 133px;
-                    border: 1px solid #e5e7eb;
-                    border-radius: 4px;
-                    overflow: hidden;
-                }
-                .info-avatar-box img {
-                    width: 100%;
-                    height: 100%;
-                    object-fit: cover;
-                }
-                .resume-section {
-                    margin-bottom: 26px;
-                }
-                .resume-section-title {
-                    font-size: 1.1rem;
-                    font-weight: 700;
-                    color: white !important;
-                    background: ${themeColor};
-                    padding: 6px 24px 6px 12px;
-                    display: inline-block;
-                    clip-path: polygon(0 0, 88% 0, 100% 100%, 0 100%);
-                    margin: 0;
-                }
-                .resume-project-item {
-                    margin-bottom: 16px;
-                }
-                .resume-project-header {
-                    display: flex;
-                    justify-content: space-between;
-                    font-weight: 600;
-                    color: #111827;
-                    margin-bottom: 4px;
-                }
-                .resume-project-role {
-                    font-size: 0.88rem;
-                    color: ${themeColor};
-                    font-weight: 600;
-                    margin-bottom: 6px;
-                }
-                .resume-bullets {
-                    padding-left: 20px;
-                    margin: 0;
-                }
-                .resume-bullets li {
-                    margin-bottom: 6px;
-                }
-                strong {
-                    color: #111827;
-                }
-                @media print {
-                    body { background: transparent; padding: 0; }
-                    .resume-container { box-shadow: none; padding: 0; max-width: 100%; }
-                }
-            </style>
-        </head>
-        <body>
-            <div class="resume-container">
-                ${cleanContent}
-            </div>
-        </body>
-        </html>
-    `;
-    
-    const blob = new Blob([fullHTML], { type: 'text/html;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-    
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `简历_${AppState.resumeProfile}_${new Date().toISOString().slice(0,10)}.html`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-    
-    showNotification('独立 HTML 网页格式已成功下载！');
+    const context = getResumeExportContext();
+    const fullHTML = createResumeExportDocument(cleanContent, context, 'screen');
+    downloadResumeFile(`${context.filenameBase}.html`, fullHTML, 'text/html');
+    showNotification('HTML 简历已导出，版式与预览纸张保持一致。');
 };
 
 // 3. 导出 Markdown (.md) - 从底层结构化数据生成，跳过被隐藏的板块
@@ -3429,18 +3510,9 @@ window.exportResumeMarkdown = function() {
         md += `\n`;
     }
     
-    const blob = new Blob([md], { type: 'text/markdown;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-    
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `简历_${AppState.resumeProfile}_${new Date().toISOString().slice(0,10)}.md`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-    
-    showNotification('Markdown 格式简历已成功下载！');
+    const context = getResumeExportContext();
+    downloadResumeFile(`${context.filenameBase}.md`, md, 'text/markdown');
+    showNotification('Markdown 简历已按 UTF-8 编码导出。');
 };
 
 // 4. 复制简历文本 - 从结构化数据导出
@@ -3515,7 +3587,24 @@ window.copyResumeText = function() {
 };
 
 window.printResume = function() {
-    window.print();
+    const cleanContent = getCleanResumeHTML();
+    const context = getResumeExportContext();
+    const printHTML = createResumeExportDocument(cleanContent, context, 'print');
+    const printWindow = window.open('', '_blank', 'width=960,height=1200');
+
+    if (!printWindow) {
+        window.print();
+        showNotification('浏览器阻止了独立 PDF 窗口，已切换为当前页面打印。');
+        return;
+    }
+
+    printWindow.document.open();
+    printWindow.document.write(printHTML);
+    printWindow.document.close();
+    printWindow.focus();
+    printWindow.onload = () => {
+        printWindow.print();
+    };
 };
 
 /* ==========================================================================
